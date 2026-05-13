@@ -1,5 +1,5 @@
 import DashboardShell from "@/components/DashboardShell";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/app/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { Users, Shield, User, Briefcase } from "lucide-react";
 

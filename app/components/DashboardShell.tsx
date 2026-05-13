@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut,
   ChevronLeft, Menu, X, Target, Briefcase, TrendingUp,

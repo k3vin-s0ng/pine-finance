@@ -15,7 +15,7 @@ import { useRef, useState } from "react";
 import { Upload, FileText, X, Loader2, File } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 
 export interface SourceMaterial {
   label: string;

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import DashboardShell from "@/components/DashboardShell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { FileText, Search, Download, ArrowRight, ExternalLink } from "lucide-react";
 

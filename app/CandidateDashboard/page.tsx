@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import DashboardShell from "@/components/DashboardShell";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { FileText, Clock, CheckCircle, Circle, ArrowRight, BarChart3, Award } from "lucide-react";
