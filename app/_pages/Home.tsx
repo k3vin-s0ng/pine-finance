@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
@@ -16,6 +16,16 @@ import {
   ArrowRight, CheckCircle, BarChart3, Shield, Zap, Users, Target, TrendingUp,
   ChevronRight, Star, Building2, Briefcase, LineChart, Calculator, BookOpen, Brain
 } from "lucide-react";
+
+function useLoginHref() {
+  const [href, setHref] = useState("/");
+
+  useEffect(() => {
+    setHref(getLoginUrl());
+  }, []);
+
+  return href;
+}
 
 // ─── Demo Request Modal ───────────────────────────────────────────────────────
 function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -89,6 +99,7 @@ function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ─── Navigation ───────────────────────────────────────────────────────────────
 function Nav({ onDemo }: { onDemo: () => void }) {
   const { isAuthenticated, user } = useAuth();
+  const loginHref = useLoginHref();
 
   const getDashboardPath = () => {
     if (user?.role === "recruiter" || user?.role === "admin") return "/dashboard/recruiter";
@@ -121,7 +132,7 @@ function Nav({ onDemo }: { onDemo: () => void }) {
             </Link>
           ) : (
             <>
-              <a href={getLoginUrl()}>
+              <a href={loginHref}>
                 <Button variant="ghost" className="text-[#888] hover:text-white text-xs tracking-widest uppercase">Sign In</Button>
               </a>
               <Button onClick={onDemo} className="bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold text-xs tracking-widest uppercase px-5">
@@ -137,6 +148,8 @@ function Nav({ onDemo }: { onDemo: () => void }) {
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 function Hero({ onDemo }: { onDemo: () => void }) {
+  const loginHref = useLoginHref();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#060606]">
       {/* Atmospheric background */}
@@ -183,7 +196,7 @@ function Hero({ onDemo }: { onDemo: () => void }) {
               Request Demo
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <a href={getLoginUrl()}>
+            <a href={loginHref}>
               <Button variant="outline" className="border-[#333] text-[#aaa] hover:border-[#c9a84c]/50 hover:text-white text-sm tracking-widest uppercase px-8 py-6 bg-transparent">
                 Sign In to Platform
               </Button>
@@ -792,6 +805,8 @@ function Pricing({ onDemo }: { onDemo: () => void }) {
 
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 function CTA({ onDemo }: { onDemo: () => void }) {
+  const loginHref = useLoginHref();
+
   return (
     <section className="py-32 bg-[#060606] relative overflow-hidden">
       <div className="absolute inset-0">
@@ -819,7 +834,7 @@ function CTA({ onDemo }: { onDemo: () => void }) {
             Request Demo
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <a href={getLoginUrl()}>
+          <a href={loginHref}>
             <Button variant="outline" className="border-[#333] text-[#aaa] hover:border-[#c9a84c]/50 hover:text-white text-sm tracking-widest uppercase px-10 py-6 bg-transparent">
               Sign In
             </Button>
