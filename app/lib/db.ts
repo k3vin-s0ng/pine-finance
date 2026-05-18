@@ -97,7 +97,6 @@ export async function getDb(): Promise<Db | null> {
 
 async function ensureIndexes(db: Db) {
   await Promise.all([
-    db.collection("counters").createIndex({ _id: 1 }, { unique: true }),
     db.collection("users").createIndex({ id: 1 }, { unique: true }),
     db.collection("users").createIndex({ openId: 1 }, { unique: true }),
     db.collection("campaigns").createIndex({ id: 1 }, { unique: true }),
