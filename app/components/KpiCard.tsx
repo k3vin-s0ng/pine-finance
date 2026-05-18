@@ -1,4 +1,6 @@
-import { cn } from "@/lib/utils";
+"use client";
+
+import { cn } from "@/app/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 interface KpiCardProps {

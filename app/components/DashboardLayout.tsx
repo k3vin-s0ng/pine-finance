@@ -1,4 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+"use client";
+
+import { useAuth } from "@/app/_core/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,11 +21,11 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/app/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
-import { useIsMobile } from "@/hooks/useMobile";
+import { getLoginUrl } from "@/app/lib/const";
+import { useIsMobile } from "@/app/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation } from "@/app/lib/wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 

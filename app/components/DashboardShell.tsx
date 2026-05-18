@@ -1,6 +1,8 @@
+"use client";
+
 import { ReactNode, useState } from "react";
-import { Link, useLocation } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { Link, useLocation } from "@/app/lib/wouter";
+import { useAuth } from "@/app/_core/hooks/useAuth";
 import { Button } from "@/app/components/ui/button";
 import {
   LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut,

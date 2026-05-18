@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/app/lib/trpc";
 import {
   ChevronDown, ChevronUp, MessageSquare, FileText, Clock,
   CheckCircle2, Loader2, Bot, User, History, Trophy, Calendar,

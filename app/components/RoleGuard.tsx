@@ -1,5 +1,7 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Redirect } from "wouter";
+"use client";
+
+import { useAuth } from "@/app/_core/hooks/useAuth";
+import { Redirect } from "@/app/lib/wouter";
 
 type Role = "recruiter" | "candidate" | "manager" | "user" | "admin";
 type FinanceRole = "executive" | "manager" | "analyst" | "compliance_lead" | null | undefined;

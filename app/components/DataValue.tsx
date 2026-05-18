@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * DataValue — first-class financial number rendering component.
  *

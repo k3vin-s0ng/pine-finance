@@ -17,8 +17,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
-import { useIsMobile } from "@/hooks/useMobile";
-import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/app/hooks/useMobile";
+import { cn } from "@/app/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
@@ -731,3 +731,4 @@ export {
   SidebarTrigger,
   useSidebar
 };
+

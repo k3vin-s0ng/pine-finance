@@ -1,6 +1,8 @@
+"use client";
+
 import { useDialogComposition } from "@/app/components/ui/dialog";
-import { useComposition } from "@/hooks/useComposition";
-import { cn } from "@/lib/utils";
+import { useComposition } from "@/app/hooks/useComposition";
+import { cn } from "@/app/lib/utils";
 import * as React from "react";
 
 function Input({

@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * GOOGLE MAPS FRONTEND INTEGRATION - ESSENTIAL GUIDE
  *
@@ -77,8 +79,8 @@
 /// <reference types="@types/google.maps" />
 
 import { useEffect, useRef } from "react";
-import { usePersistFn } from "@/hooks/usePersistFn";
-import { cn } from "@/lib/utils";
+import { usePersistFn } from "@/app/hooks/usePersistFn";
+import { cn } from "@/app/lib/utils";
 
 declare global {
   interface Window {
@@ -86,9 +88,9 @@ declare global {
   }
 }
 
-const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_FRONTEND_FORGE_API_KEY;
 const FORGE_BASE_URL =
-  import.meta.env.VITE_FRONTEND_FORGE_API_URL ||
+  process.env.NEXT_PUBLIC_FRONTEND_FORGE_API_URL ||
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 

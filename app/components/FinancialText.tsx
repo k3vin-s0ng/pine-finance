@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * FinancialText — financial typography utilities for the Pine Assessment.
  *
