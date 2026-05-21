@@ -20,6 +20,9 @@
 # production
 /build
 
+# cursor agent session flags
+.cursor/.open-pr-armed
+
 # misc
 .DS_Store
 *.pem
