@@ -4,7 +4,7 @@ import "@/app/globals.css";
 
 export const metadata: Metadata = {
   title: "Pine Finance",
-  description: "Finance AI fluency assessment and intelligence platform",
+  description: "Finance AI fluency assessments for hiring teams",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
