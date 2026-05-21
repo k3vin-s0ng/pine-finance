@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { trpc } from "@/app/lib/trpc";
 import { useLocalStorageDraft } from "@/app/hooks/useLocalStorageDraft";
 import { useTaskProgress } from "@/app/hooks/useTaskProgress";
-import { useAIUsageTracker } from "@/app/hooks/useAIUsageTracker";
+import { useCompositionTracker } from "@/app/hooks/useCompositionTracker";
 import { DataValue } from "@/app/components/DataValue";
 import {
   MemoComposer, VarianceComposer, ThesisComposer,
@@ -1438,7 +1438,7 @@ export default function AssessmentInterface() {
   const totalMinutes = assessmentData?.assessment.timeLimitMinutes ?? 60;
   const taskIds = tasks.map(t => t.id);
   const { progress: taskProgress, formatElapsed } = useTaskProgress(currentTask, taskIds, responses);
-  const { textareaProps: aiUsageProps, getRatio, lastTypedAt } = useAIUsageTracker(tasks[currentTask]?.id ?? "", taskIds);
+  const { textareaProps: compositionProps, getRatio, lastTypedAt } = useCompositionTracker(tasks[currentTask]?.id ?? "", taskIds);
 
   // Source material labels for AI chips
   const sourceMaterialLabels = useMemo(() => {
@@ -1504,8 +1504,7 @@ export default function AssessmentInterface() {
     });
     // Reset to external after use
     lastCopiedFromRef.current = "external";
-    // Also forward to aiUsageProps.onPaste for the existing typed/pasted ratio tracker
-    aiUsageProps.onPaste?.(e as any);
+    compositionProps.onPaste?.(e);
   }, [currentTaskId, pushEvent]);
 
   const updateComposerValue = (value: any) => {

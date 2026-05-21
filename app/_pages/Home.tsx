@@ -14,7 +14,7 @@ import { getLoginUrl } from "@/app/lib/const";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import {
   ArrowRight, CheckCircle, BarChart3, Shield, Zap, Users, Target, TrendingUp,
-  ChevronRight, Star, Building2, Briefcase, LineChart, Calculator, BookOpen, Brain
+  ChevronRight, Star, Building2, Briefcase, Calculator, BookOpen
 } from "lucide-react";
 
 function useLoginHref() {
@@ -104,7 +104,6 @@ function Nav({ onDemo }: { onDemo: () => void }) {
   const getDashboardPath = () => {
     if (user?.role === "recruiter" || user?.role === "admin") return "/dashboard/recruiter";
     if (user?.role === "candidate") return "/dashboard/candidate";
-    if (user?.role === "manager") return "/dashboard/manager";
     return "/onboarding";
   };
 
@@ -185,7 +184,7 @@ function Hero({ onDemo }: { onDemo: () => void }) {
           </h1>
 
           <p className="text-[#888] text-lg md:text-xl max-w-xl leading-relaxed mb-10 font-light">
-            Finance-specific AI fluency assessments and workforce intelligence for investment banks, private equity, hedge funds, and FP&A teams. Stop guessing. Start measuring.
+            Finance-specific AI fluency assessments for investment banks, private equity, hedge funds, and FP&A teams. Stop guessing who can use AI well. Start measuring with realistic hiring workflows.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -258,12 +257,12 @@ function Problem() {
               {
                 icon: BarChart3,
                 title: "No meaningful benchmarks",
-                desc: "Managers cannot benchmark internal adoption beyond crude measures like tool logins or prompt counts.",
+                desc: "Hiring teams cannot compare AI fluency across candidates using consistent, role-specific scoring.",
               },
               {
                 icon: TrendingUp,
-                title: "Productivity gap widening",
-                desc: "Finance teams are under pressure to improve productivity on repetitive work — but lack the infrastructure to identify who's actually driving it.",
+                title: "Interviews miss applied skill",
+                desc: "Candidates can talk about AI fluency without proving they can use it under realistic finance constraints.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-4 p-5 bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg hover:border-[#c9a84c]/20 transition-colors group">
@@ -296,23 +295,22 @@ function Product() {
             <div className="h-px w-8 bg-[#c9a84c]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">Two Products.</span><br />
-            <span className="text-gold-gradient">One System of Record.</span>
+            <span className="text-white">Hiring Assessments.</span><br />
+            <span className="text-gold-gradient">Sharper Signal.</span>
           </h2>
-          <p className="text-[#666] max-w-xl mx-auto">From pre-hire screening to internal workforce intelligence — Pine Finance covers the full AI capability lifecycle.</p>
+          <p className="text-[#666] max-w-xl mx-auto">Pine Finance helps hiring teams evaluate AI fluency with role-specific finance tasks, embedded AI assistance, structured scoring, and recruiter-ready reports.</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Product 1 */}
-          <div className="relative p-8 bg-[#0a0a0a] border border-[#c9a84c]/30 rounded-xl overflow-hidden group hover:border-[#c9a84c]/60 transition-all duration-300 glow-gold">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative p-8 bg-[#0a0a0a] border border-[#c9a84c]/30 rounded-xl overflow-hidden glow-gold">
             <div className="absolute top-0 right-0 w-48 h-48 opacity-5"
               style={{ background: "radial-gradient(circle, #c9a84c, transparent)" }} />
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-lg bg-[#c9a84c] flex items-center justify-center">
-                  <span className="text-black font-black text-sm">01</span>
+                  <Briefcase className="w-5 h-5 text-black" />
                 </div>
-                <span className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase">Pre-Hire Product</span>
+                <span className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase">Hiring Product</span>
               </div>
               <h3 className="text-2xl font-black text-white uppercase mb-3">AI Fluency Interviews</h3>
               <p className="text-[#777] text-sm leading-relaxed mb-6">
@@ -329,37 +327,6 @@ function Product() {
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5 text-sm text-[#aaa]">
                     <CheckCircle className="w-4 h-4 text-[#c9a84c] flex-shrink-0" />
-                    {f}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Product 2 */}
-          <div className="relative p-8 bg-[#0a0a0a] border border-[#222] rounded-xl overflow-hidden group hover:border-[#c9a84c]/30 transition-all duration-300">
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#333] flex items-center justify-center">
-                  <span className="text-[#c9a84c] font-black text-sm">02</span>
-                </div>
-                <span className="text-[#666] text-xs font-bold tracking-widest uppercase">Internal Product</span>
-              </div>
-              <h3 className="text-2xl font-black text-white uppercase mb-3">AI Usage Intelligence</h3>
-              <p className="text-[#777] text-sm leading-relaxed mb-6">
-                Post-hire analytics layer that measures employee AI adoption and effectiveness over time — benchmarking usage by function, level, and workflow.
-              </p>
-              <div className="space-y-2.5">
-                {[
-                  "Team-level AI adoption dashboards",
-                  "Benchmarking by function, level, and workflow",
-                  "High-performer identification and best practices",
-                  "Training module recommendations",
-                  "Efficiency gains quantification",
-                  "Governance and approved-use reporting",
-                ].map(f => (
-                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#aaa]">
-                    <CheckCircle className="w-4 h-4 text-[#555] flex-shrink-0" />
                     {f}
                   </div>
                 ))}
@@ -441,7 +408,7 @@ function Segments() {
       why: "Small teams, high value-per-hire, strong interest in productivity",
     },
     {
-      icon: LineChart,
+      icon: TrendingUp,
       name: "Hedge Funds",
       buyer: "COO, Chief of Staff, PM, Talent Lead",
       useCase: "Research and ops workflow assessment",
@@ -451,15 +418,15 @@ function Segments() {
       icon: Calculator,
       name: "FP&A",
       buyer: "VP Finance, CFO Office, FP&A Lead",
-      useCase: "Internal benchmarking and upskilling",
-      why: "Repetitive reporting and planning tasks, broader volume market",
+      useCase: "Analyst assessment for planning and reporting workflows",
+      why: "Recurring planning cycles and high need for accurate, AI-assisted analysis",
     },
     {
       icon: BookOpen,
       name: "Accounting",
       buyer: "Controller, Finance Transformation Lead",
-      useCase: "AI usage tracking and training",
-      why: "Clear repetitive workflows and measurable efficiency gains",
+      useCase: "Assessment for close, reconciliation, and reporting roles",
+      why: "Clear workflows where candidates can demonstrate accuracy and verification discipline",
     },
   ];
 
@@ -580,114 +547,6 @@ function HowItWorks() {
   );
 }
 
-// ─── Workforce AI Intelligence ──────────────────────────────────────────────
-function WorkforceIntelligence({ onDemo }: { onDemo: () => void }) {
-  const pillars = [
-    {
-      icon: LineChart,
-      title: "Executive Dashboard",
-      desc: "Org-wide AI adoption KPIs, touchless processing rates, hours saved, and governance posture — all in one CFO-ready view.",
-      href: "/intelligence/executive",
-    },
-    {
-      icon: Users,
-      title: "Manager Intelligence",
-      desc: "Per-team workflow penetration, AI session analytics, governance alerts, and coaching nudges for finance managers.",
-      href: "/intelligence/manager",
-    },
-    {
-      icon: BarChart3,
-      title: "Analyst Scorecard",
-      desc: "Individual AI effectiveness scores across 6 dimensions: adoption, efficiency, quality, judgment, governance, and business impact.",
-      href: "/intelligence/analyst",
-    },
-    {
-      icon: Shield,
-      title: "Governance & Compliance",
-      desc: "Real-time policy violation tracking, unapproved tool detection, audit trails, and one-click resolution for compliance leads.",
-      href: "/intelligence/governance",
-    },
-    {
-      icon: TrendingUp,
-      title: "Automated Reports",
-      desc: "LLM-generated monthly manager reports, quarterly executive summaries, and individual evaluation narratives — delivered automatically.",
-      href: "/intelligence/reports",
-    },
-    {
-      icon: Zap,
-      title: "Coaching & Feedback",
-      desc: "Personalized nudges, workflow playbooks, and AI-generated coaching narratives to accelerate team capability development.",
-      href: "/intelligence/feedback",
-    },
-  ];
-
-  return (
-    <section id="intelligence" className="py-32 bg-[#080808] relative overflow-hidden">
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#c9a84c 1px, transparent 1px), linear-gradient(90deg, #c9a84c 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      <div className="container relative">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#c9a84c]/20 bg-[#c9a84c]/5 mb-6">
-            <Brain className="w-3 h-3 text-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">Workforce AI Intelligence</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-            Measure What Matters.
-            <br />
-            <span className="text-gold-gradient">Govern What's Risky.</span>
-          </h2>
-          <p className="text-[#666] max-w-2xl mx-auto text-sm leading-relaxed">
-            Pine Finance's intelligence layer gives finance leaders real-time visibility into how their teams use AI — from workflow adoption to policy compliance to individual effectiveness scores.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
-          {pillars.map((p) => (
-            <Link key={p.href} href={p.href}>
-              <div className="group h-full bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-6 hover:border-[#c9a84c]/30 hover:bg-[#0d0d0d] transition-all cursor-pointer">
-                <div className="w-9 h-9 rounded-lg bg-[#c9a84c]/10 border border-[#c9a84c]/20 flex items-center justify-center mb-4 group-hover:bg-[#c9a84c]/15 transition-colors">
-                  <p.icon className="w-4 h-4 text-[#c9a84c]" />
-                </div>
-                <h3 className="text-white font-bold text-sm mb-2 tracking-wide">{p.title}</h3>
-                <p className="text-[#555] text-xs leading-relaxed">{p.desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-[#c9a84c]/60 text-xs font-medium group-hover:text-[#c9a84c] transition-colors">
-                  <span>Explore</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Stats row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
-          {[
-            { label: "Workflows Tracked", value: "10+", sub: "finance-specific" },
-            { label: "Governance Policies", value: "6", sub: "violation types" },
-            { label: "Scoring Dimensions", value: "6", sub: "per analyst" },
-            { label: "Report Types", value: "3", sub: "auto-generated" },
-          ].map((s) => (
-            <div key={s.label} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-5 text-center">
-              <div className="text-3xl font-black text-[#c9a84c] mb-1">{s.value}</div>
-              <div className="text-white text-xs font-semibold">{s.label}</div>
-              <div className="text-[#444] text-[10px] mt-0.5">{s.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center">
-          <Button
-            onClick={onDemo}
-            className="bg-[#c9a84c] text-black font-bold px-8 py-3 rounded-lg hover:bg-[#e0bf6a] transition-colors"
-          >
-            See Intelligence Platform Demo
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 function Pricing({ onDemo }: { onDemo: () => void }) {
   const plans = [
@@ -727,12 +586,12 @@ function Pricing({ onDemo }: { onDemo: () => void }) {
       name: "Enterprise",
       price: "Custom",
       unit: "annual contract",
-      desc: "For large institutions with internal analytics needs.",
+      desc: "For large institutions running high-volume assessment programs.",
       features: [
         "Unlimited candidates",
-        "Internal AI usage dashboards",
-        "Team-level analytics",
-        "Governance & compliance controls",
+        "Custom assessment design",
+        "Advanced benchmarking",
+        "SSO and admin controls",
         "Custom integrations",
         "Dedicated success manager",
       ],
@@ -882,7 +741,6 @@ export default function Home() {
       <ScoringDimensions />
       <Segments />
       <HowItWorks />
-      <WorkforceIntelligence onDemo={() => setDemoOpen(true)} />
       <Pricing onDemo={() => setDemoOpen(true)} />
       <CTA onDemo={() => setDemoOpen(true)} />
       <Footer />

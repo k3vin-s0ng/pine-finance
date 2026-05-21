@@ -8,7 +8,7 @@ import { Label } from "@/app/components/ui/label";
 import { toast } from "sonner";
 import { trpc } from "@/app/lib/trpc";
 import { useAuth } from "@/app/_core/hooks/useAuth";
-import { Users, Briefcase, BarChart3, ArrowRight } from "lucide-react";
+import { Users, Briefcase, ArrowRight } from "lucide-react";
 
 const ROLES = [
   {
@@ -29,29 +29,19 @@ const ROLES = [
     iconColor: "text-[#aaa]",
     iconBg: "bg-[#333]/30",
   },
-  {
-    id: "manager" as const,
-    label: "Team Manager",
-    icon: BarChart3,
-    desc: "Monitor team AI adoption, view analytics, and identify coaching opportunities.",
-    color: "border-[#555]/50 bg-[#555]/5",
-    iconColor: "text-[#aaa]",
-    iconBg: "bg-[#333]/30",
-  },
 ];
 
 export default function Onboarding() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<"recruiter" | "candidate" | "manager" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"recruiter" | "candidate" | null>(null);
   const [organization, setOrganization] = useState("");
 
   const completeOnboarding = trpc.auth.completeOnboarding.useMutation({
     onSuccess: () => {
       toast.success("Welcome to Pine Finance!");
       if (selectedRole === "recruiter") navigate("/dashboard/recruiter");
-      else if (selectedRole === "candidate") navigate("/dashboard/candidate");
-      else navigate("/dashboard/manager");
+      else navigate("/dashboard/candidate");
     },
     onError: (e) => toast.error(e.message),
   });

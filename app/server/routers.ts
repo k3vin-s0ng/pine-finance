@@ -10,9 +10,8 @@ import {
   createCampaign, getCampaignsByRecruiter, getCampaignById, updateCampaign, deleteCampaign,
   createAssessment, getAssessmentsByCampaign, getAssessmentById, getAssessmentWithCampaign, getAssessmentsByCandidate, updateAssessmentStatus,
   createSubmission, getSubmissionByAssessment,
-  createScore, getScoreBySubmission, getScoreByAssessment, getScoresByCampaign,
+  createScore, getScoreByAssessment, getScoresByCampaign,
   createPdfReport, getPdfReportByAssessment,
-  logAiUsageEvent, getAiUsageByUser, getTeamAiUsageStats,
   createDemoRequest,
   getCandidatesFullStatus,
   getAssessmentByToken,
@@ -20,9 +19,7 @@ import {
   getAssessmentsByEmail,
   getAllCandidatesForRecruiter,
   getAllReportsForRecruiter,
-  getTeamMembers,
   getCandidateScoreSummary,
-  getAllCandidatesForManager,
   getAssessmentHistoryForCandidate,
   getAssessmentSubmissionDetail,
   bulkInsertBehaviorEvents,
@@ -31,37 +28,12 @@ import {
 } from "@/app/lib/db";
 import { notifyOwner } from "./_core/notification";
 import { sendCandidateInviteEmail, sendScoreReadyEmail } from "./email";
-import { computeBenchmarkPercentile, getDimensionBenchmark } from "./benchmarkData";
-
-// Intelligence sub-routers
-import { dashboardRouter } from "./routers/dashboard";
-import { aiEventsRouter } from "./routers/aiEventsIntelligence";
-import { governanceRouter } from "./routers/governance";
-import { reportsRouter } from "./routers/reports";
-import { feedbackRouter } from "./routers/feedback";
-import { scoringRouter as intelligenceScoringRouter } from "./routers/scoring";
-import { teamsRouter } from "./routers/teams";
+import { computeBenchmarkPercentile } from "./benchmarkData";
 
 // ─── Role guard helpers ───────────────────────────────────────────────────────
 const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "recruiter" && ctx.user.role !== "admin") {
     throw new TRPCError({ code: "FORBIDDEN", message: "Recruiter access required" });
-  }
-  return next({ ctx });
-});
-
-const managerProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "manager" && ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Manager access required" });
-  }
-  return next({ ctx });
-});
-
-// Recruiter OR manager can view company-wide analytics
-const recruiterOrManagerProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const allowed = ["recruiter", "manager", "admin"];
-  if (!allowed.includes(ctx.user.role)) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Recruiter or manager access required" });
   }
   return next({ ctx });
 });
@@ -336,7 +308,7 @@ export const appRouter = router({
     }),
     completeOnboarding: protectedProcedure
       .input(z.object({
-        role: z.enum(["recruiter", "candidate", "manager"]),
+        role: z.enum(["recruiter", "candidate"]),
         organization: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
@@ -561,15 +533,6 @@ export const appRouter = router({
           completionTimeSeconds: input.completionTimeSeconds,
         });
         await updateAssessmentStatus(input.assessmentId, "submitted", { submittedAt: new Date() });
-        // Log AI usage events
-        for (const interaction of input.aiInteractions.filter(i => i.role === "user")) {
-          await logAiUsageEvent({
-            userId: ctx.user.id,
-            eventType: "prompt",
-            workflow: "assessment",
-            promptLength: interaction.content.length,
-          });
-        }
         // Auto-score if campaign has autoScore enabled (non-blocking — runs in background)
         if (campaign.autoScore) {
           setImmediate(async () => {
@@ -780,7 +743,7 @@ export const appRouter = router({
     examHistory: protectedProcedure
       .input(z.object({ candidateId: z.number().optional() }))
       .query(async ({ ctx, input }) => {
-        const isRecruiterOrAdmin = ctx.user.role === "recruiter" || ctx.user.role === "admin" || ctx.user.role === "manager";
+        const isRecruiterOrAdmin = ctx.user.role === "recruiter" || ctx.user.role === "admin";
         // Candidates can only see their own history
         const targetId = isRecruiterOrAdmin && input.candidateId
           ? input.candidateId
@@ -795,7 +758,7 @@ export const appRouter = router({
     examResponses: protectedProcedure
       .input(z.object({ assessmentId: z.number() }))
       .query(async ({ ctx, input }) => {
-        const isRecruiterOrAdmin = ctx.user.role === "recruiter" || ctx.user.role === "admin" || ctx.user.role === "manager";
+        const isRecruiterOrAdmin = ctx.user.role === "recruiter" || ctx.user.role === "admin";
         const detail = await getAssessmentSubmissionDetail(
           input.assessmentId,
           ctx.user.id,
@@ -874,35 +837,6 @@ export const appRouter = router({
       }),
   }),
 
-  // ─── AI Usage Analytics ─────────────────────────────────────────────────────
-  analytics: router({
-    myUsage: protectedProcedure.query(async ({ ctx }) => {
-      return getAiUsageByUser(ctx.user.id);
-    }),
-    teamStats: managerProcedure.query(async () => {
-      return getTeamAiUsageStats();
-    }),
-    logEvent: protectedProcedure
-      .input(z.object({
-        eventType: z.string(),
-        workflow: z.string().optional(),
-        tool: z.string().optional(),
-        promptLength: z.number().optional(),
-        responseLength: z.number().optional(),
-        durationMs: z.number().optional(),
-        qualityScore: z.number().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        await logAiUsageEvent({ userId: ctx.user.id, ...input });
-        return { success: true };
-      }),
-    teamMembers: managerProcedure.query(async () => {
-      return getTeamMembers();
-    }),
-    allCandidates: managerProcedure.query(async () => {
-      return getAllCandidatesForManager();
-    }),
-  }),
   // ─── Recruiter-wide views ───────────────────────────────────────────────────────────────────
   recruiter: router({
     allCandidates: recruiterProcedure.query(async ({ ctx }) => {
@@ -946,31 +880,10 @@ Important guidelines:
         const rawContent = response.choices[0]?.message?.content;
         const content = typeof rawContent === "string" ? rawContent : "";
 
-        // Log the interaction
-        const lastUserMsg = input.messages.filter(m => m.role === "user").pop();
-        await logAiUsageEvent({
-          userId: ctx.user.id,
-          eventType: "prompt",
-          workflow: "assessment",
-          tool: "pine-ai",
-          promptLength: lastUserMsg?.content.length ?? 0,
-          responseLength: content.length,
-        });
-
         return { content };
       }),
   }),
 
-  // ─── Intelligence Platform ──────────────────────────────────────────────────
-  intelligence: router({
-    dashboard: dashboardRouter,
-    aiEvents: aiEventsRouter,
-    governance: governanceRouter,
-    reports: reportsRouter,
-    feedback: feedbackRouter,
-    scoring: intelligenceScoringRouter,
-    teams: teamsRouter,
-  }),
 });
 
 export type AppRouter = typeof appRouter;

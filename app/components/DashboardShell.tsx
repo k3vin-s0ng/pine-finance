@@ -5,9 +5,8 @@ import { Link, useLocation } from "@/app/lib/wouter";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import { Button } from "@/app/components/ui/button";
 import {
-  LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut,
-  ChevronLeft, Menu, X, Target, Briefcase, TrendingUp,
-  Brain, Shield, ClipboardList, MessageSquare, Star, LineChart
+  LayoutDashboard, Users, FileText, LogOut,
+  ChevronLeft, Menu, Target
 } from "lucide-react";
 
 interface NavItem {
@@ -28,45 +27,23 @@ const CANDIDATE_NAV: NavItem[] = [
   { icon: FileText, label: "My Reports", href: "/dashboard/candidate/reports" },
 ];
 
-const MANAGER_NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Overview", href: "/dashboard/manager" },
-  { icon: TrendingUp, label: "Team Analytics", href: "/dashboard/manager/analytics" },
-  { icon: Users, label: "Team Members", href: "/dashboard/manager/team" },
-  { icon: BarChart3, label: "AI Usage", href: "/dashboard/manager/usage" },
-];
-
-const INTELLIGENCE_NAV: NavItem[] = [
-  { icon: LineChart, label: "Executive View", href: "/intelligence/executive" },
-  { icon: Brain, label: "Manager View", href: "/intelligence/manager" },
-  { icon: BarChart3, label: "Analyst View", href: "/intelligence/analyst" },
-  { icon: Shield, label: "Governance", href: "/intelligence/governance" },
-  { icon: FileText, label: "Reports", href: "/intelligence/reports" },
-  { icon: Star, label: "Scoring", href: "/intelligence/scoring" },
-  { icon: MessageSquare, label: "Feedback", href: "/intelligence/feedback" },
-];
-
 function getNavItems(role: string | undefined): NavItem[] {
   if (role === "recruiter" || role === "admin") return RECRUITER_NAV;
   if (role === "candidate") return CANDIDATE_NAV;
-  if (role === "manager") return MANAGER_NAV;
   return RECRUITER_NAV;
 }
 
 function getRoleLabel(role: string | undefined): string {
   if (role === "recruiter" || role === "admin") return "Recruiter/HR";
   if (role === "candidate") return "Candidate";
-  if (role === "manager") return "Team Manager";
   return "User";
 }
-
-const INTELLIGENCE_FINANCE_ROLES = new Set(["manager", "executive", "compliance_lead", "admin"]);
 
 export default function DashboardShell({ children, title, subtitle, actions }: { children: ReactNode; title?: string; subtitle?: string; actions?: ReactNode }) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navItems = getNavItems(user?.role);
-  const showIntelligence = INTELLIGENCE_FINANCE_ROLES.has((user as any)?.financeRole ?? "");
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -90,7 +67,7 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location === item.href || (item.href !== "/dashboard/recruiter" && item.href !== "/dashboard/candidate" && item.href !== "/dashboard/manager" && location.startsWith(item.href));
+          const isActive = location === item.href || (item.href !== "/dashboard/recruiter" && item.href !== "/dashboard/candidate" && location.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href}>
               <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
@@ -104,27 +81,6 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
             </Link>
           );
         })}
-        {/* AI Intelligence section — visible to manager, executive, compliance_lead, admin only */}
-        {showIntelligence && (
-          <div className="pt-3 mt-2 border-t border-[#1a1a1a]">
-            <div className="px-3 pb-2 text-[#444] text-[9px] font-bold tracking-widest uppercase">AI Intelligence</div>
-            {INTELLIGENCE_NAV.map((item) => {
-              const isActive = location.startsWith(item.href);
-              return (
-                <Link key={item.href} href={item.href}>
-                  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-[#c9a84c]/10 text-[#c9a84c] border border-[#c9a84c]/20"
-                      : "text-[#555] hover:text-[#999] hover:bg-[#111]"
-                  }`}>
-                    <item.icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium text-xs tracking-wide uppercase">{item.label}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
       </nav>
 
       {/* Footer */}

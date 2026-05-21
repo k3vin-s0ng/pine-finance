@@ -1,36 +1,20 @@
 import { Collection, Db, MongoClient, ObjectId, type Filter } from "mongodb";
 import type {
-  AiEvent,
-  AiUsageEvent,
   Assessment,
   BehaviorEvent,
   Campaign,
   DemoRequest,
-  EvaluationScore,
-  FeedbackItem,
-  InsertAiEvent,
-  InsertAiUsageEvent,
   InsertAssessment,
   InsertBehaviorEvent,
   InsertCampaign,
   InsertDemoRequest,
-  InsertEvaluationScore,
-  InsertFeedbackItem,
-  InsertIntelligenceReport,
   InsertPdfReport,
-  InsertPolicyEvent,
   InsertScore,
-  InsertScoringWeight,
   InsertSubmission,
   InsertTeam,
   InsertUser,
-  IntelligenceReport,
-  OutcomeMetric,
   PdfReport,
-  Playbook,
-  PolicyEvent,
   Score,
-  ScoringWeight,
   Submission,
   Team,
   User,
@@ -45,19 +29,8 @@ type CollectionName =
   | "submissions"
   | "scores"
   | "pdfReports"
-  | "aiUsageEvents"
   | "demoRequests"
   | "teams"
-  | "workflows"
-  | "aiEvents"
-  | "workflowInstances"
-  | "outcomeMetrics"
-  | "evaluationScores"
-  | "policyEvents"
-  | "feedbackItems"
-  | "playbooks"
-  | "intelligenceReports"
-  | "scoringWeights"
   | "behaviorEvents";
 
 declare global {
@@ -113,14 +86,6 @@ async function ensureIndexes(db: Db) {
     db.collection("scores").createIndex({ submissionId: 1 }),
     db.collection("pdfReports").createIndex({ id: 1 }, { unique: true }),
     db.collection("pdfReports").createIndex({ assessmentId: 1 }),
-    db.collection("aiEvents").createIndex({ id: 1 }, { unique: true }),
-    db.collection("aiEvents").createIndex({ eventId: 1 }, { unique: true }),
-    db.collection("aiEvents").createIndex({ teamId: 1, timestamp: -1 }),
-    db.collection("aiEvents").createIndex({ userId: 1, timestamp: -1 }),
-    db.collection("policyEvents").createIndex({ id: 1 }, { unique: true }),
-    db.collection("policyEvents").createIndex({ teamId: 1, timestamp: -1 }),
-    db.collection("intelligenceReports").createIndex({ id: 1 }, { unique: true }),
-    db.collection("feedbackItems").createIndex({ userId: 1, createdAt: -1 }),
   ]);
 }
 
@@ -170,31 +135,9 @@ async function insertWithId<T extends { id: number }>(
   return id;
 }
 
-function rangeFilter(field: string, from?: Date, to?: Date) {
-  const query: Record<string, unknown> = {};
-  if (from || to) query[field] = { ...(from ? { $gte: from } : {}), ...(to ? { $lte: to } : {}) };
-  return query;
-}
-
 function toNumber(value: unknown) {
   const n = Number(value ?? 0);
   return Number.isFinite(n) ? n : 0;
-}
-
-function countBy<T>(rows: T[], key: (row: T) => string | number | null | undefined) {
-  const map = new Map<string, number>();
-  for (const row of rows) {
-    const value = key(row);
-    if (value === undefined || value === null || value === "") continue;
-    const k = String(value);
-    map.set(k, (map.get(k) ?? 0) + 1);
-  }
-  return Array.from(map.entries()).map(([value, count]) => ({ value, count }));
-}
-
-function avg(values: unknown[]) {
-  const nums = values.map(toNumber).filter((n) => Number.isFinite(n));
-  return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
 }
 
 export async function getUserById(id: number) {
@@ -255,7 +198,7 @@ export async function getUserByOpenId(openId: string) {
   return stripId<User>(await users?.findOne({ openId } as Filter<MongoRecord<User>>));
 }
 
-export async function updateUserRole(userId: number, role: "recruiter" | "candidate" | "manager", organization?: string) {
+export async function updateUserRole(userId: number, role: "recruiter" | "candidate", organization?: string) {
   const users = await col<User>("users");
   await users?.updateOne({ id: userId }, { $set: { role, onboardingCompleted: true, organization: organization ?? null, updatedAt: new Date() } });
 }
@@ -402,31 +345,6 @@ export async function getPdfReportByAssessment(assessmentId: number): Promise<Pd
   return stripId<PdfReport>(await pdfReports?.findOne({ assessmentId }));
 }
 
-export async function logAiUsageEvent(data: InsertAiUsageEvent): Promise<void> {
-  await insertWithId<AiUsageEvent>("aiUsageEvents", data);
-}
-
-export async function getAiUsageByUser(userId: number, limit = 100): Promise<AiUsageEvent[]> {
-  const events = await col<AiUsageEvent>("aiUsageEvents");
-  return stripMany(await events?.find({ userId }).sort({ createdAt: -1 }).limit(limit).toArray() ?? []);
-}
-
-export async function getTeamAiUsageStats() {
-  const events = stripMany(await (await col<AiUsageEvent>("aiUsageEvents"))?.find().toArray() ?? []);
-  const grouped = countBy(events, (e) => e.userId);
-  return Promise.all(grouped.map(async ({ value, count }) => {
-    const userEvents = events.filter((e) => String(e.userId) === value);
-    const user = await getUserById(Number(value));
-    return {
-      userId: Number(value),
-      userName: user?.name ?? null,
-      eventCount: count,
-      avgQuality: avg(userEvents.map((e) => e.qualityScore)),
-      totalDuration: userEvents.reduce((sum, e) => sum + toNumber(e.durationMs), 0),
-    };
-  }));
-}
-
 export async function createDemoRequest(data: InsertDemoRequest): Promise<void> {
   await insertWithId<DemoRequest>("demoRequests", data);
 }
@@ -459,27 +377,12 @@ export async function getAllReportsForRecruiter(recruiterId: number) {
   });
 }
 
-export async function getTeamMembers() {
-  const users = await col<User>("users");
-  return stripMany(await users?.find({ role: { $in: ["candidate", "recruiter", "manager"] } }).sort({ lastSignedIn: -1 }).toArray() ?? []);
-}
-
 export async function getCandidateScoreSummary(candidateId: number) {
   const rows = await getAssessmentsByCandidate(candidateId);
   return Promise.all(rows.map(async (row) => ({
     ...row,
     score: await getScoreByAssessment(row.assessment.id) ?? null,
     pdf: await getPdfReportByAssessment(row.assessment.id) ?? null,
-  })));
-}
-
-export async function getAllCandidatesForManager() {
-  const assessments = stripMany(await (await col<Assessment>("assessments"))?.find().sort({ createdAt: -1 }).toArray() ?? []);
-  return Promise.all(assessments.map(async (assessment) => ({
-    assessment,
-    campaign: await getCampaignById(assessment.campaignId) ?? null,
-    score: await getScoreByAssessment(assessment.id) ?? null,
-    candidate: assessment.candidateId ? await getUserById(assessment.candidateId) ?? null : null,
   })));
 }
 
@@ -510,208 +413,6 @@ export async function getAllUsers() {
 export async function updateUserFinanceRole(userId: number, financeRole: User["financeRole"], teamId?: number) {
   const users = await col<User>("users");
   await users?.updateOne({ id: userId }, { $set: { financeRole, ...(teamId !== undefined ? { teamId } : {}), updatedAt: new Date() } });
-}
-
-export async function logAiEvent(data: InsertAiEvent) {
-  const event = Object.assign({
-    workflowType: "other",
-    toolName: "internal_llm",
-    sourceApplication: "other",
-    actionType: "prompted",
-    durationSeconds: 0,
-    complexityScore: 5,
-    outputAccepted: false,
-    outputEdited: false,
-    humanApprovalRequired: false,
-    humanApprovalGiven: false,
-    policyStatus: "compliant",
-    timestamp: new Date(),
-  }, data);
-  await insertWithId<AiEvent>("aiEvents", event);
-}
-
-export async function getAiEvents(filters?: {
-  userId?: number;
-  teamId?: number;
-  workflowType?: string;
-  from?: Date;
-  to?: Date;
-  limit?: number;
-}) {
-  const query: Filter<MongoRecord<AiEvent>> = {
-    ...(filters?.userId ? { userId: filters.userId } : {}),
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...(filters?.workflowType ? { workflowType: filters.workflowType } : {}),
-    ...rangeFilter("timestamp", filters?.from, filters?.to),
-  };
-  const events = await col<AiEvent>("aiEvents");
-  return stripMany(await events?.find(query).sort({ timestamp: -1 }).limit(filters?.limit ?? 200).toArray() ?? []);
-}
-
-export async function getAiEventStats(from: Date, to: Date) {
-  const events = await getAiEvents({ from, to, limit: 100_000 });
-  const workflowBreakdown = countBy(events, (e) => e.workflowType).map(({ value, count }) => ({ workflowType: value, count }));
-  const toolBreakdown = countBy(events, (e) => e.toolName).map(({ value, count }) => ({ toolName: value, count }));
-  return {
-    totalEvents: events.length,
-    activeUsers: new Set(events.map((e) => e.userId)).size,
-    violations: events.filter((e) => e.policyStatus === "violation").length,
-    workflowBreakdown,
-    toolBreakdown,
-  };
-}
-
-export async function getOutcomeMetrics(filters?: { teamId?: number; userId?: number; workflowType?: string; from?: Date; to?: Date }) {
-  const metrics = await col<OutcomeMetric>("outcomeMetrics");
-  return stripMany(await metrics?.find({
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...(filters?.userId ? { userId: filters.userId } : {}),
-    ...(filters?.workflowType ? { workflowType: filters.workflowType } : {}),
-    ...rangeFilter("periodStart", filters?.from),
-    ...rangeFilter("periodEnd", undefined, filters?.to),
-  }).sort({ periodEnd: -1 }).toArray() ?? []);
-}
-
-export async function getScoringWeights() {
-  const weights = await col<ScoringWeight>("scoringWeights");
-  let result = stripId<ScoringWeight>(await weights?.findOne({ id: 1 }));
-  if (!result && weights) {
-    result = {
-      id: 1,
-      adoptionWeight: 15,
-      efficiencyWeight: 20,
-      qualityWeight: 20,
-      judgmentWeight: 20,
-      governanceWeight: 15,
-      businessImpactWeight: 10,
-      updatedAt: new Date(),
-    };
-    await weights.insertOne(result);
-  }
-  return result;
-}
-
-export async function updateScoringWeights(weights: InsertScoringWeight) {
-  const collection = await col<ScoringWeight>("scoringWeights");
-  await collection?.updateOne({ id: 1 }, { $set: { ...weights, updatedAt: new Date() } }, { upsert: true });
-}
-
-export async function upsertEvaluationScore(data: InsertEvaluationScore) {
-  await insertWithId<EvaluationScore>("evaluationScores", data);
-}
-
-export async function getEvaluationScores(filters?: { userId?: number; teamId?: number; from?: Date; to?: Date }) {
-  const scores = await col<EvaluationScore>("evaluationScores");
-  return stripMany(await scores?.find({
-    ...(filters?.userId ? { userId: filters.userId } : {}),
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...rangeFilter("periodStart", filters?.from),
-    ...rangeFilter("periodEnd", undefined, filters?.to),
-  }).sort({ periodEnd: -1 }).toArray() ?? []);
-}
-
-export async function logPolicyEvent(data: InsertPolicyEvent) {
-  const event = Object.assign({
-    type: "policy_breach",
-    severity: "medium",
-    resolved: false,
-    notifiedComplianceLead: false,
-    timestamp: new Date(),
-  }, data);
-  await insertWithId<PolicyEvent>("policyEvents", event);
-}
-
-export async function getPolicyEvents(filters?: { teamId?: number; resolved?: boolean; severity?: string; from?: Date; to?: Date; limit?: number; skip?: number }) {
-  const events = await col<PolicyEvent>("policyEvents");
-  return stripMany(await events?.find({
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...(filters?.resolved !== undefined ? { resolved: filters.resolved } : {}),
-    ...(filters?.severity ? { severity: filters.severity } : {}),
-    ...rangeFilter("timestamp", filters?.from, filters?.to),
-  } as Filter<MongoRecord<PolicyEvent>>).sort({ timestamp: -1 }).skip(filters?.skip ?? 0).limit(filters?.limit ?? 200).toArray() ?? []);
-}
-
-export async function countPolicyEvents(filters?: { teamId?: number; resolved?: boolean; severity?: string; from?: Date; to?: Date }) {
-  const events = await col<PolicyEvent>("policyEvents");
-  return events?.countDocuments({
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...(filters?.resolved !== undefined ? { resolved: filters.resolved } : {}),
-    ...(filters?.severity ? { severity: filters.severity } : {}),
-    ...rangeFilter("timestamp", filters?.from, filters?.to),
-  } as Filter<MongoRecord<PolicyEvent>>) ?? 0;
-}
-
-export async function resolvePolicyEvent(id: number, resolvedById: number) {
-  const events = await col<PolicyEvent>("policyEvents");
-  await events?.updateOne({ id }, { $set: { resolved: true, resolvedAt: new Date(), resolvedById, updatedAt: new Date() } });
-}
-
-export async function updatePolicyEventStatus(id: number, resolved: boolean, resolvedById: number) {
-  const events = await col<PolicyEvent>("policyEvents");
-  await events?.updateOne({ id }, { $set: { resolved, resolvedAt: resolved ? new Date() : null, resolvedById, updatedAt: new Date() } });
-}
-
-export async function getFeedbackItems(filters?: { userId?: number; teamId?: number }) {
-  const items = await col<FeedbackItem>("feedbackItems");
-  return stripMany(await items?.find({
-    ...(filters?.userId ? { userId: filters.userId } : {}),
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-  }).sort({ createdAt: -1 }).toArray() ?? []);
-}
-
-export async function createFeedbackItem(data: InsertFeedbackItem) {
-  await insertWithId<FeedbackItem>("feedbackItems", Object.assign({ type: "nudge", isRead: false }, data));
-}
-
-export async function markFeedbackRead(id: number) {
-  const items = await col<FeedbackItem>("feedbackItems");
-  await items?.updateOne({ id }, { $set: { isRead: true, updatedAt: new Date() } });
-}
-
-export async function updateFeedbackNarrative(id: number, llmNarrative: string) {
-  const items = await col<FeedbackItem>("feedbackItems");
-  await items?.updateOne({ id }, { $set: { llmNarrative, updatedAt: new Date() } });
-}
-
-export async function getAllPlaybooks() {
-  const playbooks = await col<Playbook>("playbooks");
-  return stripMany(await playbooks?.find().sort({ workflowType: 1 }).toArray() ?? []);
-}
-
-export async function getPlaybooksByWorkflow(workflowType: string) {
-  const playbooks = await col<Playbook>("playbooks");
-  return stripMany(await playbooks?.find({ workflowType }).toArray() ?? []);
-}
-
-export async function createIntelligenceReport(data: InsertIntelligenceReport) {
-  return insertWithId<IntelligenceReport>("intelligenceReports", Object.assign({ status: "draft" }, data));
-}
-
-export async function getIntelligenceReports(filters?: { type?: string; targetId?: number; targetType?: string; limit?: number }) {
-  const reports = await col<IntelligenceReport>("intelligenceReports");
-  return stripMany(await reports?.find({
-    ...(filters?.targetId ? { targetId: filters.targetId } : {}),
-    ...(filters?.targetType ? { targetType: filters.targetType } : {}),
-    ...(filters?.type ? { type: filters.type } : {}),
-  } as Filter<MongoRecord<IntelligenceReport>>).sort({ createdAt: -1 }).limit(filters?.limit ?? 100).toArray() ?? []);
-}
-
-export async function getIntelligenceReportById(id: number) {
-  const reports = await col<IntelligenceReport>("intelligenceReports");
-  return stripId<IntelligenceReport>(await reports?.findOne({ id }));
-}
-
-export async function updateIntelligenceReport(id: number, data: Partial<InsertIntelligenceReport>) {
-  const reports = await col<IntelligenceReport>("intelligenceReports");
-  await reports?.updateOne({ id }, { $set: { ...data, updatedAt: new Date() } });
-}
-
-export async function getWorkflowInstances(filters?: { teamId?: number; userId?: number }) {
-  const instances = await col<unknown>("workflowInstances");
-  return stripMany(await instances?.find({
-    ...(filters?.teamId ? { teamId: filters.teamId } : {}),
-    ...(filters?.userId ? { userId: filters.userId } : {}),
-  }).sort({ startedAt: -1 }).limit(500).toArray() ?? []);
 }
 
 export async function getAssessmentHistoryForCandidate(candidateId: number) {
@@ -758,42 +459,4 @@ export async function bulkInsertBehaviorEvents(events: InsertBehaviorEvent[]): P
     updatedAt: now,
   })));
   await collection.insertMany(docs);
-}
-
-export async function getFinanceDashboardData(from: Date, to: Date) {
-  const [events, users, metrics, scores, openViolations] = await Promise.all([
-    getAiEvents({ from, to, limit: 100_000 }),
-    getAllUsers(),
-    getOutcomeMetrics({ from, to }),
-    getEvaluationScores({ from, to }),
-    countPolicyEvents({ resolved: false }),
-  ]);
-  const weeklyActiveUsers = new Set((await getAiEvents({ from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), to, limit: 100_000 })).map((e) => e.userId)).size;
-  const workflowPenetration = countBy(events, (e) => e.workflowType).map(({ value, count }) => ({
-    workflowType: value,
-    count,
-    uniqueUsers: new Set(events.filter((e) => e.workflowType === value).map((e) => e.userId)).size,
-  }));
-  const workflowEfficiency = countBy(metrics, (m) => m.workflowType).map(({ value }) => {
-    const rows = metrics.filter((m) => m.workflowType === value);
-    return { workflowType: value, avgHoursSaved: avg(rows.map((m) => m.hoursSaved)), avgTouchless: avg(rows.map((m) => m.touchlessRate)) };
-  }).sort((a, b) => b.avgHoursSaved - a.avgHoursSaved);
-  const hoursSaved = metrics.reduce((sum, m) => sum + toNumber(m.hoursSaved), 0);
-  const avgCycleTime = avg(metrics.map((m) => m.avgCycleTimeSeconds));
-  const avgBaseline = avg(metrics.map((m) => m.baselineCycleTimeSeconds));
-  const violations = events.filter((e) => e.policyStatus === "violation").length;
-  return {
-    weeklyActiveUsers,
-    totalUsers: users.length,
-    events,
-    workflowPenetration,
-    workflowEfficiency,
-    hoursSaved,
-    touchlessRate: avg(metrics.map((m) => m.touchlessRate)),
-    errorRate: avg(metrics.map((m) => m.errorRate)),
-    cycleTimeImprovement: avgBaseline > 0 ? ((avgBaseline - avgCycleTime) / avgBaseline) * 100 : 0,
-    governanceScore: events.length > 0 ? Math.round(((events.length - violations) / events.length) * 100) : 100,
-    compositeScore: avg(scores.map((s) => s.compositeScore)),
-    openViolations,
-  };
 }
