@@ -24,7 +24,7 @@ function getDashboardPath(role: Role | undefined): string {
     case "admin":
       return "/dashboard/recruiter";
     default:
-      return "/onboarding";
+      return "/Onboarding";
   }
 }
 
@@ -40,7 +40,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   if (loading) return null;
 
   // Not logged in at all — send to onboarding/login
-  if (!user) return <Redirect to="/onboarding" />;
+  if (!user) return <Redirect to="/Onboarding" />;
 
   // Admins bypass all role checks
   if (user.role === "admin") return <>{children}</>;

@@ -104,7 +104,7 @@ function Nav({ onDemo }: { onDemo: () => void }) {
   const getDashboardPath = () => {
     if (user?.role === "recruiter" || user?.role === "admin") return "/dashboard/recruiter";
     if (user?.role === "candidate") return "/dashboard/candidate";
-    return "/onboarding";
+    return "/Onboarding";
   };
 
   return (
