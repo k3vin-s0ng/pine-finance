@@ -28,6 +28,17 @@ Next.js 16.2.6 App Router, React 19.2, TypeScript 5. tRPC 11, @tanstack/react-qu
 - Core tRPC exports are `publicProcedure`, `protectedProcedure`, and `adminProcedure`. `recruiterProcedure`, `managerProcedure`, and `recruiterOrManagerProcedure` are local helpers in `app/server/routers.ts`; role-gate new endpoints with the correct existing guard or add a deliberate shared guard.
 - Validate tRPC inputs with `zod`.
 
+## Living Docs Protocol
+
+- Read `AGENTS.md`, `PLAN.md`, and `TODO.md` before starting non-trivial work. Claude Code should also read `CLAUDE.md`.
+- These files are operational state, not archive docs. Keep them accurate as part of every meaningful change.
+- Update `TODO.md` whenever a task is completed, newly discovered, blocked, or materially re-scoped.
+- Update `PLAN.md` when strategy, sequencing, architecture, migration status, or v1 definition of done changes.
+- Update `AGENTS.md` when stack, commands, directory conventions, hard rules, env requirements, or agent workflow rules change.
+- Update `CLAUDE.md` only for Claude Code-specific workflow notes; do not duplicate `AGENTS.md`.
+- Do not pad these files. Remove stale claims instead of preserving them for history.
+- If a code change makes one of these files inaccurate, update the file in the same change before handing off.
+
 ## How To Run / Verify
 
 - Dev server: `npm run dev` (`next dev`).

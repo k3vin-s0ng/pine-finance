@@ -4,6 +4,8 @@
 
 Pine is a finance AI-fluency assessment platform. The repo is mid-migration from the original Manus Vite/Express/Drizzle/Postgres build into this Next.js 16/tRPC/MongoDB app. The v1 wedge is a pre-hire assessment workflow: recruiters create campaigns, candidates complete finance tasks with Pine AI, and recruiters review scored reports.
 
+The repo now treats `AGENTS.md`, `CLAUDE.md`, `PLAN.md`, and `TODO.md` as living operational memory. Agents should update them in the same change whenever implementation, strategy, sequencing, or task status changes enough to make the current text stale.
+
 ## Migration Status
 
 Several v1 surfaces survived the migration: source-material upload, structured response composers, client telemetry capture through `BehaviorStrip`/`onPushBehaviorEvent`, paste/type/AI behavior events, 6-dimension LLM grading, dashboards, and the intelligence sub-router mount under `intelligence.*`.

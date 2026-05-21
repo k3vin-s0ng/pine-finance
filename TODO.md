@@ -38,3 +38,4 @@
 - [ ] Decide on test tooling for this Next.js/tRPC/MongoDB stack.
 - [ ] Add focused tests for deterministic scoring, numerical parsing, score blending, and chat prompt/material injection.
 - [ ] Add a verification checklist for migrations from the Manus reference repo so stack-specific adaptations are reviewed explicitly.
+- [x] Add a living-docs protocol so agents keep `AGENTS.md`, `CLAUDE.md`, `PLAN.md`, and `TODO.md` synchronized after meaningful changes. (2026-05-21)
