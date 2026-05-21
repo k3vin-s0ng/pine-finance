@@ -490,9 +490,6 @@ export const appRouter = router({
           assessmentUrl,
           recruiterName: recruiter.name ?? undefined,
         }).then(result => {
-          if (result.previewUrl) {
-            console.log(`[Email] Preview: ${result.previewUrl}`);
-          }
         }).catch(err => console.error("[Email] Invite send error:", err));
         // Notify owner
         notifyOwner({
