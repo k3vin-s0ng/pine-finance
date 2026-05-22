@@ -173,22 +173,31 @@ const DEFAULT_EXTRACTION: ExtractionValue = {
 
 export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) {
   const v: ExtractionValue = value ?? DEFAULT_EXTRACTION;
+  const rows = Array.isArray(v.rows) ? v.rows : DEFAULT_EXTRACTION.rows;
 
   const updateRow = (i: number, field: keyof ExtractionRow, text: string) => {
-    const rows = v.rows.map((r, idx) => (idx === i ? { ...r, [field]: text } : r));
-    onChange({ rows });
+    const nextRows = rows.map((r, idx) =>
+      idx === i ? { ...r, [field]: text } : r
+    );
+
+    onChange({ ...v, rows: nextRows });
   };
 
-  const addRow = () => onChange({ rows: [...v.rows, EMPTY_ROW()] });
+  const addRow = () => {
+    onChange({ ...v, rows: [...rows, EMPTY_ROW()] });
+  };
 
   const deleteRow = (i: number) => {
-    if (v.rows.length <= 1) return;
-    onChange({ rows: v.rows.filter((_, idx) => idx !== i) });
+    if (rows.length <= 1) return;
+
+    onChange({
+      ...v,
+      rows: rows.filter((_, idx) => idx !== i),
+    });
   };
 
   return (
     <div className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]`}>
-      {/* Header row */}
       <div className="flex items-center gap-1 px-3 pt-2.5 pb-1 border-b border-[#1a1a1a]">
         <span className={`${LABEL} flex-[35]`}>Metric</span>
         <span className={`${LABEL} flex-[30]`}>Value</span>
@@ -196,9 +205,11 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
         <span className="w-5" />
       </div>
 
-      {/* Data rows */}
-      {(v.rows ?? []).map((row, i) => (
-        <div key={i} className="flex items-center gap-1 px-3 py-1 border-b border-[#111] last:border-0">
+      {rows.map((row, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-1 px-3 py-1 border-b border-[#111] last:border-0"
+        >
           <input
             className="flex-[35] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5"
             placeholder="e.g. Net Revenue"
@@ -229,7 +240,6 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
         </div>
       ))}
 
-      {/* Add row */}
       <div className="px-3 py-2">
         <button
           onClick={addRow}
@@ -329,25 +339,37 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
   const v: FlagsValue = value ?? { flags: [EMPTY_FLAG()] };
+  const flags = Array.isArray(v.flags) ? v.flags : [EMPTY_FLAG()];
 
   const updateFlag = (i: number, field: keyof FlagEntry, text: string) => {
-    const flags = v.flags.map((f, idx) => (idx === i ? { ...f, [field]: text } : f));
-    onChange({ flags });
+    const nextFlags = flags.map((f, idx) =>
+      idx === i ? { ...f, [field]: text } : f
+    );
+
+    onChange({ ...v, flags: nextFlags });
   };
 
-  const addFlag = () => onChange({ flags: [...v.flags, EMPTY_FLAG()] });
+  const addFlag = () => {
+    onChange({ ...v, flags: [...flags, EMPTY_FLAG()] });
+  };
 
   const deleteFlag = (i: number) => {
-    if (v.flags.length <= 1) return;
-    onChange({ flags: v.flags.filter((_, idx) => idx !== i) });
+    if (flags.length <= 1) return;
+
+    onChange({
+      ...v,
+      flags: flags.filter((_, idx) => idx !== i),
+    });
   };
 
   return (
     <div className="flex flex-col gap-2">
-      {(v.flags ?? []).map((flags, i) => (
-        <div key={i} className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]/40 relative`}>
-          {/* Delete button */}
-          {v.flags.length > 1 && (
+      {flags.map((flag, i) => (
+        <div
+          key={i}
+          className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]/40 relative`}
+        >
+          {flags.length > 1 && (
             <button
               onClick={() => deleteFlag(i)}
               className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center text-[#333] hover:text-[#c9a84c]/60 transition-colors z-10"
@@ -360,29 +382,40 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
             <span className={`${LABEL} text-[#c9a84c]/60`}>Flag {i + 1}</span>
           </div>
 
-          {/* Location + Severity row */}
           <div className="flex items-center gap-3 px-3 pb-2">
             <div className="flex-1">
               <p className={`${LABEL} mb-1`}>Location</p>
               <input
                 className="w-full bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-[#1a1a1a] focus:border-[#c9a84c]/40 transition-colors py-0.5"
                 placeholder="e.g. Item 7, Page 12"
-                value={flags.location}
+                value={flag.location}
                 onChange={(e) => updateFlag(i, "location", e.target.value)}
                 onPaste={onPaste as any}
               />
             </div>
+
             <div className="w-36">
               <p className={`${LABEL} mb-1`}>Severity</p>
-              <Select value={flags.severity} onValueChange={(v) => updateFlag(i, "severity", v)}>
+              <Select
+                value={flag.severity}
+                onValueChange={(value) => updateFlag(i, "severity", value)}
+              >
                 <SelectTrigger
-                  className={`h-7 text-[12px] bg-transparent border-[#1a1a1a] ${flags.severity ? SEVERITY_COLORS[flags.severity] ?? "" : "text-[#333]"}`}
+                  className={`h-7 text-[12px] bg-transparent border-[#1a1a1a] ${
+                    flag.severity
+                      ? SEVERITY_COLORS[flag.severity] ?? ""
+                      : "text-[#333]"
+                  }`}
                 >
                   <SelectValue placeholder="Select…" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#0d0d0d] border-[#1a1a1a]">
                   {["Critical", "High", "Medium", "Low"].map((s) => (
-                    <SelectItem key={s} value={s} className={`text-[12px] ${SEVERITY_COLORS[s]}`}>
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      className={`text-[12px] ${SEVERITY_COLORS[s]}`}
+                    >
                       {s}
                     </SelectItem>
                   ))}
@@ -391,11 +424,10 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
             </div>
           </div>
 
-          {/* Issue textarea */}
           <div className="px-3 pb-2">
             <p className={`${LABEL} mb-1`}>Issue</p>
             <Textarea
-              value={flags.issue}
+              value={flag.issue}
               onChange={(e) => updateFlag(i, "issue", e.target.value)}
               onPaste={onPaste}
               placeholder="Describe the specific issue, discrepancy, or risk you identified. Be precise."
@@ -404,11 +436,10 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
             />
           </div>
 
-          {/* Recommendation textarea */}
           <div className="px-3 pb-3">
             <p className={`${LABEL} mb-1`}>Recommendation</p>
             <Textarea
-              value={flags.recommendation}
+              value={flag.recommendation}
               onChange={(e) => updateFlag(i, "recommendation", e.target.value)}
               onPaste={onPaste}
               placeholder="How should this flag be addressed or mitigated?"
@@ -419,7 +450,6 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
         </div>
       ))}
 
-      {/* Add flag button */}
       <button
         onClick={addFlag}
         className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#c9a84c]/70 transition-colors px-1 py-1"

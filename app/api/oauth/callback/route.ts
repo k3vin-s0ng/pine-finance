@@ -41,14 +41,26 @@ function dashboardPath(role?: string | null) {
   return "/onboarding";
 }
 
+function canonicalRedirectPath(redirectTo: string) {
+  const url = new URL(redirectTo, "http://pine.local");
+  const normalizedPath = url.pathname.toLowerCase();
+
+  if (normalizedPath === "/onboarding") {
+    url.pathname = "/onboarding";
+  } else if (normalizedPath === "/dashboard") {
+    url.pathname = "/dashboard";
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 function resolveRedirectPath(redirectTo: string, role?: string | null) {
-  if (redirectTo === "/" || redirectTo === "/dashboard") {
+  const canonicalPath = canonicalRedirectPath(redirectTo);
+
+  if (canonicalPath === "/" || canonicalPath === "/dashboard") {
     return dashboardPath(role);
   }
-  if (redirectTo === "/Onboarding") {
-    return "/onboarding";
-  }
-  return redirectTo;
+  return canonicalPath;
 }
 
 export async function GET(req: NextRequest) {
