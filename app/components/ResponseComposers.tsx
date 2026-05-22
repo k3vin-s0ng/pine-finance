@@ -367,16 +367,16 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
               <input
                 className="w-full bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-[#1a1a1a] focus:border-[#c9a84c]/40 transition-colors py-0.5"
                 placeholder="e.g. Item 7, Page 12"
-                value={flag.location}
+                value={flags.location}
                 onChange={(e) => updateFlag(i, "location", e.target.value)}
                 onPaste={onPaste as any}
               />
             </div>
             <div className="w-36">
               <p className={`${LABEL} mb-1`}>Severity</p>
-              <Select value={flag.severity} onValueChange={(v) => updateFlag(i, "severity", v)}>
+              <Select value={flags.severity} onValueChange={(v) => updateFlag(i, "severity", v)}>
                 <SelectTrigger
-                  className={`h-7 text-[12px] bg-transparent border-[#1a1a1a] ${flag.severity ? SEVERITY_COLORS[flag.severity] ?? "" : "text-[#333]"}`}
+                  className={`h-7 text-[12px] bg-transparent border-[#1a1a1a] ${flags.severity ? SEVERITY_COLORS[flags.severity] ?? "" : "text-[#333]"}`}
                 >
                   <SelectValue placeholder="Select…" />
                 </SelectTrigger>
@@ -395,7 +395,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
           <div className="px-3 pb-2">
             <p className={`${LABEL} mb-1`}>Issue</p>
             <Textarea
-              value={flag.issue}
+              value={flags.issue}
               onChange={(e) => updateFlag(i, "issue", e.target.value)}
               onPaste={onPaste}
               placeholder="Describe the specific issue, discrepancy, or risk you identified. Be precise."
@@ -408,7 +408,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
           <div className="px-3 pb-3">
             <p className={`${LABEL} mb-1`}>Recommendation</p>
             <Textarea
-              value={flag.recommendation}
+              value={flags.recommendation}
               onChange={(e) => updateFlag(i, "recommendation", e.target.value)}
               onPaste={onPaste}
               placeholder="How should this flag be addressed or mitigated?"
