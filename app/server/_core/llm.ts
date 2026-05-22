@@ -216,7 +216,7 @@ const resolveApiUrl = () =>
 
 const assertApiKey = () => {
   if (!ENV.openRouterApiKey) {
-    throw new Error("OPENROUTER_API_KEY is not configured");
+    throw new Error("OPENAI_API_KEY is not configured");
   }
 };
 
