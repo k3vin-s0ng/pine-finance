@@ -1367,15 +1367,20 @@ export default function AssessmentInterface() {
   }, []);
 
   // Flush buffer to server
-  const flushBehaviorBuffer = useCallback(() => {
+  const flushBehaviorBuffer = useCallback(async () => {
     const events = behaviorBufferRef.current.splice(0);
     if (!events.length || !assessmentId) return;
-    logBehavior.mutate({ assessmentId, events });
-  }, [assessmentId]);
+    try {
+      await logBehavior.mutateAsync({ assessmentId, events });
+    } catch (error) {
+      behaviorBufferRef.current.unshift(...events);
+      throw error;
+    }
+  }, [assessmentId, logBehavior]);
 
   // Periodic flush every 10 seconds
   useEffect(() => {
-    const interval = setInterval(flushBehaviorBuffer, 10_000);
+    const interval = setInterval(() => { void flushBehaviorBuffer(); }, 10_000);
     return () => clearInterval(interval);
   }, [flushBehaviorBuffer]);
 
@@ -1547,9 +1552,9 @@ export default function AssessmentInterface() {
     }, 1000);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Flush telemetry buffer before submitting
-    flushBehaviorBuffer();
+    await flushBehaviorBuffer();
     const completionTimeSeconds = Math.round((Date.now() - startTime) / 1000);
     submitAssessment.mutate({
       assessmentId,

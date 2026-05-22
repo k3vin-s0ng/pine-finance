@@ -61,6 +61,18 @@ export type Submission = BaseRecord & {
 };
 export type InsertSubmission = Omit<Submission, "id" | "createdAt" | "updatedAt">;
 
+export type ScoreEvidence = {
+  accuracyChecks?: unknown;
+  efficiencyBand?: unknown;
+  behavioral?: {
+    summary?: unknown;
+    judgment?: unknown;
+    verification?: unknown;
+    toolFluency?: unknown;
+  };
+  blend?: unknown;
+};
+
 export type Score = BaseRecord & {
   submissionId: number;
   assessmentId: number;
@@ -81,6 +93,7 @@ export type Score = BaseRecord & {
   recruiterSummary: string | null;
   strengths: unknown;
   improvements: unknown;
+  scoreEvidence?: ScoreEvidence | null;
 };
 export type InsertScore = Omit<Score, "id" | "createdAt" | "updatedAt">;
 

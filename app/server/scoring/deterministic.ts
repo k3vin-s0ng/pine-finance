@@ -1,5 +1,13 @@
 import { EXPECTED_TASK_ANSWERS, type ExpectedTaskAnswers } from "./expectedAnswers";
 import { parseNumericalInput, withinTolerance } from "./numericalParser";
+import {
+  computeBehavioralScores,
+  type BehavioralSummaryEvidence,
+  type BehaviorScoringEvent,
+  type JudgmentEvidence,
+  type ToolFluencyEvidence,
+  type VerificationEvidence,
+} from "./behavioral";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,25 +42,18 @@ export type EfficiencyEvidence = {
   band: "rushed" | "good" | "optimal" | "tight" | "expired";
 };
 
-/** Placeholder evidence types for chunk-2 behavioral scoring. */
-export type JudgmentEvidence = null;
-export type VerificationEvidence = null;
-export type ToolFluencyEvidence = null;
-
 export type DeterministicScores = {
   accuracy: number | null;
   accuracyEvidence: AccuracyEvidence | null;
   efficiency: number;
   efficiencyEvidence: EfficiencyEvidence;
-  /** TODO(chunk-2): behavioral scoring from behaviorEvents telemetry */
+  behavioralEvidence: BehavioralSummaryEvidence | null;
   judgment: number | null;
-  judgmentEvidence: JudgmentEvidence;
-  /** TODO(chunk-2): behavioral scoring from behaviorEvents telemetry */
+  judgmentEvidence: JudgmentEvidence | null;
   verification: number | null;
-  verificationEvidence: VerificationEvidence;
-  /** TODO(chunk-2): behavioral scoring from behaviorEvents telemetry */
+  verificationEvidence: VerificationEvidence | null;
   toolFluency: number | null;
-  toolFluencyEvidence: ToolFluencyEvidence;
+  toolFluencyEvidence: ToolFluencyEvidence | null;
 };
 
 // ─── Accuracy ────────────────────────────────────────────────────────────────
@@ -232,22 +233,25 @@ export function computeDeterministicScores(params: {
   tasks: StructuredTaskResponse[];
   completionTimeSeconds: number;
   timeLimitSeconds: number;
+  behaviorEvents?: BehaviorScoringEvent[];
 }): DeterministicScores {
-  const { roleTemplate, tasks, completionTimeSeconds, timeLimitSeconds } = params;
+  const { roleTemplate, tasks, completionTimeSeconds, timeLimitSeconds, behaviorEvents = [] } = params;
 
   const accuracy = computeAccuracyScore(roleTemplate, tasks);
   const efficiency = computeEfficiency(completionTimeSeconds, timeLimitSeconds);
+  const behavioral = computeBehavioralScores(behaviorEvents);
 
   return {
     accuracy: accuracy.score,
     accuracyEvidence: accuracy.evidence,
     efficiency: efficiency.score,
     efficiencyEvidence: efficiency.evidence,
-    judgment: null,
-    judgmentEvidence: null,
-    verification: null,
-    verificationEvidence: null,
-    toolFluency: null,
-    toolFluencyEvidence: null,
+    behavioralEvidence: behavioral.summary,
+    judgment: behavioral.judgment,
+    judgmentEvidence: behavioral.judgmentEvidence,
+    verification: behavioral.verification,
+    verificationEvidence: behavioral.verificationEvidence,
+    toolFluency: behavioral.toolFluency,
+    toolFluencyEvidence: behavioral.toolFluencyEvidence,
   };
 }

@@ -23,6 +23,7 @@ import {
   getAssessmentHistoryForCandidate,
   getAssessmentSubmissionDetail,
   bulkInsertBehaviorEvents,
+  getBehaviorEventsByAssessment,
   getSubmissionById,
   getUserById,
 } from "@/app/lib/db";
@@ -33,7 +34,13 @@ import {
   extractSourceMaterials,
   formatSourceMaterialsForPrompt,
 } from "./materials";
-import type { SourceMaterial } from "@/app/lib/schema";
+import {
+  blendScores,
+  computeDeterministicScores,
+  type DimensionScoreSet,
+  type StructuredTaskResponse,
+} from "./scoring";
+import type { ScoreEvidence, SourceMaterial } from "@/app/lib/schema";
 
 // ─── Role guard helpers ───────────────────────────────────────────────────────
 const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -208,6 +215,108 @@ ${aiLog}`;
     accuracyRationale: string; efficiencyRationale: string; judgmentRationale: string;
     verificationRationale: string; communicationRationale: string; toolFluencyRationale: string;
     recruiterSummary: string; strengths: string[]; improvements: string[];
+  };
+}
+
+type LLMScoreResult = Awaited<ReturnType<typeof generateScoreWithLLM>>;
+
+const TASK_RESPONSE_TYPES: Record<string, Record<string, StructuredTaskResponse["responseType"]>> = {
+  "IB Analyst": { t1: "extraction", t2: "memo", t3: "flags" },
+  "FP&A Analyst": { t1: "variance", t2: "memo", t3: "reconciliation" },
+  "PE Associate": { t1: "thesis", t2: "flags", t3: "memo" },
+  "Hedge Fund Research Analyst": { t1: "thesis", t2: "extraction", t3: "flags" },
+};
+
+function parseMarkdownTableRows(raw: string) {
+  const tableLines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|") && line.endsWith("|"));
+
+  if (tableLines.length < 2) return [];
+
+  const headers = tableLines[0]
+    .split("|")
+    .slice(1, -1)
+    .map((header) => header.trim().toLowerCase());
+
+  return tableLines.slice(1).flatMap((line) => {
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim());
+    if (cells.every((cell) => /^:?-{2,}:?$/.test(cell))) return [];
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      row[header] = cells[index] ?? "";
+    });
+    return [row];
+  });
+}
+
+function buildStructuredTaskResponses(
+  roleTemplate: string,
+  taskResponses: Record<string, string>,
+): StructuredTaskResponse[] {
+  const typeByTask = TASK_RESPONSE_TYPES[roleTemplate] ?? {};
+
+  return Object.entries(taskResponses).map(([taskId, raw]) => {
+    const responseType = typeByTask[taskId] ?? "memo";
+    const tableRows = parseMarkdownTableRows(raw ?? "");
+    const value: Record<string, unknown> = { rawText: raw ?? "" };
+
+    if (responseType === "extraction") {
+      value.rows = tableRows.map((row) => ({
+        metric: row.metric ?? row.label ?? "",
+        value: row.value ?? "",
+        source: row.source ?? "",
+      }));
+    }
+
+    if (responseType === "reconciliation") {
+      value.entries = tableRows.map((row) => ({
+        account: row.account ?? "",
+        stated: row.stated ?? "",
+        corrected: row.corrected ?? "",
+        reason: row.reason ?? "",
+      }));
+    }
+
+    return { taskId, responseType, value };
+  });
+}
+
+async function buildBlendedScore(params: {
+  assessmentId: number;
+  roleTemplate: string;
+  taskResponses: Record<string, string>;
+  llmScore: LLMScoreResult;
+  completionTimeSeconds: number;
+  timeLimitSeconds: number;
+}) {
+  const behaviorEvents = await getBehaviorEventsByAssessment(params.assessmentId);
+  const deterministic = computeDeterministicScores({
+    roleTemplate: params.roleTemplate,
+    tasks: buildStructuredTaskResponses(params.roleTemplate, params.taskResponses),
+    completionTimeSeconds: params.completionTimeSeconds,
+    timeLimitSeconds: params.timeLimitSeconds,
+    behaviorEvents,
+  });
+  const blended = blendScores(params.llmScore as DimensionScoreSet, deterministic);
+  const scoreEvidence: ScoreEvidence = {
+    accuracyChecks: deterministic.accuracyEvidence,
+    efficiencyBand: deterministic.efficiencyEvidence,
+    behavioral: {
+      summary: deterministic.behavioralEvidence,
+      judgment: deterministic.judgmentEvidence,
+      verification: deterministic.verificationEvidence,
+      toolFluency: deterministic.toolFluencyEvidence,
+    },
+    blend: blended.evidence,
+  };
+
+  return {
+    ...params.llmScore,
+    ...blended.scores,
+    overallScore: blended.scores.overallScore ?? params.llmScore.overallScore,
+    scoreEvidence,
   };
 }
 
@@ -612,11 +721,20 @@ export const appRouter = router({
                 completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
                 timeLimitSeconds: assessment.timeLimitMinutes * 60,
               });
-              const benchmarkPercentile = computeBenchmarkPercentile(llmScore.overallScore, campaign.roleTemplate);
+              const blendedScore = await buildBlendedScore({
+                assessmentId: input.assessmentId,
+                roleTemplate: campaign.roleTemplate,
+                taskResponses,
+                llmScore,
+                completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
+                timeLimitSeconds: assessment.timeLimitMinutes * 60,
+              });
+              const overallScore = blendedScore.overallScore ?? llmScore.overallScore;
+              const benchmarkPercentile = computeBenchmarkPercentile(overallScore, campaign.roleTemplate);
               await createScore({
                 submissionId,
                 assessmentId: input.assessmentId,
-                ...llmScore,
+                ...blendedScore,
                 benchmarkPercentile,
               });
               await updateAssessmentStatus(input.assessmentId, "scored");
@@ -650,14 +768,14 @@ export const appRouter = router({
                       toEmail: candidateEmail,
                       candidateName,
                       campaignTitle: campaign.title,
-                      overallScore: llmScore.overallScore,
+                      overallScore,
                       benchmarkPercentile,
                       reportUrl,
                     }).catch(err => console.error("[AutoScore] Score-ready email failed:", err));
                   }
                 }
               }
-              console.log(`[AutoScore] Assessment ${input.assessmentId} scored successfully (${llmScore.overallScore}/100)`);
+              console.log(`[AutoScore] Assessment ${input.assessmentId} scored successfully (${overallScore}/100)`);
             } catch (err) {
               console.error(`[AutoScore] Failed to score assessment ${input.assessmentId}:`, err);
             }
@@ -717,14 +835,23 @@ export const appRouter = router({
           completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
           timeLimitSeconds: assessment.timeLimitMinutes * 60,
         });
+        const blendedScore = await buildBlendedScore({
+          assessmentId: sub.assessmentId,
+          roleTemplate: campaign.roleTemplate,
+          taskResponses,
+          llmScore,
+          completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
+          timeLimitSeconds: assessment.timeLimitMinutes * 60,
+        });
 
         // Compute benchmark percentile using real cohort distribution
-        const benchmarkPercentile = computeBenchmarkPercentile(llmScore.overallScore, campaign.roleTemplate);
+        const overallScore = blendedScore.overallScore ?? llmScore.overallScore;
+        const benchmarkPercentile = computeBenchmarkPercentile(overallScore, campaign.roleTemplate);
 
         const scoreId = await createScore({
           submissionId: input.submissionId,
           assessmentId: sub.assessmentId,
-          ...llmScore,
+          ...blendedScore,
           benchmarkPercentile,
         });
 
@@ -761,14 +888,14 @@ export const appRouter = router({
                 toEmail: candidateEmail,
                 candidateName,
                 campaignTitle: campaign.title,
-                overallScore: llmScore.overallScore,
+                overallScore,
                 benchmarkPercentile,
                 reportUrl,
               }).catch(err => console.error("[Email] Score ready email failed:", err));
             }
           }
         }
-        return { scoreId, ...llmScore, benchmarkPercentile };
+        return { scoreId, ...blendedScore, benchmarkPercentile };
       }),
 
     getScore: protectedProcedure

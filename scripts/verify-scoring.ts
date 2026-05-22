@@ -6,8 +6,11 @@
 import {
   parseNumericalInput,
   withinTolerance,
+  blendScores,
+  computeBehavioralScores,
   computeEfficiency,
   computeDeterministicScores,
+  type DimensionScoreSet,
   type ExpectedNumericalAnswer,
 } from "../app/server/scoring";
 
@@ -78,5 +81,61 @@ assert("FP&A has no accuracy keys → null accuracy only", (() => {
   });
   return fpa.accuracy === null && fpa.efficiency > 0;
 })());
+
+// 8. Behavioral events produce non-null process scores.
+const behavioral = computeBehavioralScores([
+  {
+    id: 1,
+    taskId: "t1",
+    eventType: "material_view",
+    eventData: { materialKey: "10K", durationSeconds: 95 },
+    clientTimestamp: 1000,
+  },
+  {
+    id: 2,
+    taskId: "t1",
+    eventType: "ai_prompt_sent",
+    eventData: { promptLength: 84, secondsSinceTaskStart: 120 },
+    clientTimestamp: 2000,
+  },
+  {
+    id: 3,
+    taskId: "t1",
+    eventType: "response_edit",
+    eventData: { netDeltaChars: 350, totalLength: 350 },
+    clientTimestamp: 3000,
+  },
+]);
+assert(
+  "behavioral telemetry → non-null judgment/verification/tool scores",
+  behavioral.judgment !== null && behavioral.verification !== null && behavioral.toolFluency !== null,
+);
+
+// 9. Blend uses deterministic scores when present and falls back to LLM when absent.
+const llmScores: DimensionScoreSet = {
+  accuracy: 60,
+  efficiency: 60,
+  judgment: 60,
+  verification: 60,
+  communication: 88,
+  toolFluency: 60,
+  overallScore: 64.2,
+};
+const blended = blendScores(llmScores, {
+  accuracy: 100,
+  accuracyEvidence: null,
+  efficiency: 80,
+  efficiencyEvidence: { completionTimeSeconds: 2700, timeLimitSeconds: 3600, timeRatio: 0.75, band: "optimal" },
+  behavioralEvidence: null,
+  judgment: null,
+  judgmentEvidence: null,
+  verification: 70,
+  verificationEvidence: null,
+  toolFluency: 90,
+  toolFluencyEvidence: null,
+});
+assert("blend accuracy uses 65% deterministic weight", blended.scores.accuracy === 86);
+assert("blend null judgment falls back to LLM", blended.scores.judgment === 60);
+assert("blend communication remains 100% LLM", blended.scores.communication === 88);
 
 console.log(process.exitCode === 1 ? "\nSome checks failed." : "\nAll checks passed.");

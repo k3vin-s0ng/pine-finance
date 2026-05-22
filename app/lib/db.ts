@@ -86,6 +86,8 @@ async function ensureIndexes(db: Db) {
     db.collection("scores").createIndex({ submissionId: 1 }),
     db.collection("pdfReports").createIndex({ id: 1 }, { unique: true }),
     db.collection("pdfReports").createIndex({ assessmentId: 1 }),
+    db.collection("behaviorEvents").createIndex({ id: 1 }, { unique: true }),
+    db.collection("behaviorEvents").createIndex({ assessmentId: 1, clientTimestamp: 1 }),
   ]);
 }
 
@@ -445,6 +447,13 @@ export async function getAssessmentSubmissionDetail(assessmentId: number, reques
     submission,
     score: submission ? await getScoreByAssessment(assessmentId) ?? null : null,
   };
+}
+
+export async function getBehaviorEventsByAssessment(assessmentId: number): Promise<BehaviorEvent[]> {
+  const collection = await col<BehaviorEvent>("behaviorEvents");
+  return stripMany(
+    await collection?.find({ assessmentId }).sort({ clientTimestamp: 1, id: 1 }).toArray() ?? [],
+  );
 }
 
 export async function bulkInsertBehaviorEvents(events: InsertBehaviorEvent[]): Promise<void> {

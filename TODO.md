@@ -3,8 +3,8 @@
 ## Regression debt (re-port from Manus, adapt to this stack)
 
 - [x] Port deterministic accuracy scoring; reference Manus `server/scoring/deterministic.ts` and `server/scoring/numericalParser.ts`, adapt to `app/lib/db.ts` and tRPC. (Chunk 1: `app/server/scoring/` modules + smoke script; not wired to live grade yet.)
-- [ ] Port behavioral scoring inputs; reference Manus `server/scoring/behavioral.ts`, using existing `behaviorEvents` captured by `assessment.logBehavior`.
-- [ ] Port score blending; reference Manus `server/scoring/blend.ts`, combining deterministic, behavioral, and LLM scores.
+- [x] Port behavioral scoring inputs; reference Manus `server/scoring/behavioral.ts`, using existing `behaviorEvents` captured by `assessment.logBehavior`.
+- [x] Port score blending; reference Manus `server/scoring/blend.ts`, combining deterministic, behavioral, and LLM scores.
 - [x] Port expected-answer definitions; reference Manus `server/scoring/expectedAnswers.ts`, mapping them to current role templates and task IDs. (Chunk 1: `app/server/scoring/expectedAnswers.ts` for t1–t3; FP&A/HF empty where prompts differ.)
 - [x] Restore in-test Pine AI constraints in `chat.send`: no final deliverables, no filling numbers for candidates, concise guidance, and role-aware boundaries.
 - [x] Inject uploaded source material/PDF text into Pine AI chat context instead of only claiming materials are available.
@@ -13,10 +13,10 @@
 
 ## Scoring & defensibility
 
-- [ ] Replace single-path `generateScoreWithLLM` grading with a scoring pipeline that runs deterministic, behavioral, and LLM scoring.
+- [x] Replace single-path `generateScoreWithLLM` grading with a scoring pipeline that runs deterministic, behavioral, and LLM scoring.
 - [ ] Add a process-trace timeline to every score report showing candidate edits, paste/type events, task changes, and AI interactions.
 - [ ] Add an evidence panel to score reports with separate sections for behavioral signals, AI-interaction analysis, deterministic checks, and LLM judgment.
-- [ ] Store enough structured scoring evidence to regenerate or audit score reports without reparsing prose rationales.
+- [x] Store enough structured scoring evidence to regenerate or audit score reports without reparsing prose rationales.
 
 ## Workspace realism
 
