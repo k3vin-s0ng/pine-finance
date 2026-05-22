@@ -77,8 +77,9 @@ function parseSectionsFromDefs(raw: string, defs: SectionDef[]): Record<string, 
   return result;
 }
 
-function wordCount(text: string): number {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
+function wordCount(text?: string | null) {
+  const trimmed = (text ?? "").trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

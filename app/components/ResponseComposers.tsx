@@ -16,8 +16,9 @@ export type ComposerProps = {
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
 
-function wordCount(text: string): number {
-  return text.trim() ? text.trim().split(/\s+/).length : 0;
+function wordCount(text?: string | null) {
+  const trimmed = (text ?? "").trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
 const LABEL = "text-[#555] text-[10px] font-bold tracking-widest uppercase mb-1 select-none";
@@ -48,7 +49,7 @@ function Section({
   placeholder,
   minRows = 4,
 }: SectionProps) {
-  const wc = wordCount(value);
+  const wc = wordCount(value ?? "");
   return (
     <div
       className={`${SECTION_BASE} ${active ? ACTIVE_BORDER : INACTIVE_BORDER}`}
@@ -72,7 +73,7 @@ function Section({
         />
       ) : (
         <p className="px-3 pb-2.5 text-[12px] text-[#444] truncate">
-          {value.trim() ? value.trim().slice(0, 80) + (value.trim().length > 80 ? "…" : "") : (
+          {(value ?? "").trim() ? (value ?? "").trim().slice(0, 80) + ((value ?? "").trim().length > 80 ? "…" : "") : (
             <span className="italic">{placeholder ?? `Write your ${label.toLowerCase()} here…`}</span>
           )}
         </p>
@@ -276,7 +277,7 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
           <span className={`${LABEL} flex-[22]`}>Corrected Balance</span>
           <span className={`${LABEL} flex-[28]`}>Adjustment Reason</span>
         </div>
-        {v.entries.map((entry, i) => (
+        {(v.entries ?? []).map((entry, i) => (
           <div key={i} className="flex items-center gap-1 px-3 py-1.5 border-b border-[#111] last:border-0">
             <span className="flex-[28] text-[12px] text-[#666] truncate pr-1">{entry.account}</span>
             <span className="flex-[22] text-[12px] text-[#555] font-mono tabular-nums">{entry.stated}</span>
@@ -343,7 +344,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      {v.flags.map((flag, i) => (
+      {(v.flags ?? []).map((flags, i) => (
         <div key={i} className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]/40 relative`}>
           {/* Delete button */}
           {v.flags.length > 1 && (
