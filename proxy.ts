@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === "/onboarding") {
-    return NextResponse.redirect(new URL("/Onboarding", request.url));
+  if (request.nextUrl.pathname === "/Onboarding") {
+    return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/onboarding"],
+  matcher: ["/Onboarding"],
 };

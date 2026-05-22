@@ -6,7 +6,7 @@ import { Redirect } from "@/app/lib/wouter";
 function dashboardPath(role?: string | null) {
   if (role === "recruiter" || role === "admin") return "/dashboard/recruiter";
   if (role === "candidate") return "/dashboard/candidate";
-  return "/Onboarding";
+  return "/onboarding";
 }
 
 export default function Page() {

@@ -6,7 +6,12 @@ export const getLoginUrl = () => {
   if (!clientId || typeof window === "undefined") return "/";
 
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(JSON.stringify({ redirectTo: window.location.pathname || "/" }));
+  const currentPath = `${window.location.pathname}${window.location.search}`;
+  const redirectTo =
+    currentPath === "/" || currentPath === ""
+      ? "/dashboard"
+      : currentPath;
+  const state = btoa(JSON.stringify({ redirectTo }));
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 
   url.searchParams.set("client_id", clientId);
