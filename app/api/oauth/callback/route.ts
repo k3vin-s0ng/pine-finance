@@ -35,6 +35,22 @@ function decodeState(state: string | null) {
   }
 }
 
+function dashboardPath(role?: string | null) {
+  if (role === "recruiter" || role === "admin") return "/dashboard/recruiter";
+  if (role === "candidate") return "/dashboard/candidate";
+  return "/onboarding";
+}
+
+function resolveRedirectPath(redirectTo: string, role?: string | null) {
+  if (redirectTo === "/" || redirectTo === "/dashboard") {
+    return dashboardPath(role);
+  }
+  if (redirectTo === "/Onboarding") {
+    return "/onboarding";
+  }
+  return redirectTo;
+}
+
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   const state = req.nextUrl.searchParams.get("state");
@@ -99,6 +115,7 @@ export async function GET(req: NextRequest) {
       loginMethod: "google",
       lastSignedIn: new Date(),
     });
+    const user = await db.getUserByOpenId(openId);
 
     const sessionToken = await sdk.createSessionToken(openId, {
       name,
@@ -106,7 +123,7 @@ export async function GET(req: NextRequest) {
       expiresInMs: ONE_YEAR_MS,
     });
 
-    const response = NextResponse.redirect(new URL(decodeState(state), req.url));
+    const response = NextResponse.redirect(new URL(resolveRedirectPath(decodeState(state), user?.role), req.url));
     response.cookies.set(COOKIE_NAME, sessionToken, {
       httpOnly: true,
       path: "/",
