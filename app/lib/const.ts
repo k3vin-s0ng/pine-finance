@@ -1,9 +1,5 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@/app/shared/const";
 
-function clientIdHint(clientId: string) {
-  return clientId.slice(-12);
-}
-
 export const getLoginUrl = () => {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -25,14 +21,6 @@ export const getLoginUrl = () => {
   url.searchParams.set("state", state);
   url.searchParams.set("prompt", "select_account");
   url.searchParams.set("access_type", "offline");
-
-  console.info("[auth-debug] login-url-created", {
-    origin: window.location.origin,
-    currentPath,
-    redirectUri,
-    redirectTo,
-    clientIdHint: clientIdHint(clientId),
-  });
 
   return url.toString();
 };
