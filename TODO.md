@@ -4,6 +4,8 @@
 
 - [x] Port deterministic accuracy scoring; reference Manus `server/scoring/deterministic.ts` and `server/scoring/numericalParser.ts`, adapt to `app/lib/db.ts` and tRPC. (Chunk 1: `app/server/scoring/` modules + smoke script; not wired to live grade yet.)
 - [x] Port behavioral scoring inputs; reference Manus `server/scoring/behavioral.ts`, using existing `behaviorEvents` captured by `assessment.logBehavior`.
+  - Behavioral signals are now fed by real telemetry: `citation_added` (with `source: "ai" | "source_material"`), `ai_response_complete`, and `response_edit` (with `secsSinceAIResponse`) are all emitted by the client. Events are stored via `logBehavior` and read by `computeDeterministicScores`.
+  - **TODO (Fix 4 — do not implement without confirmation):** `expectedAnswers.ts` defines numerical keys for IB Analyst t2/t3 and PE Associate, but the `memo`/`variance`/`thesis` composers have no keyed `NumericalAnswersBlock` fields (dropped in migration). Numerical accuracy for those tasks scores nothing until the composers are rebuilt in `app/components/ResponseComposers.tsx`.
 - [x] Port score blending; reference Manus `server/scoring/blend.ts`, combining deterministic, behavioral, and LLM scores.
 - [x] Port expected-answer definitions; reference Manus `server/scoring/expectedAnswers.ts`, mapping them to current role templates and task IDs. (Chunk 1: `app/server/scoring/expectedAnswers.ts` for t1–t3; FP&A/HF empty where prompts differ.)
 - [x] Restore in-test Pine AI constraints in `chat.send`: no final deliverables, no filling numbers for candidates, concise guidance, and role-aware boundaries.

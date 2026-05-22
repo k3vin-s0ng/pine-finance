@@ -858,7 +858,7 @@ function AIChatPanel({
   roleTemplate: string;
   activeMaterialLabel?: string;
   onInteraction: (msg: { role: string; content: string; taskKey: string; timestamp: number }) => void;
-  onCiteInResponse: (text: string) => void;
+  onCiteInResponse: (text: string, source: "ai" | "source_material") => void;
   sourceMaterialLabels: string[];
   onPushBehaviorEvent: (event: { eventType: string; taskId?: string; eventData?: unknown; clientTimestamp: number }) => void;
   taskStartTimeRef: React.MutableRefObject<Record<string, number>>;
@@ -1069,7 +1069,7 @@ function AIChatPanel({
                         }}
                       >
                         <button
-                          onClick={() => onCiteInResponse(msg.content)}
+                          onClick={() => onCiteInResponse(msg.content, "ai")}
                           className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors duration-150"
                           style={{ color: "var(--text-quaternary)" }}
                           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-gold)"}
@@ -1140,7 +1140,7 @@ function SourceMaterialContent({
 }: {
   content: string;
   onSendToAI: (text: string) => void;
-  onCiteInResponse: (text: string) => void;
+  onCiteInResponse: (text: string, source: "ai" | "source_material") => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
@@ -1315,7 +1315,7 @@ function SourceMaterialContent({
             </button>
             <div className="w-px" style={{ background: "var(--border-subtle)" }} />
             <button
-              onMouseDown={e => { e.preventDefault(); onCiteInResponse(selection.text); setSelection(null); window.getSelection()?.removeAllRanges(); }}
+              onMouseDown={e => { e.preventDefault(); onCiteInResponse(selection.text, "source_material"); setSelection(null); window.getSelection()?.removeAllRanges(); }}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-bold uppercase tracking-widest transition-colors duration-150"
               style={{ color: "var(--text-secondary)" }}
               onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "var(--surface-1)"}
@@ -1359,6 +1359,7 @@ export default function AssessmentInterface() {
   const materialViewStartRef = useRef<number>(Date.now());
   const prevResponseLengthRef = useRef<Record<string, number>>({});
   const editDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastAIResponseAtRef = useRef<number | null>(null);
 
   const logBehavior = trpc.assessments.logBehavior.useMutation();
 
@@ -1546,7 +1547,13 @@ export default function AssessmentInterface() {
       pushEvent({
         eventType: "response_edit",
         taskId: currentTaskId,
-        eventData: { netDeltaChars: delta, totalLength: newLen },
+        eventData: {
+          netDeltaChars: delta,
+          totalLength: newLen,
+          secsSinceAIResponse: lastAIResponseAtRef.current !== null
+            ? Math.round((Date.now() - lastAIResponseAtRef.current) / 1000)
+            : null,
+        },
         clientTimestamp: Date.now(),
       });
     }, 1000);
@@ -1559,6 +1566,7 @@ export default function AssessmentInterface() {
     submitAssessment.mutate({
       assessmentId,
       taskResponses: responses,
+      taskResponsesStructured: composerValues,
       aiInteractions,
       completionTimeSeconds,
     });
@@ -1574,9 +1582,24 @@ export default function AssessmentInterface() {
     if (msg.role === "user") {
       setBehaviorEvents(prev => [...prev, { type: "ai", timestamp: msg.timestamp }]);
     }
+    if (msg.role === "assistant") {
+      lastAIResponseAtRef.current = Date.now();
+      pushEvent({
+        eventType: "ai_response_complete",
+        taskId: msg.taskKey,
+        eventData: { responseLength: msg.content.length },
+        clientTimestamp: Date.now(),
+      });
+    }
   };
 
-  const handleCiteInResponse = (text: string) => {
+  const handleCiteInResponse = (text: string, source: "ai" | "source_material") => {
+    pushEvent({
+      eventType: "citation_added",
+      taskId: currentTaskId,
+      eventData: { source, textLength: text.length, responseType: currentResponseType },
+      clientTimestamp: Date.now(),
+    });
     const citation = `\n\n> ${text.replace(/\n/g, "\n> ")}`;
     if (currentResponseType === "memo") {
       const v = (currentComposerValue as MemoValue) ?? {};

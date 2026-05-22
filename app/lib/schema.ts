@@ -54,6 +54,7 @@ export type InsertAssessment = Omit<Assessment, "id" | "createdAt" | "updatedAt"
 export type Submission = BaseRecord & {
   assessmentId: number;
   taskResponses?: unknown;
+  taskResponsesStructured?: unknown;
   aiInteractions?: unknown;
   fileRefs?: unknown;
   wordCount?: number | null;

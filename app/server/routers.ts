@@ -254,9 +254,19 @@ function parseMarkdownTableRows(raw: string) {
 function buildStructuredTaskResponses(
   roleTemplate: string,
   taskResponses: Record<string, string>,
+  structuredValues?: Record<string, unknown>,
 ): StructuredTaskResponse[] {
   const typeByTask = TASK_RESPONSE_TYPES[roleTemplate] ?? {};
 
+  // Prefer persisted structured values when present (avoids lossy markdown re-parse)
+  if (structuredValues && Object.keys(structuredValues).length > 0) {
+    return Object.entries(structuredValues).map(([taskId, value]) => {
+      const responseType = typeByTask[taskId] ?? "memo";
+      return { taskId, responseType, value: (value as Record<string, unknown>) ?? {} };
+    });
+  }
+
+  // Legacy fallback: reconstruct from serialized markdown strings
   return Object.entries(taskResponses).map(([taskId, raw]) => {
     const responseType = typeByTask[taskId] ?? "memo";
     const tableRows = parseMarkdownTableRows(raw ?? "");
@@ -287,6 +297,7 @@ async function buildBlendedScore(params: {
   assessmentId: number;
   roleTemplate: string;
   taskResponses: Record<string, string>;
+  taskResponsesStructured?: Record<string, unknown>;
   llmScore: LLMScoreResult;
   completionTimeSeconds: number;
   timeLimitSeconds: number;
@@ -294,7 +305,7 @@ async function buildBlendedScore(params: {
   const behaviorEvents = await getBehaviorEventsByAssessment(params.assessmentId);
   const deterministic = computeDeterministicScores({
     roleTemplate: params.roleTemplate,
-    tasks: buildStructuredTaskResponses(params.roleTemplate, params.taskResponses),
+    tasks: buildStructuredTaskResponses(params.roleTemplate, params.taskResponses, params.taskResponsesStructured),
     completionTimeSeconds: params.completionTimeSeconds,
     timeLimitSeconds: params.timeLimitSeconds,
     behaviorEvents,
@@ -684,6 +695,7 @@ export const appRouter = router({
       .input(z.object({
         assessmentId: z.number(),
         taskResponses: z.record(z.string(), z.string()),
+        taskResponsesStructured: z.record(z.string(), z.unknown()).optional(),
         aiInteractions: z.array(z.object({
           role: z.string(),
           content: z.string(),
@@ -701,6 +713,7 @@ export const appRouter = router({
         const submissionId = await createSubmission({
           assessmentId: input.assessmentId,
           taskResponses: input.taskResponses,
+          taskResponsesStructured: input.taskResponsesStructured,
           aiInteractions: input.aiInteractions,
           wordCount,
           completionTimeSeconds: input.completionTimeSeconds,
@@ -725,6 +738,7 @@ export const appRouter = router({
                 assessmentId: input.assessmentId,
                 roleTemplate: campaign.roleTemplate,
                 taskResponses,
+                taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
                 llmScore,
                 completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
                 timeLimitSeconds: assessment.timeLimitMinutes * 60,
@@ -839,6 +853,7 @@ export const appRouter = router({
           assessmentId: sub.assessmentId,
           roleTemplate: campaign.roleTemplate,
           taskResponses,
+          taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
           llmScore,
           completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
           timeLimitSeconds: assessment.timeLimitMinutes * 60,
