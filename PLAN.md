@@ -11,7 +11,7 @@ Several v1 surfaces survived the migration: source-material upload, structured r
 Regression debt remains:
 
 - Deterministic scoring was dropped. Manus had `server/scoring/deterministic.ts`, `behavioral.ts`, `blend.ts`, `numericalParser.ts`, and `expectedAnswers.ts`; this repo has no `app/server/scoring/` folder. Current assessment grading is a single `generateScoreWithLLM` call in `app/server/routers.ts`.
-- In-test AI constraints were weakened. Manus constrained Pine AI against final deliverables, filling numbers, and long answers, and injected source-material/PDF text into chat context. Current `chat.send` uses a generic prompt and does not inject actual uploaded material content.
+- In-test AI constraints and source-material chat context have been restored in `chat.send`: Pine AI now refuses final deliverables and candidate-owned numerical answers while injecting uploaded text/PDF material into the prompt.
 - `CandidateBehaviorTab.tsx` was dropped, so captured behavior telemetry is not displayed in reports.
 - `PdfMaterialViewer.tsx` was dropped, so uploaded PDFs are not viewable inside the assessment.
 - All tests were dropped. `package.json` has no test tooling.
@@ -24,6 +24,6 @@ The score report needs a process-trace timeline showing what the candidate did w
 
 ## Sequencing
 
-First re-port deterministic scoring and the in-test AI constraints, adapting them to Next.js/tRPC/MongoDB instead of copying the Manus stack. These are prerequisites for credible process trace, evidence panel, and AI difficulty work: a deterministic-checks section is empty until the deterministic engine exists, and AI difficulty depends on real prompt constraints plus material-aware chat context.
+First re-port deterministic scoring and the in-test AI constraints, adapting them to Next.js/tRPC/MongoDB instead of copying the Manus stack. These are now in place as foundations for credible process trace, evidence panel, and AI difficulty work: deterministic checks and material-aware prompt boundaries can be wired into later report and configuration surfaces.
 
 After that, build the report process trace, evidence panel, and role-template AI difficulty controls. Workspace realism can proceed in parallel where independent: spreadsheet task surface, scratchpad, and material-driven question/prompt generation.
