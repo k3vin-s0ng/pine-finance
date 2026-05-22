@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import type { SourceMaterial } from "@/app/lib/schema";
 import { storageGetSignedUrl } from "./storage";
 
@@ -53,6 +52,7 @@ async function fetchMaterialBuffer(material: SourceMaterial) {
 }
 
 async function extractPdfPages(buffer: Buffer): Promise<ExtractedSourceMaterialPage[]> {
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: new Uint8Array(buffer) });
   try {
     const result = await parser.getText();
