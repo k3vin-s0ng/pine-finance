@@ -22,6 +22,13 @@ type GoogleUserInfo = {
   picture?: string;
 };
 
+function maskEmail(email?: string | null) {
+  if (!email) return null;
+  const [local, domain] = email.split("@");
+  if (!domain) return "invalid-email";
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+
 function decodeState(state: string | null) {
   if (!state) return "/";
   try {
@@ -67,23 +74,42 @@ export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   const state = req.nextUrl.searchParams.get("state");
   const error = req.nextUrl.searchParams.get("error");
+  const decodedState = decodeState(state);
+  const redirectUri = new URL("/api/oauth/callback", req.url).toString();
+
+  console.info("[auth-debug] callback-start", {
+    host: req.nextUrl.host,
+    protocol: req.nextUrl.protocol,
+    pathname: req.nextUrl.pathname,
+    redirectUri,
+    hasCode: Boolean(code),
+    hasState: Boolean(state),
+    decodedState,
+    error,
+    googleClientConfigured: Boolean(ENV.googleClientId),
+    googleSecretConfigured: Boolean(ENV.googleClientSecret),
+  });
 
   if (error) {
+    console.warn("[auth-debug] callback-provider-error", { error });
     return NextResponse.json({ error }, { status: 400 });
   }
 
   if (!code) {
+    console.warn("[auth-debug] callback-missing-code");
     return NextResponse.json({ error: "code is required" }, { status: 400 });
   }
 
   if (!ENV.googleClientId || !ENV.googleClientSecret) {
+    console.error("[auth-debug] callback-missing-google-config", {
+      googleClientConfigured: Boolean(ENV.googleClientId),
+      googleSecretConfigured: Boolean(ENV.googleClientSecret),
+    });
     return NextResponse.json(
       { error: "Google OAuth is not configured" },
       { status: 500 },
     );
   }
-
-  const redirectUri = new URL("/api/oauth/callback", req.url).toString();
 
   try {
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -99,6 +125,15 @@ export async function GET(req: NextRequest) {
     });
 
     const tokenJson = (await tokenResponse.json()) as GoogleTokenResponse;
+    console.info("[auth-debug] token-response", {
+      ok: tokenResponse.ok,
+      status: tokenResponse.status,
+      hasAccessToken: Boolean(tokenJson.access_token),
+      hasIdToken: Boolean(tokenJson.id_token),
+      error: tokenJson.error,
+      errorDescription: tokenJson.error_description,
+    });
+
     if (!tokenResponse.ok || !tokenJson.access_token) {
       console.error("[Google OAuth] Token exchange failed", tokenJson);
       return NextResponse.json(
@@ -111,6 +146,14 @@ export async function GET(req: NextRequest) {
       headers: { Authorization: `Bearer ${tokenJson.access_token}` },
     });
     const userInfo = (await userInfoResponse.json()) as GoogleUserInfo;
+
+    console.info("[auth-debug] userinfo-response", {
+      ok: userInfoResponse.ok,
+      status: userInfoResponse.status,
+      hasSub: Boolean(userInfo.sub),
+      email: maskEmail(userInfo.email),
+      emailVerified: userInfo.email_verified,
+    });
 
     if (!userInfoResponse.ok || !userInfo.sub) {
       console.error("[Google OAuth] Userinfo failed", userInfo);
@@ -129,13 +172,33 @@ export async function GET(req: NextRequest) {
     });
     const user = await db.getUserByOpenId(openId);
 
+    console.info("[auth-debug] user-upserted", {
+      userId: user?.id ?? null,
+      role: user?.role ?? null,
+      onboardingCompleted: user?.onboardingCompleted ?? null,
+      email: maskEmail(user?.email),
+    });
+
     const sessionToken = await sdk.createSessionToken(openId, {
       name,
       email: userInfo.email ?? null,
       expiresInMs: ONE_YEAR_MS,
     });
 
-    const response = NextResponse.redirect(new URL(resolveRedirectPath(decodeState(state), user?.role), req.url));
+    const resolvedRedirectPath = resolveRedirectPath(decodedState, user?.role);
+    const resolvedRedirectUrl = new URL(resolvedRedirectPath, req.url);
+
+    console.info("[auth-debug] callback-redirect", {
+      decodedState,
+      role: user?.role ?? null,
+      resolvedRedirectPath,
+      resolvedRedirectUrl: resolvedRedirectUrl.toString(),
+      secureCookie: req.nextUrl.protocol === "https:",
+      cookiePath: "/",
+      sameSite: "lax",
+    });
+
+    const response = NextResponse.redirect(resolvedRedirectUrl);
     response.cookies.set(COOKIE_NAME, sessionToken, {
       httpOnly: true,
       path: "/",
