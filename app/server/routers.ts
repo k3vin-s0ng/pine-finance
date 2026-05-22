@@ -29,6 +29,11 @@ import {
 import { notifyOwner } from "./_core/notification";
 import { sendCandidateInviteEmail, sendScoreReadyEmail } from "./email";
 import { computeBenchmarkPercentile } from "./benchmarkData";
+import {
+  extractSourceMaterials,
+  formatSourceMaterialsForPrompt,
+} from "./materials";
+import type { SourceMaterial } from "@/app/lib/schema";
 
 // ─── Role guard helpers ───────────────────────────────────────────────────────
 const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -37,6 +42,68 @@ const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+type PineChatTaskContext = {
+  title?: string;
+  prompt?: string;
+};
+
+export function getPineChatRoleBoundary(roleTemplate: string) {
+  switch (roleTemplate) {
+    case "IB Analyst":
+      return "Role boundary: be comfortable with IB concepts, valuation methods, transaction framing, and source triangulation. Stay strict: do not write pitch-book-ready language or supply completed valuation outputs.";
+    case "FP&A Analyst":
+      return "Role boundary: emphasize operating drivers, variance logic, budget math setup, and forecast verification. Stay strict: do not fill the forecast, bridge, or budget recommendation for the candidate.";
+    case "PE Associate":
+      return "Role boundary: emphasize investment judgment, diligence framing, LBO mechanics, and risk checks. Stay strict: do not write the investment memo, deal recommendation, or final IRR answer.";
+    case "Hedge Fund Research Analyst":
+      return "Role boundary: emphasize thesis testing, variant perception, catalyst framing, and valuation cross-checks. Stay strict: do not hand over a final long/short thesis, price target, or fully computed return.";
+    default:
+      return "Role boundary: adapt to the stated finance role, but stay strict about research-assistant behavior and candidate-owned work product.";
+  }
+}
+
+export function buildPineChatSystemPrompt(params: {
+  roleTemplate: string;
+  taskContext?: PineChatTaskContext;
+  activeMaterialLabel?: string;
+  sourceMaterialsBlock?: string;
+}) {
+  const taskContext = params.taskContext;
+  const taskBlock =
+    taskContext?.title || taskContext?.prompt
+      ? [
+          "=== CURRENT TASK ===",
+          taskContext.title ? `Title: ${taskContext.title}` : null,
+          taskContext.prompt ? `Prompt: ${taskContext.prompt}` : null,
+        ].filter(Boolean).join("\n")
+      : "";
+  const activeMaterialNote = params.activeMaterialLabel
+    ? `Active material note: the candidate is currently viewing "${params.activeMaterialLabel}". Prioritize that material when it is relevant, but still cross-check other provided sources.`
+    : "";
+
+  return `You are Pine AI, a strict research assistant inside a timed finance assessment for the role: ${params.roleTemplate}.
+
+Your job is to help the candidate reason, verify, and structure their own work. You are not the candidate and you must not complete the assessment for them.
+
+${getPineChatRoleBoundary(params.roleTemplate)}
+
+Non-negotiable rules:
+- Never produce a final or submittable deliverable. If asked for a finished memo, thesis, executive summary, model answer, final table, or final response, briefly refuse and offer an outline, checklist, critique rubric, or targeted questions instead.
+- Never fill in numerical answers for the candidate. Do not hand over computed final values, valuation outputs, percentages, IRRs, price targets, deal sizes, bridge totals, or completed table cells. Give the formula, identify the figures from the sources, show the setup and units, and let the candidate compute.
+- You may verify math the candidate already provides. If their number is wrong, explain the correction path without replacing their work with a final answer.
+- Keep continuous prose to about three sentences maximum. Prefer concise bullets, formulas, and pointed checks.
+- Ask a clarifying question when the candidate's request is ambiguous or underspecified.
+- Point out verification opportunities, source cross-checks, and assumptions the candidate should test.
+- Use the provided source materials directly. Cite figures by material label and page marker when available. If the material is missing or unclear, say what to verify rather than inventing facts.
+- Stay role-aware and concise; do not become a general tutor or generic writing assistant.
+
+${activeMaterialNote}
+
+${taskBlock}
+
+${params.sourceMaterialsBlock ?? ""}`.trim();
+}
 
 // ─── Scoring helper ───────────────────────────────────────────────────────────
 async function generateScoreWithLLM(params: {
@@ -490,9 +557,6 @@ export const appRouter = router({
           assessmentUrl,
           recruiterName: recruiter.name ?? undefined,
         }).then(result => {
-          if (result.previewUrl) {
-            console.log(`[Email] Preview: ${result.previewUrl}`);
-          }
         }).catch(err => console.error("[Email] Invite send error:", err));
         // Notify owner
         notifyOwner({
@@ -856,24 +920,36 @@ export const appRouter = router({
       .input(z.object({
         assessmentId: z.number(),
         messages: z.array(z.object({ role: z.string(), content: z.string() })),
-        roleTemplate: z.string(),
+        roleTemplate: z.string().optional(),
+        taskContext: z.object({
+          title: z.string().optional(),
+          prompt: z.string().optional(),
+        }).optional(),
+        activeMaterialLabel: z.string().optional(),
       }))
-      .mutation(async ({ ctx, input }) => {
-        const systemPrompt = `You are an AI assistant helping a finance professional complete a timed assessment task for the role: ${input.roleTemplate}.
+      .mutation(async ({ input }) => {
+        const assessment = await getAssessmentById(input.assessmentId);
+        if (!assessment) throw new TRPCError({ code: "NOT_FOUND" });
 
-You have access to the source materials provided in the assessment. Help the candidate analyze financial data, extract metrics, draft memos, and complete finance workflow tasks.
+        const campaign = await getCampaignById(assessment.campaignId);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
 
-Important guidelines:
-- Provide accurate financial analysis and calculations
-- Help structure responses professionally
-- Point out when verification or cross-checking is important
-- Do not complete the entire task for the candidate — guide and assist
-- Keep responses focused and concise`;
+        const sourceMaterials = (campaign.sourceMaterials as SourceMaterial[] | null | undefined) ?? [];
+        const extractedMaterials = await extractSourceMaterials(sourceMaterials);
+        const systemPrompt = buildPineChatSystemPrompt({
+          roleTemplate: campaign.roleTemplate ?? input.roleTemplate ?? "Assessment",
+          taskContext: input.taskContext,
+          activeMaterialLabel: input.activeMaterialLabel,
+          sourceMaterialsBlock: formatSourceMaterialsForPrompt(extractedMaterials),
+        });
 
         const response = await invokeLLM({
           messages: [
             { role: "system", content: systemPrompt },
-            ...input.messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+            ...input.messages.map(m => ({
+              role: m.role === "assistant" ? "assistant" as const : "user" as const,
+              content: m.content,
+            })),
           ],
         });
 

@@ -1,33 +1,75 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// ─── Email Transport ──────────────────────────────────────────────────────────
-// Supports any SMTP provider: SendGrid, Resend, Mailgun, Gmail, etc.
-// Falls back to Ethereal (test) transport when SMTP_HOST is not configured.
+// ─── Resend Client ────────────────────────────────────────────────────────────
 
-function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT ?? "587");
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM ?? "Pine Finance <noreply@pinefinance.ai>";
+const resendApiKey = process.env.RESEND_API_KEY;
 
-  if (!host || !user || !pass) {
-    // Use Ethereal for dev/testing — emails are captured at https://ethereal.email
-    console.warn("[Email] SMTP not configured. Using Ethereal test transport. Set SMTP_HOST, SMTP_USER, SMTP_PASS to send real emails.");
-    return null;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+const FROM_ADDRESS =
+  process.env.RESEND_FROM ?? "Pine Finance <noreply@pineshopping.com>";
+
+type EmailResult = {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+};
+
+async function sendEmail(params: {
+  toEmail: string;
+  subject: string;
+  text: string;
+  html: string;
+}): Promise<EmailResult> {
+  const { toEmail, subject, text, html } = params;
+
+  if (!resend) {
+    console.warn(
+      "[Email] RESEND_API_KEY is not configured. Email was not sent."
+    );
+
+    return {
+      success: false,
+      error: "RESEND_API_KEY is not configured.",
+    };
   }
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  });
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: [toEmail],
+      subject,
+      text,
+      html,
+    });
+
+    if (error) {
+      console.error(`[Email] Resend failed to send to ${toEmail}:`, error);
+
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    console.log(`[Email] Sent to ${toEmail} via Resend: ${data?.id}`);
+
+    return {
+      success: true,
+      messageId: data?.id,
+    };
+  } catch (err) {
+    console.error(`[Email] Unexpected Resend error for ${toEmail}:`, err);
+
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown email error.",
+    };
+  }
 }
 
-const FROM_ADDRESS = process.env.SMTP_FROM ?? "Pine Finance <noreply@pinefinance.ai>";
-
 // ─── Send Candidate Invite Email ─────────────────────────────────────────────
+
 export async function sendCandidateInviteEmail(params: {
   toEmail: string;
   candidateName?: string;
@@ -36,14 +78,23 @@ export async function sendCandidateInviteEmail(params: {
   timeLimitMinutes: number;
   assessmentUrl: string;
   recruiterName?: string;
-}): Promise<{ success: boolean; previewUrl?: string; messageId?: string }> {
+}): Promise<EmailResult> {
   const {
-    toEmail, candidateName, campaignTitle, roleTemplate,
-    timeLimitMinutes, assessmentUrl, recruiterName,
+    toEmail,
+    candidateName,
+    campaignTitle,
+    roleTemplate,
+    timeLimitMinutes,
+    assessmentUrl,
+    recruiterName,
   } = params;
 
   const greeting = candidateName ? `Hi ${candidateName},` : "Hello,";
-  const from = recruiterName ? `the team at Pine Finance (on behalf of ${recruiterName})` : "the team at Pine Finance";
+  const from = recruiterName
+    ? `the team at Pine Finance, on behalf of ${recruiterName}`
+    : "the team at Pine Finance";
+
+  const subject = `Your Pine Finance Assessment: ${campaignTitle}`;
 
   const html = `
 <!DOCTYPE html>
@@ -58,26 +109,20 @@ export async function sendCandidateInviteEmail(params: {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden;max-width:600px;">
-          <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#0d0d0d,#111);padding:32px 40px;border-bottom:1px solid #c9a84c;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <div style="display:inline-block;background:#c9a84c;color:#000;font-size:11px;font-weight:900;letter-spacing:3px;padding:6px 12px;border-radius:4px;text-transform:uppercase;">P</div>
-                    <span style="color:#c9a84c;font-size:14px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-left:10px;vertical-align:middle;">PINE FINANCE</span>
-                  </td>
-                </tr>
-              </table>
+              <div style="display:inline-block;background:#c9a84c;color:#000;font-size:11px;font-weight:900;letter-spacing:3px;padding:6px 12px;border-radius:4px;text-transform:uppercase;">P</div>
+              <span style="color:#c9a84c;font-size:14px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-left:10px;vertical-align:middle;">PINE FINANCE</span>
             </td>
           </tr>
-          <!-- Body -->
+
           <tr>
             <td style="padding:40px;">
               <h1 style="color:#ffffff;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">You've Been Invited</h1>
               <p style="color:#c9a84c;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:0 0 28px;">AI Fluency Assessment</p>
 
               <p style="color:#aaa;font-size:15px;line-height:1.7;margin:0 0 20px;">${greeting}</p>
+
               <p style="color:#aaa;font-size:15px;line-height:1.7;margin:0 0 28px;">
                 You have been invited by ${from} to complete an AI fluency assessment for the
                 <strong style="color:#fff;">${campaignTitle}</strong> campaign.
@@ -85,7 +130,6 @@ export async function sendCandidateInviteEmail(params: {
                 <strong style="color:#fff;">${roleTemplate}</strong> context.
               </p>
 
-              <!-- Assessment Details -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #1a1a1a;border-radius:8px;margin:0 0 32px;">
                 <tr>
                   <td style="padding:20px 24px;">
@@ -113,7 +157,6 @@ export async function sendCandidateInviteEmail(params: {
                 </tr>
               </table>
 
-              <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
                 <tr>
                   <td align="center">
@@ -128,11 +171,11 @@ export async function sendCandidateInviteEmail(params: {
               <p style="color:#555;font-size:13px;line-height:1.6;margin:0 0 8px;">
                 Or copy and paste this link into your browser:
               </p>
+
               <p style="color:#c9a84c;font-size:12px;word-break:break-all;margin:0 0 32px;">
                 ${assessmentUrl}
               </p>
 
-              <!-- What to Expect -->
               <div style="border-left:3px solid #c9a84c;padding-left:20px;margin:0 0 32px;">
                 <p style="color:#888;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">What to Expect</p>
                 <p style="color:#aaa;font-size:14px;line-height:1.7;margin:0 0 8px;">
@@ -145,7 +188,7 @@ export async function sendCandidateInviteEmail(params: {
               </div>
             </td>
           </tr>
-          <!-- Footer -->
+
           <tr>
             <td style="background:#080808;padding:24px 40px;border-top:1px solid #1a1a1a;">
               <p style="color:#333;font-size:12px;margin:0;text-align:center;">
@@ -180,51 +223,16 @@ Find a quiet environment and ensure you have ${timeLimitMinutes} uninterrupted m
 — Pine Finance Team
 `;
 
-  const transport = createTransport();
-
-  if (!transport) {
-    // Create a one-time Ethereal test account for preview
-    try {
-      const testAccount = await nodemailer.createTestAccount();
-      const testTransport = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass },
-      });
-      const info = await testTransport.sendMail({
-        from: FROM_ADDRESS,
-        to: toEmail,
-        subject: `Your Pine Finance Assessment: ${campaignTitle}`,
-        text,
-        html,
-      });
-      const previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
-      console.log(`[Email] Test email sent. Preview: ${previewUrl}`);
-      return { success: true, previewUrl: previewUrl as string, messageId: info.messageId };
-    } catch (err) {
-      console.error("[Email] Ethereal test send failed:", err);
-      return { success: false };
-    }
-  }
-
-  try {
-    const info = await transport.sendMail({
-      from: FROM_ADDRESS,
-      to: toEmail,
-      subject: `Your Pine Finance Assessment: ${campaignTitle}`,
-      text,
-      html,
-    });
-    console.log(`[Email] Invite sent to ${toEmail} (messageId: ${info.messageId})`);
-    return { success: true, messageId: info.messageId };
-  } catch (err) {
-    console.error(`[Email] Failed to send invite to ${toEmail}:`, err);
-    return { success: false };
-  }
+  return sendEmail({
+    toEmail,
+    subject,
+    text,
+    html,
+  });
 }
 
 // ─── Send Score Ready Email ───────────────────────────────────────────────────
+
 export async function sendScoreReadyEmail(params: {
   toEmail: string;
   candidateName?: string;
@@ -232,14 +240,29 @@ export async function sendScoreReadyEmail(params: {
   overallScore: number;
   benchmarkPercentile: number;
   reportUrl: string;
-}): Promise<{ success: boolean }> {
-  const { toEmail, candidateName, campaignTitle, overallScore, benchmarkPercentile, reportUrl } = params;
+}): Promise<EmailResult> {
+  const {
+    toEmail,
+    candidateName,
+    campaignTitle,
+    overallScore,
+    benchmarkPercentile,
+    reportUrl,
+  } = params;
+
   const greeting = candidateName ? `Hi ${candidateName},` : "Hello,";
+
+  const subject = `Your Pine Finance Score Report is Ready — ${Math.round(
+    overallScore
+  )}/100`;
 
   const html = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Your Pine Finance Score Report</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Your Pine Finance Score Report</title>
+</head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px;">
     <tr>
@@ -250,32 +273,51 @@ export async function sendScoreReadyEmail(params: {
               <span style="color:#c9a84c;font-size:14px;font-weight:900;letter-spacing:4px;text-transform:uppercase;">PINE FINANCE</span>
             </td>
           </tr>
+
           <tr>
             <td style="padding:40px;">
               <h1 style="color:#ffffff;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Your Score Is Ready</h1>
+
               <p style="color:#c9a84c;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:0 0 28px;">${campaignTitle}</p>
-              <p style="color:#aaa;font-size:15px;line-height:1.7;margin:0 0 28px;">${greeting}<br><br>Your AI fluency assessment has been scored. Here's a summary:</p>
+
+              <p style="color:#aaa;font-size:15px;line-height:1.7;margin:0 0 28px;">
+                ${greeting}<br><br>
+                Your AI fluency assessment has been scored. Here's a summary:
+              </p>
+
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #c9a84c33;border-radius:8px;margin:0 0 32px;">
                 <tr>
                   <td style="padding:24px;text-align:center;">
-                    <div style="font-size:72px;font-weight:900;color:#c9a84c;line-height:1;">${Math.round(overallScore)}</div>
+                    <div style="font-size:72px;font-weight:900;color:#c9a84c;line-height:1;">${Math.round(
+                      overallScore
+                    )}</div>
                     <div style="color:#888;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Overall Score</div>
-                    <div style="color:#aaa;font-size:14px;margin-top:12px;">Top <strong style="color:#fff;">${100 - benchmarkPercentile}%</strong> of your peer cohort</div>
+                    <div style="color:#aaa;font-size:14px;margin-top:12px;">
+                      Top <strong style="color:#fff;">${
+                        100 - benchmarkPercentile
+                      }%</strong> of your peer cohort
+                    </div>
                   </td>
                 </tr>
               </table>
+
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
                 <tr>
                   <td align="center">
-                    <a href="${reportUrl}" style="display:inline-block;background:#c9a84c;color:#000;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">VIEW FULL REPORT →</a>
+                    <a href="${reportUrl}" style="display:inline-block;background:#c9a84c;color:#000;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">
+                      VIEW FULL REPORT →
+                    </a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
+
           <tr>
             <td style="background:#080808;padding:24px 40px;border-top:1px solid #1a1a1a;">
-              <p style="color:#333;font-size:12px;margin:0;text-align:center;">Pine Finance · The AI Fluency Standard for Finance</p>
+              <p style="color:#333;font-size:12px;margin:0;text-align:center;">
+                Pine Finance · The AI Fluency Standard for Finance
+              </p>
             </td>
           </tr>
         </table>
@@ -285,22 +327,24 @@ export async function sendScoreReadyEmail(params: {
 </body>
 </html>`;
 
-  const transport = createTransport();
-  if (!transport) {
-    console.log(`[Email] Score ready email (no SMTP): ${toEmail} — score ${overallScore}`);
-    return { success: true };
-  }
-  try {
-    await transport.sendMail({
-      from: FROM_ADDRESS,
-      to: toEmail,
-      subject: `Your Pine Finance Score Report is Ready — ${Math.round(overallScore)}/100`,
-      text: `${greeting}\n\nYour assessment for "${campaignTitle}" has been scored.\n\nOverall Score: ${Math.round(overallScore)}/100\nPeer Percentile: ${benchmarkPercentile}th\n\nView your full report: ${reportUrl}`,
-      html,
-    });
-    return { success: true };
-  } catch (err) {
-    console.error(`[Email] Score ready email failed:`, err);
-    return { success: false };
-  }
+  const text = `
+${greeting}
+
+Your assessment for "${campaignTitle}" has been scored.
+
+Overall Score: ${Math.round(overallScore)}/100
+Peer Percentile: ${benchmarkPercentile}th
+
+View your full report:
+${reportUrl}
+
+— Pine Finance Team
+`;
+
+  return sendEmail({
+    toEmail,
+    subject,
+    text,
+    html,
+  });
 }

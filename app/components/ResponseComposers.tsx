@@ -196,7 +196,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
       </div>
 
       {/* Data rows */}
-      {v.rows.map((row, i) => (
+      {(v.rows ?? []).map((row, i) => (
         <div key={i} className="flex items-center gap-1 px-3 py-1 border-b border-[#111] last:border-0">
           <input
             className="flex-[35] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5"
