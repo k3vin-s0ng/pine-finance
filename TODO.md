@@ -6,8 +6,8 @@
 - [ ] Port behavioral scoring inputs; reference Manus `server/scoring/behavioral.ts`, using existing `behaviorEvents` captured by `assessment.logBehavior`.
 - [ ] Port score blending; reference Manus `server/scoring/blend.ts`, combining deterministic, behavioral, and LLM scores.
 - [x] Port expected-answer definitions; reference Manus `server/scoring/expectedAnswers.ts`, mapping them to current role templates and task IDs. (Chunk 1: `app/server/scoring/expectedAnswers.ts` for t1–t3; FP&A/HF empty where prompts differ.)
-- [ ] Restore in-test Pine AI constraints in `chat.send`: no final deliverables, no filling numbers for candidates, concise guidance, and role-aware boundaries.
-- [ ] Inject uploaded source material/PDF text into Pine AI chat context instead of only claiming materials are available.
+- [x] Restore in-test Pine AI constraints in `chat.send`: no final deliverables, no filling numbers for candidates, concise guidance, and role-aware boundaries.
+- [x] Inject uploaded source material/PDF text into Pine AI chat context instead of only claiming materials are available.
 - [ ] Rebuild report behavior telemetry display; reference Manus `CandidateBehaviorTab.tsx`, using current `behaviorEvents`.
 - [ ] Rebuild in-assessment PDF/material viewing; reference Manus `PdfMaterialViewer.tsx`, adapting to current source-material storage shape.
 

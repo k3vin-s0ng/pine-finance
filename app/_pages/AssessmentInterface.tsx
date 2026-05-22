@@ -844,6 +844,8 @@ function AIChatPanel({
   assessmentId,
   currentTaskId,
   currentTask,
+  roleTemplate,
+  activeMaterialLabel,
   onInteraction,
   onCiteInResponse,
   sourceMaterialLabels,
@@ -852,7 +854,9 @@ function AIChatPanel({
 }: {
   assessmentId: number;
   currentTaskId: string;
-  currentTask: { title: string; aiSuggestions?: string[] };
+  currentTask: { title: string; prompt?: string; aiSuggestions?: string[] };
+  roleTemplate: string;
+  activeMaterialLabel?: string;
   onInteraction: (msg: { role: string; content: string; taskKey: string; timestamp: number }) => void;
   onCiteInResponse: (text: string) => void;
   sourceMaterialLabels: string[];
@@ -903,7 +907,16 @@ function AIChatPanel({
     });
     setInput("");
     setLoading(true);
-    chat.mutate({ assessmentId, messages: [...messages, userMsg], roleTemplate: "IB Analyst" });
+    chat.mutate({
+      assessmentId,
+      messages: [...messages, userMsg],
+      roleTemplate,
+      taskContext: {
+        title: currentTask.title,
+        prompt: currentTask.prompt,
+      },
+      activeMaterialLabel,
+    });
   };
 
   const isEmpty = messages.length === 0;
@@ -1445,6 +1458,12 @@ export default function AssessmentInterface() {
     if (hasCustomMaterials) return customMaterials.map(m => m.label);
     return Object.values(SOURCE_MATERIALS).map(m => m.label);
   }, [hasCustomMaterials, customMaterials]);
+  const activeMaterialLabel = useMemo(() => {
+    if (hasCustomMaterials) {
+      return customMaterials.find(m => m.fileKey === activeTab)?.label;
+    }
+    return (SOURCE_MATERIALS as Record<string, { label: string }>)[activeTab]?.label;
+  }, [activeTab, hasCustomMaterials, customMaterials]);
 
   const currentTaskId = tasks[currentTask]?.id ?? "";
   const currentResponseType = (tasks[currentTask]?.responseType ?? "memo") as ResponseType;
@@ -2155,6 +2174,8 @@ export default function AssessmentInterface() {
             assessmentId={assessmentId}
             currentTaskId={currentTaskId}
             currentTask={tasks[currentTask] ?? { title: "", aiSuggestions: [] }}
+            roleTemplate={roleTemplate}
+            activeMaterialLabel={activeMaterialLabel}
             onInteraction={handleAIInteraction}
             onCiteInResponse={handleCiteInResponse}
             sourceMaterialLabels={sourceMaterialLabels}
