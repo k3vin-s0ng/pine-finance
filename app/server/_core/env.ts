@@ -5,6 +5,10 @@ export const ENV = {
   mongoUri: process.env.MONGODB_URI ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  openRouterApiUrl: process.env.OPENAI_API_URL ?? "",
+  openRouterApiKey: process.env.OPENAI_API_KEY ?? "",
+  openRouterModel: process.env.OPENROUTER_MODEL ?? "google/gemini-2.5-flash",
+  siteUrl:
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000",
 };

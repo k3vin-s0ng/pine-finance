@@ -210,13 +210,13 @@ const normalizeToolChoice = (
 };
 
 const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+  ENV.openRouterApiUrl && ENV.openRouterApiUrl.trim().length > 0
+    ? `${ENV.openRouterApiUrl.replace(/\/$/, "")}/chat/completions`
+    : "https://openrouter.ai/api/v1/chat/completions";
 
 const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+  if (!ENV.openRouterApiKey) {
+    throw new Error("OPENROUTER_API_KEY is not configured");
   }
 };
 
@@ -280,8 +280,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: ENV.openRouterModel || "google/gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
+    max_tokens: params.maxTokens || params.max_tokens || 4096,
   };
 
   if (tools && tools.length > 0) {
@@ -292,13 +293,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     toolChoice || tool_choice,
     tools
   );
+
   if (normalizedToolChoice) {
     payload.tool_choice = normalizedToolChoice;
-  }
-
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -316,7 +313,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${ENV.openRouterApiKey}`,
+      "HTTP-Referer": ENV.siteUrl || "https://pine-finance.vercel.app",
+      "X-OpenRouter-Title": "Pine Finance",
     },
     body: JSON.stringify(payload),
   });
