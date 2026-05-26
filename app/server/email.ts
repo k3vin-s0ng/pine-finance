@@ -111,7 +111,6 @@ export async function sendCandidateInviteEmail(params: {
         <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #d9e7db;border-radius:12px;overflow:hidden;max-width:600px;">
           <tr>
             <td style="background:linear-gradient(135deg,#fff,#eef7ef);padding:32px 40px;border-bottom:1px solid #168a4a;">
-              <div style="display:inline-block;background:#168a4a;color:#fff;font-size:11px;font-weight:900;letter-spacing:3px;padding:6px 12px;border-radius:4px;text-transform:uppercase;">P</div>
               <span style="color:#168a4a;font-size:14px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-left:10px;vertical-align:middle;">PINE FINANCE</span>
             </td>
           </tr>
