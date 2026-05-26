@@ -7,7 +7,7 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const FROM_ADDRESS =
-  process.env.RESEND_FROM ?? "Pine Finance <noreply@pineshopping.com>";
+  process.env.RESEND_FROM ?? "Pine Finance <noreply@pinefinance.org>";
 
 type EmailResult = {
   success: boolean;
