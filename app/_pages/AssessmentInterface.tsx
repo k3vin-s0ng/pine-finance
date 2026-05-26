@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { useParams, useLocation } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -1679,14 +1680,9 @@ export default function AssessmentInterface() {
         style={{ background: "var(--surface-1)", borderColor: "var(--border-subtle)" }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-6 h-6 rounded-sm flex items-center justify-center"
-            style={{ background: "var(--accent-gold)" }}
-          >
-            <span className="text-white font-black text-xs">P</span>
-          </div>
+          <Image src="/logo.png" alt="Pine" width={24} height={24} className="h-6 w-6 rounded-sm" priority />
           <span className="font-bold text-xs uppercase tracking-widest hidden sm:block" style={{ color: "var(--text-primary)" }}>
-            Pine Finance Assessment
+            Pine Assessment
           </span>
           <span className="text-xs hidden md:block" style={{ color: "var(--text-quaternary)" }}>·</span>
           <span className="text-xs hidden md:block" style={{ color: "var(--accent-gold)" }}>{roleTemplate}</span>
