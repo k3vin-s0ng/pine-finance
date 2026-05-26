@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Link } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
@@ -111,10 +112,8 @@ function Nav({ onDemo }: { onDemo: () => void }) {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#168a4a]/10 bg-[#f8fbf8]/90 backdrop-blur-md">
       <div className="container flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-sm bg-[#168a4a] flex items-center justify-center">
-            <span className="text-white font-black text-xs">P</span>
-          </div>
-          <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine Finance</span>
+          <Image src="/logo.png" alt="Pine" width={28} height={28} className="h-7 w-7 rounded-sm" priority />
+          <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine</span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-xs font-medium tracking-widest uppercase text-[#52665a]">
           <a href="#product" className="hover:text-[#168a4a] transition-colors">Product</a>
@@ -711,9 +710,7 @@ function Footer() {
       <div className="container">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-sm bg-[#168a4a] flex items-center justify-center">
-              <span className="text-white font-black text-xs">P</span>
-            </div>
+            <Image src="/logo.png" alt="Pine Finance" width={24} height={24} className="h-6 w-6 rounded-sm" />
             <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine Finance</span>
           </div>
           <p className="text-[#8fa095] text-xs">© 2025 Pine Finance. The AI Fluency Standard for Finance.</p>

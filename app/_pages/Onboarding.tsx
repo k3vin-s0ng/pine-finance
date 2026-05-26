@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useLocation } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -55,10 +56,8 @@ export default function Onboarding() {
       <div className="relative z-10 w-full max-w-2xl px-4">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-12 justify-center">
-          <div className="w-8 h-8 rounded-sm bg-[#168a4a] flex items-center justify-center">
-            <span className="text-white font-black text-sm">P</span>
-          </div>
-          <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine Finance</span>
+          <Image src="/logo.png" alt="Pine" width={32} height={32} className="h-8 w-8 rounded-sm" priority />
+          <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine</span>
         </div>
 
         <div className="text-center mb-10">
