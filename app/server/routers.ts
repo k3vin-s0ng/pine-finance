@@ -945,6 +945,21 @@ export const appRouter = router({
           cohortMean: getCohortMean(input.roleTemplate),
         };
       }),
+    getBehaviorEvents: recruiterProcedure
+      .input(z.object({ assessmentId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const assessmentWithCampaign = await getAssessmentWithCampaign(input.assessmentId);
+        if (!assessmentWithCampaign?.assessment || !assessmentWithCampaign.campaign) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        if (
+          ctx.user.role !== "admin" &&
+          assessmentWithCampaign.campaign.recruiterId !== ctx.user.id
+        ) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "You do not own this assessment" });
+        }
+        return getBehaviorEventsByAssessment(input.assessmentId);
+      }),
     // Exam history: list of all past exams for a candidate (candidate sees own, recruiter sees any)
     examHistory: protectedProcedure
       .input(z.object({ candidateId: z.number().optional() }))
@@ -1077,12 +1092,18 @@ export const appRouter = router({
         if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
 
         const sourceMaterials = (campaign.sourceMaterials as SourceMaterial[] | null | undefined) ?? [];
-        const extractedMaterials = await extractSourceMaterials(sourceMaterials);
+        let sourceMaterialsBlock = "";
+        try {
+          const extractedMaterials = await extractSourceMaterials(sourceMaterials);
+          sourceMaterialsBlock = formatSourceMaterialsForPrompt(extractedMaterials);
+        } catch (error) {
+          console.error("[Chat] Source material extraction failed:", error);
+        }
         const systemPrompt = buildPineChatSystemPrompt({
           roleTemplate: campaign.roleTemplate ?? input.roleTemplate ?? "Assessment",
           taskContext: input.taskContext,
           activeMaterialLabel: input.activeMaterialLabel,
-          sourceMaterialsBlock: formatSourceMaterialsForPrompt(extractedMaterials),
+          sourceMaterialsBlock,
         });
 
         const response = await invokeLLM({

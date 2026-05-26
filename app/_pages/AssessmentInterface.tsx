@@ -19,10 +19,11 @@ import {
 import {
   Clock, Send, ChevronRight, ChevronLeft, FileText, Table2,
   BarChart3, AlertTriangle, CheckCircle, Loader2, BookOpen, Zap, ShieldAlert,
-  Timer as TimerIcon, Keyboard, Clipboard, Sparkles, Quote, ExternalLink,
+  Timer as TimerIcon, Keyboard, Clipboard, Sparkles, Quote,
   TrendingUp, TrendingDown, Activity
 } from "lucide-react";
 import { Streamdown } from "streamdown";
+import { PdfMaterialViewer } from "@/app/components/PdfMaterialViewer";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/components/ui/tooltip";
 import {
   AlertDialog,
@@ -1913,58 +1914,7 @@ export default function AssessmentInterface() {
               (() => {
                 const mat = customMaterials.find(m => m.fileKey === activeTab);
                 if (!mat) return null;
-                if (mat.mimeType === "application/pdf") {
-                  return (
-                    <div className="flex flex-col h-full gap-3 p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-widest truncate" style={{ color: "var(--text-tertiary)" }}>
-                          {mat.label}
-                        </span>
-                        <a
-                          href={mat.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[10px] flex-shrink-0 ml-2 transition-colors duration-150"
-                          style={{ color: "var(--accent-gold)" }}
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Open
-                        </a>
-                      </div>
-                      <iframe
-                        src={mat.url}
-                        className="flex-1 w-full rounded border bg-white"
-                        style={{ minHeight: "400px", borderColor: "var(--border-subtle)" }}
-                        title={mat.label}
-                      />
-                    </div>
-                  );
-                }
-                return (
-                  <div className="flex flex-col gap-4 p-4">
-                    <div
-                      className="p-4 rounded-xl border flex items-center justify-between gap-3"
-                      style={{ background: "var(--surface-1)", borderColor: "var(--border-subtle)" }}
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{mat.label}</p>
-                        <p className="text-xs mt-0.5" style={{ color: "var(--text-quaternary)" }}>{mat.mimeType}</p>
-                      </div>
-                      <a
-                        href={mat.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors duration-150"
-                        style={{ background: "rgba(22,138,74,0.1)", borderColor: "rgba(22,138,74,0.3)", color: "var(--accent-gold)" }}
-                      >
-                        Open ↗
-                      </a>
-                    </div>
-                    <p className="text-xs" style={{ color: "var(--text-quaternary)" }}>
-                      Click "Open" to view this file in a new tab.
-                    </p>
-                  </div>
-                );
+                return <PdfMaterialViewer material={mat} />;
               })()
             ) : (
               <SourceMaterialContent

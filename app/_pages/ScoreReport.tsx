@@ -10,6 +10,7 @@ import {
   BookOpen, BarChart3, Award, TrendingUp, Loader2, FileText
 } from "lucide-react";
 import { ExamResponseHistory } from "@/app/components/ExamResponseHistory";
+import { CandidateBehaviorTab } from "@/app/components/CandidateBehaviorTab";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ReferenceLine
@@ -318,6 +319,12 @@ export default function ScoreReport() {
               <h3 className="text-slate-950 font-bold text-sm uppercase tracking-widest">Recruiter Summary</h3>
             </div>
             <p className="text-[#2e4637] text-sm leading-relaxed">{score.recruiterSummary}</p>
+          </div>
+        )}
+
+        {isRecruiter && (
+          <div className="mt-8">
+            <CandidateBehaviorTab assessmentId={assessmentId} />
           </div>
         )}
 
