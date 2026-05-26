@@ -117,16 +117,16 @@ export async function sendCandidateInviteEmail(params: {
 
           <tr>
             <td style="padding:40px;">
-              <h1 style="color:#fff;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">You've Been Invited</h1>
+              <h1 style="color:#168a4a;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">You've Been Invited</h1>
               <p style="color:#168a4a;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:0 0 28px;">AI Fluency Assessment</p>
 
               <p style="color:#2e4637;font-size:15px;line-height:1.7;margin:0 0 20px;">${greeting}</p>
 
               <p style="color:#2e4637;font-size:15px;line-height:1.7;margin:0 0 28px;">
                 You have been invited by ${from} to complete an AI fluency assessment for the
-                <strong style="color:#fff;">${campaignTitle}</strong> campaign.
+                <strong style="color:#168a4a;">${campaignTitle}</strong> campaign.
                 This assessment measures your ability to work effectively with AI tools in a
-                <strong style="color:#fff;">${roleTemplate}</strong> context.
+                <strong style="color:#168a4a;">${roleTemplate}</strong> context.
               </p>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef7ef;border:1px solid #d9e7db;border-radius:8px;margin:0 0 32px;">
@@ -136,13 +136,13 @@ export async function sendCandidateInviteEmail(params: {
                       <tr>
                         <td style="padding:8px 0;border-bottom:1px solid #d9e7db;">
                           <span style="color:#6f8274;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Role</span>
-                          <span style="color:#fff;font-size:14px;font-weight:700;float:right;">${roleTemplate}</span>
+                          <span style="color:#168a4a;font-size:14px;font-weight:700;float:right;">${roleTemplate}</span>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding:8px 0;border-bottom:1px solid #d9e7db;">
                           <span style="color:#6f8274;font-size:11px;letter-spacing:2px;text-transform:uppercase;">Time Limit</span>
-                          <span style="color:#fff;font-size:14px;font-weight:700;float:right;">${timeLimitMinutes} minutes</span>
+                          <span style="color:#168a4a;font-size:14px;font-weight:700;float:right;">${timeLimitMinutes} minutes</span>
                         </td>
                       </tr>
                       <tr>
@@ -160,7 +160,7 @@ export async function sendCandidateInviteEmail(params: {
                 <tr>
                   <td align="center">
                     <a href="${assessmentUrl}"
-                       style="display:inline-block;background:#168a4a;color:#fff;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">
+                       style="display:inline-block;background:#eef7ef;border:1px solid #168a4a;color:#168a4a;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">
                       BEGIN ASSESSMENT →
                     </a>
                   </td>
@@ -275,7 +275,7 @@ export async function sendScoreReadyEmail(params: {
 
           <tr>
             <td style="padding:40px;">
-              <h1 style="color:#fff;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Your Score Is Ready</h1>
+              <h1 style="color:#168a4a;font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Your Score Is Ready</h1>
 
               <p style="color:#168a4a;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:0 0 28px;">${campaignTitle}</p>
 
@@ -292,7 +292,7 @@ export async function sendScoreReadyEmail(params: {
                     )}</div>
                     <div style="color:#3f5847;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Overall Score</div>
                     <div style="color:#2e4637;font-size:14px;margin-top:12px;">
-                      Top <strong style="color:#fff;">${
+                      Top <strong style="color:#168a4a;">${
                         100 - benchmarkPercentile
                       }%</strong> of your peer cohort
                     </div>
@@ -303,7 +303,7 @@ export async function sendScoreReadyEmail(params: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
                 <tr>
                   <td align="center">
-                    <a href="${reportUrl}" style="display:inline-block;background:#168a4a;color:#fff;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">
+                    <a href="${reportUrl}" style="display:inline-block;background:#eef7ef;border:1px solid #168a4a;color:#168a4a;font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">
                       VIEW FULL REPORT →
                     </a>
                   </td>
