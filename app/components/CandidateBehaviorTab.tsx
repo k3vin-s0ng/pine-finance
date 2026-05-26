@@ -5,30 +5,8 @@ import { AlertTriangle, BookOpen, Clipboard, FileText, Loader2, MessageSquare, P
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Badge } from "@/app/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { deriveBehaviorEventSummary, formatBehaviorSeconds } from "@/app/components/behaviorEventSummary";
 import { trpc } from "@/app/lib/trpc";
-
-type EventData = Record<string, unknown>;
-
-function asEventData(value: unknown): EventData {
-  return value != null && typeof value === "object" && !Array.isArray(value) ? value as EventData : {};
-}
-
-function stringField(data: EventData, key: string) {
-  const value = data[key];
-  return typeof value === "string" ? value : undefined;
-}
-
-function numberField(data: EventData, key: string) {
-  const value = data[key];
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
-function formatSeconds(totalSeconds: number) {
-  if (totalSeconds < 60) return `${Math.round(totalSeconds)}s`;
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = Math.round(totalSeconds % 60);
-  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
-}
 
 function StatCard({
   icon: Icon,
@@ -63,63 +41,7 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
   const query = trpc.scoring.getBehaviorEvents.useQuery({ assessmentId });
 
   const summary = useMemo(() => {
-    const events = query.data ?? [];
-    const pasteSources = { ai: 0, source_material: 0, external: 0 };
-    const citationSources = { ai: 0, source_material: 0 };
-    let promptsSent = 0;
-    let materialSeconds = 0;
-    let postAiEditCount = 0;
-    let responseEditCount = 0;
-    let totalSecsSinceAiResponse = 0;
-
-    for (const event of events) {
-      const data = asEventData(event.eventData);
-      if (event.eventType === "paste") {
-        const source = stringField(data, "source");
-        if (source === "ai" || source === "source_material" || source === "external") {
-          pasteSources[source] += 1;
-        } else {
-          pasteSources.external += 1;
-        }
-      }
-      if (event.eventType === "ai_prompt_sent") {
-        promptsSent += 1;
-      }
-      if (event.eventType === "material_view") {
-        materialSeconds += numberField(data, "durationSeconds") ?? 0;
-      }
-      if (event.eventType === "citation_added") {
-        const source = stringField(data, "source");
-        if (source === "ai" || source === "source_material") {
-          citationSources[source] += 1;
-        }
-      }
-      if (event.eventType === "response_edit") {
-        const seconds = numberField(data, "secsSinceAIResponse");
-        responseEditCount += 1;
-        if (seconds != null) {
-          postAiEditCount += 1;
-          totalSecsSinceAiResponse += seconds;
-        }
-      }
-    }
-
-    const pasteCount = pasteSources.ai + pasteSources.source_material + pasteSources.external;
-    const citationCount = citationSources.ai + citationSources.source_material;
-    const averageEditLag = postAiEditCount > 0 ? totalSecsSinceAiResponse / postAiEditCount : null;
-
-    return {
-      eventCount: events.length,
-      pasteCount,
-      pasteSources,
-      promptsSent,
-      materialSeconds,
-      citationCount,
-      citationSources,
-      responseEditCount,
-      postAiEditCount,
-      averageEditLag,
-    };
+    return deriveBehaviorEventSummary(query.data ?? []);
   }, [query.data]);
 
   if (query.isLoading) {
@@ -158,7 +80,7 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
 
   const editDetail = summary.averageEditLag == null
     ? `${summary.responseEditCount} edits recorded; no post-AI timing data.`
-    : `${summary.postAiEditCount} edits after AI responses, averaging ${formatSeconds(summary.averageEditLag)} later.`;
+    : `${summary.postAiEditCount} edits after AI responses, averaging ${formatBehaviorSeconds(summary.averageEditLag)} later.`;
 
   return (
     <Card className="rounded-xl border-[#168a4a]/20 bg-white shadow-none">
@@ -193,7 +115,7 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
         <StatCard
           icon={BookOpen}
           label="Material time"
-          value={formatSeconds(summary.materialSeconds)}
+          value={formatBehaviorSeconds(summary.materialSeconds)}
           detail="Total tracked time in source-material views."
         />
         <StatCard

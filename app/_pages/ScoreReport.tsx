@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { ExamResponseHistory } from "@/app/components/ExamResponseHistory";
 import { CandidateBehaviorTab } from "@/app/components/CandidateBehaviorTab";
+import { ProcessTraceTimeline } from "@/app/components/ProcessTraceTimeline";
+import { EvidencePanel } from "@/app/components/EvidencePanel";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ReferenceLine
@@ -323,8 +325,10 @@ export default function ScoreReport() {
         )}
 
         {isRecruiter && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-6">
+            <EvidencePanel score={score} assessmentId={assessmentId} />
             <CandidateBehaviorTab assessmentId={assessmentId} />
+            <ProcessTraceTimeline assessmentId={assessmentId} />
           </div>
         )}
 

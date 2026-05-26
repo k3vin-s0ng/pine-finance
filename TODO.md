@@ -16,8 +16,8 @@
 ## Scoring & defensibility
 
 - [x] Replace single-path `generateScoreWithLLM` grading with a scoring pipeline that runs deterministic, behavioral, and LLM scoring.
-- [ ] Add a process-trace timeline to every score report showing candidate edits, paste/type events, task changes, and AI interactions.
-- [ ] Add an evidence panel to score reports with separate sections for behavioral signals, AI-interaction analysis, deterministic checks, and LLM judgment.
+- [x] Add a process-trace timeline to every score report showing candidate edits, paste/type events, task changes, and AI interactions.
+- [x] Add an evidence panel to score reports with separate sections for behavioral signals, AI-interaction analysis, deterministic checks, and LLM judgment.
 - [x] Store enough structured scoring evidence to regenerate or audit score reports without reparsing prose rationales.
 
 ## Workspace realism
