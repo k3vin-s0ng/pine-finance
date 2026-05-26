@@ -57,10 +57,10 @@ export async function POST(req: NextRequest) {
     .toString(36)
     .slice(2)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  const { url } = await storagePut(fileKey, buffer, file.type);
+  const { key, url } = await storagePut(fileKey, buffer, file.type);
 
   return NextResponse.json({
-    fileKey,
+    fileKey: key,
     url,
     label,
     mimeType: file.type,
