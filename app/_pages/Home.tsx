@@ -546,119 +546,79 @@ function HowItWorks() {
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 function Pricing({ onDemo }: { onDemo: () => void }) {
-  const plans = [
-    {
-      name: "Starter",
-      price: "$49",
-      unit: "per candidate",
-      desc: "For boutique firms running focused hiring campaigns.",
-      features: [
-        "All 4 role templates",
-        "Automated LLM scoring",
-        "PDF score reports",
-        "Recruiter dashboard",
-        "Candidate comparison",
-        "Email support",
-      ],
-      cta: "Get Started",
-      highlight: false,
-    },
-    {
-      name: "Growth",
-      price: "$2,400",
-      unit: "per year",
-      desc: "For firms running structured analyst or associate programs.",
-      features: [
-        "Up to 100 candidates/year",
-        "Everything in Starter",
-        "Custom role templates",
-        "Benchmark reports",
-        "Priority support",
-        "ATS integration (coming soon)",
-      ],
-      cta: "Request Demo",
-      highlight: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      unit: "annual contract",
-      desc: "For large institutions running high-volume assessment programs.",
-      features: [
-        "Unlimited candidates",
-        "Custom assessment design",
-        "Advanced benchmarking",
-        "SSO and admin controls",
-        "Custom integrations",
-        "Dedicated success manager",
-      ],
-      cta: "Contact Sales",
-      highlight: false,
-    },
+  const features = [
+    "Up to 100 candidates/year",
+    "Custom role templates",
+    "Benchmark reports",
+    "Priority support",
+    "ATS integration coming soon",
   ];
 
   return (
-    <section id="pricing" className="py-32 bg-[#f8fbf8] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
-      <div className="container">
-        <div className="text-center mb-20">
-          <div className="flex items-center justify-center gap-3 mb-6">
+    <section id="pricing" className="relative bg-[#f8fbf8] py-32">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
+
+      <div className="container mx-auto px-6">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <div className="mb-6 flex items-center justify-center gap-3">
             <div className="h-px w-8 bg-[#168a4a]" />
-            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">Pricing</span>
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#168a4a]">
+              Request a Demo
+            </span>
             <div className="h-px w-8 bg-[#168a4a]" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-slate-950">Simple,</span><br />
-            <span className="text-gold-gradient">Transparent Pricing.</span>
+
+          <h2 className="mb-4 text-4xl font-black uppercase leading-tight md:text-5xl">
+            <span className="text-slate-950">See Pine Finance</span>
+            <br />
+            <span className="text-gold-gradient">In Action</span>
           </h2>
-          <p className="text-[#52665a] max-w-md mx-auto text-sm">Start with per-candidate pricing or commit to an annual plan for better economics.</p>
+
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#52665a] md:text-base">
+            Get a tailored walkthrough of how Pine Finance helps teams assess AI fluency in finance candidates.
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <div key={plan.name}
-              className={`relative p-8 rounded-xl border transition-all ${plan.highlight
-                ? "bg-[#fff] border-[#168a4a]/50 glow-gold"
-                : "bg-[#fff] border-[#d9e7db] hover:border-[#9db8a4]"
-              }`}>
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#168a4a] text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</span>
-                </div>
-              )}
-              <div className="mb-6">
-                <h3 className="text-[#3f5847] text-xs font-bold tracking-widest uppercase mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className={`text-4xl font-black ${plan.highlight ? "text-gold-gradient" : "text-slate-950"}`}>{plan.price}</span>
-                  <span className="text-[#6f8274] text-sm">/{plan.unit}</span>
-                </div>
-                <p className="text-[#52665a] text-xs mt-2 leading-relaxed">{plan.desc}</p>
-              </div>
-              <div className="space-y-2.5 mb-8">
-                {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#2e4637]">
-                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#168a4a]" : "text-[#8fa095]"}`} />
-                    {f}
-                  </div>
-                ))}
-              </div>
-              <Button
-                onClick={onDemo}
-                className={`w-full font-bold text-xs tracking-widest uppercase py-5 ${plan.highlight
-                  ? "bg-[#168a4a] hover:bg-[#11743d] text-white"
-                  : "bg-[#eef7ef] hover:bg-[#d9e7db] text-slate-950 border border-[#9db8a4]"
-                }`}
-              >
-                {plan.cta}
-              </Button>
+        <div className="mx-auto max-w-md">
+          <div className="relative rounded-2xl border border-[#168a4a]/40 bg-white p-8 shadow-sm transition-all hover:shadow-md">
+            <div className="mb-8">
+              <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#168a4a]">
+                Demo Access
+              </h3>
+
+              <h4 className="mb-3 text-2xl font-black text-slate-950">
+                Custom Pricing
+              </h4>
+
+              <p className="text-sm leading-relaxed text-[#52665a]">
+                Built for finance teams that want role-specific AI assessments, benchmark reporting, and candidate evaluation workflows.
+              </p>
             </div>
-          ))}
+
+            <div className="mb-8 space-y-3">
+              {features.map((feature) => (
+                <div
+                  key={feature}
+                  className="flex items-center gap-3 text-sm text-[#2e4637]"
+                >
+                  <CheckCircle className="h-4 w-4 flex-shrink-0 text-[#168a4a]" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              onClick={onDemo}
+              className="w-full bg-[#168a4a] py-5 text-xs font-bold uppercase tracking-widest text-white hover:bg-[#11743d]"
+            >
+              Request Demo
+            </Button>
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 function CTA({ onDemo }: { onDemo: () => void }) {
   const loginHref = useLoginHref();
