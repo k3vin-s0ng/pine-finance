@@ -44,58 +44,58 @@
 }
 
 :root {
-  /* Pine Finance — Chiaroscuro Dark Theme */
-  --primary: oklch(0.78 0.12 75);
-  --primary-foreground: oklch(0.08 0.01 60);
-  --sidebar-primary: oklch(0.78 0.12 75);
-  --sidebar-primary-foreground: oklch(0.08 0.01 60);
-  --chart-1: oklch(0.78 0.12 75);
+  /* Pine Finance — White & Green Theme */
+  --primary: oklch(0.52 0.14 150);
+  --primary-foreground: oklch(0.98 0.01 150);
+  --sidebar-primary: oklch(0.52 0.14 150);
+  --sidebar-primary-foreground: oklch(0.98 0.01 150);
+  --chart-1: oklch(0.52 0.14 150);
   --chart-2: oklch(0.65 0.1 200);
-  --chart-3: oklch(0.7 0.1 140);
+  --chart-3: oklch(0.68 0.13 145);
   --chart-4: oklch(0.6 0.12 30);
   --chart-5: oklch(0.55 0.1 280);
   --radius: 0.5rem;
-  --background: oklch(0.06 0.005 60);
-  --foreground: oklch(0.92 0.015 60);
-  --card: oklch(0.09 0.008 60);
-  --card-foreground: oklch(0.92 0.015 60);
-  --popover: oklch(0.1 0.008 60);
-  --popover-foreground: oklch(0.92 0.015 60);
-  --secondary: oklch(0.14 0.01 60);
-  --secondary-foreground: oklch(0.85 0.01 60);
-  --muted: oklch(0.13 0.008 60);
-  --muted-foreground: oklch(0.55 0.01 60);
-  --accent: oklch(0.78 0.12 75);
-  --accent-foreground: oklch(0.08 0.01 60);
+  --background: oklch(0.99 0.004 150);
+  --foreground: oklch(0.2 0.03 150);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.03 150);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 150);
+  --secondary: oklch(0.95 0.02 150);
+  --secondary-foreground: oklch(0.26 0.04 150);
+  --muted: oklch(0.95 0.015 150);
+  --muted-foreground: oklch(0.46 0.03 150);
+  --accent: oklch(0.9 0.06 150);
+  --accent-foreground: oklch(0.24 0.07 150);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.18 0.01 60);
-  --input: oklch(0.14 0.01 60);
-  --ring: oklch(0.78 0.12 75);
-  --sidebar: oklch(0.08 0.007 60);
-  --sidebar-foreground: oklch(0.92 0.015 60);
-  --sidebar-accent: oklch(0.13 0.008 60);
-  --sidebar-accent-foreground: oklch(0.92 0.015 60);
-  --sidebar-border: oklch(0.18 0.01 60);
-  --sidebar-ring: oklch(0.78 0.12 75);
+  --border: oklch(0.88 0.018 150);
+  --input: oklch(0.93 0.014 150);
+  --ring: oklch(0.52 0.14 150);
+  --sidebar: oklch(0.98 0.008 150);
+  --sidebar-foreground: oklch(0.22 0.035 150);
+  --sidebar-accent: oklch(0.93 0.025 150);
+  --sidebar-accent-foreground: oklch(0.24 0.07 150);
+  --sidebar-border: oklch(0.88 0.018 150);
+  --sidebar-ring: oklch(0.52 0.14 150);
 }
 
 /* ─── Pine Finance Design Tokens ─────────────────────────────────────────── */
 :root {
   /* Surface hierarchy */
-  --surface-base: #050505;
-  --surface-1: #0a0a0a;
-  --surface-2: #111111;
+  --surface-base: #f8fbf8;
+  --surface-1: #fff;
+  --surface-2: #eef7ef;
   /* Borders */
-  --border-subtle: #1a1a1a;
-  --border-emphasis: #2a2a2a;
+  --border-subtle: #d9e7db;
+  --border-emphasis: #b7d2bd;
   /* Text hierarchy */
-  --text-primary: #f5f5f5;
-  --text-secondary: #a8a8a8;
-  --text-tertiary: #6a6a6a;
-  --text-quaternary: #444444;
+  --text-primary: #122017;
+  --text-secondary: #3f5847;
+  --text-tertiary: #6f8274;
+  --text-quaternary: #8fa095;
   /* Brand accent */
-  --accent-gold: #c9a84c;
+  --accent-gold: #168a4a;
   /* Data semantics */
   --data-positive: #6ba585;
   --data-negative: #c97a85;
@@ -130,9 +130,9 @@
 }
 
 @layer utilities {
-  /* Gold gradient text */
+  /* Green gradient text */
   .text-gold-gradient {
-    background: linear-gradient(135deg, #8b6914 0%, #c9a84c 35%, #f5e6a3 60%, #c9a84c 80%, #8b6914 100%);
+    background: linear-gradient(135deg, #0f5f34 0%, #168a4a 35%, #6fd694 60%, #168a4a 80%, #0f5f34 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -140,35 +140,35 @@
 
   /* Chiaroscuro light gradient text — dark grey to brilliant white */
   .text-chiaroscuro {
-    background: linear-gradient(105deg, #2a2a2a 0%, #555 20%, #aaa 45%, #ffffff 65%, #e8e8e8 80%, #888 100%);
+    background: linear-gradient(105deg, #0f2f1f 0%, #24583a 20%, #168a4a 45%, #2fbf6b 65%, #6fd694 80%, #3f5847 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .glow-gold {
-    box-shadow: 0 0 40px oklch(0.78 0.12 75 / 0.15), 0 0 80px oklch(0.78 0.12 75 / 0.08);
+    box-shadow: 0 0 40px oklch(0.52 0.14 150 / 0.16), 0 0 80px oklch(0.52 0.14 150 / 0.08);
   }
 
   .border-gold {
-    border-color: oklch(0.78 0.12 75 / 0.4);
+    border-color: oklch(0.52 0.14 150 / 0.4);
   }
 
   .bg-gold {
-    background-color: oklch(0.78 0.12 75);
+    background-color: oklch(0.52 0.14 150);
   }
 
   .text-gold {
-    color: oklch(0.78 0.12 75);
+    color: oklch(0.52 0.14 150);
   }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: oklch(0.09 0.008 60); }
-::-webkit-scrollbar-thumb { background: oklch(0.25 0.01 60); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: oklch(0.78 0.12 75 / 0.6); }
-::selection { background: oklch(0.78 0.12 75 / 0.3); color: #fff; }
+::-webkit-scrollbar-track { background: oklch(0.95 0.015 150); }
+::-webkit-scrollbar-thumb { background: oklch(0.78 0.04 150); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.52 0.14 150 / 0.6); }
+::selection { background: oklch(0.52 0.14 150 / 0.24); color: #122017; }
 
 @layer components {
   /**

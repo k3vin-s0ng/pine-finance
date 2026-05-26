@@ -14,30 +14,30 @@ import { Streamdown } from "streamdown";
 type SectionDef = { key: string; label: string; header: string; Icon: React.ComponentType<any>; color: string };
 
 const MEMO_SECTIONS: SectionDef[] = [
-  { key: "findings",   label: "Key Findings",       header: "**Key Findings**",       Icon: Search,    color: "#c9a84c" },
+  { key: "findings",   label: "Key Findings",       header: "**Key Findings**",       Icon: Search,    color: "#168a4a" },
   { key: "analysis",  label: "Numerical Analysis",  header: "**Numerical Analysis**", Icon: BarChart2,  color: "#6b8cba" },
   { key: "conclusion",label: "Conclusion",           header: "**Conclusion**",         Icon: Lightbulb, color: "#7ec89a" },
 ];
 
 const VARIANCE_SECTIONS: SectionDef[] = [
-  { key: "driver",          label: "Driver Identification", header: "**Driver Identification**", Icon: BarChart2,  color: "#c9a84c" },
+  { key: "driver",          label: "Driver Identification", header: "**Driver Identification**", Icon: BarChart2,  color: "#168a4a" },
   { key: "quantification",  label: "Quantification",        header: "**Quantification**",        Icon: Search,    color: "#6b8cba" },
   { key: "recommendation",  label: "Recommendation",        header: "**Recommendation**",        Icon: Lightbulb, color: "#7ec89a" },
 ];
 
 const THESIS_SECTIONS: SectionDef[] = [
-  { key: "thesis",          label: "Thesis Statement",   header: "**Thesis Statement**",   Icon: Lightbulb, color: "#c9a84c" },
+  { key: "thesis",          label: "Thesis Statement",   header: "**Thesis Statement**",   Icon: Lightbulb, color: "#168a4a" },
   { key: "evidence",        label: "Supporting Evidence",header: "**Supporting Evidence**",Icon: Search,    color: "#6b8cba" },
   { key: "counterargument", label: "Counterargument",    header: "**Counterargument**",    Icon: BarChart2,  color: "#e07070" },
   { key: "recommendation",  label: "Recommendation",     header: "**Recommendation**",     Icon: Lightbulb, color: "#7ec89a" },
 ];
 
 const EXTRACTION_SECTIONS: SectionDef[] = [
-  { key: "extraction", label: "Data Extraction", header: "**Data Extraction**", Icon: BarChart2, color: "#c9a84c" },
+  { key: "extraction", label: "Data Extraction", header: "**Data Extraction**", Icon: BarChart2, color: "#168a4a" },
 ];
 
 const RECONCILIATION_SECTIONS: SectionDef[] = [
-  { key: "table",   label: "Reconciliation Table", header: "**Reconciliation Table**", Icon: BarChart2,  color: "#c9a84c" },
+  { key: "table",   label: "Reconciliation Table", header: "**Reconciliation Table**", Icon: BarChart2,  color: "#168a4a" },
   { key: "summary", label: "Summary",              header: "**Summary**",              Icon: Lightbulb, color: "#7ec89a" },
 ];
 
@@ -101,27 +101,27 @@ function formatTime(seconds: number): string {
 
 function TaskStatsBar({ stat }: { stat: TaskStat }) {
   return (
-    <div className="flex items-center gap-4 px-4 py-2.5 bg-[#0d0d0d] border-x border-t border-[#1a1a1a] rounded-t-xl">
+    <div className="flex items-center gap-4 px-4 py-2.5 bg-[#fff] border-x border-t border-[#d9e7db] rounded-t-xl">
       <div className="flex items-center gap-1.5">
-        <AlignLeft className="w-3 h-3 text-[#c9a84c]" />
-        <span className="text-[#c9a84c] text-[11px] font-bold tabular-nums">
+        <AlignLeft className="w-3 h-3 text-[#168a4a]" />
+        <span className="text-[#168a4a] text-[11px] font-bold tabular-nums">
           {stat.wordCount.toLocaleString()}
         </span>
-        <span className="text-[#444] text-[10px] uppercase tracking-widest">words</span>
+        <span className="text-[#8fa095] text-[10px] uppercase tracking-widest">words</span>
       </div>
-      <div className="w-px h-3 bg-[#222]" />
+      <div className="w-px h-3 bg-[#cfe0d2]" />
       <div className="flex items-center gap-1.5">
         <Timer className="w-3 h-3 text-[#6b8cba]" />
         <span className="text-[#6b8cba] text-[11px] font-bold tabular-nums">
           {formatTime(stat.timeSeconds)}
         </span>
-        <span className="text-[#444] text-[10px] uppercase tracking-widest">{stat.isEstimated === false ? "time" : "est. time"}</span>
+        <span className="text-[#8fa095] text-[10px] uppercase tracking-widest">{stat.isEstimated === false ? "time" : "est. time"}</span>
       </div>
       {stat.wordCount > 0 && stat.timeSeconds > 0 && (
         <>
-          <div className="w-px h-3 bg-[#222]" />
+          <div className="w-px h-3 bg-[#cfe0d2]" />
           <div className="flex items-center gap-1.5">
-            <span className="text-[#555] text-[10px] tabular-nums">
+            <span className="text-[#6f8274] text-[10px] tabular-nums">
               ~{Math.round((stat.wordCount / Math.max(stat.timeSeconds / 60, 0.1)))} wpm
             </span>
           </div>
@@ -176,35 +176,35 @@ function TaskResponseCard({
 
       {/* Card header */}
       <button
-        className={`w-full flex items-center justify-between p-4 bg-[#0a0a0a] hover:bg-[#0f0f0f] transition-colors text-left border border-[#1a1a1a] ${
+        className={`w-full flex items-center justify-between p-4 bg-[#fff] hover:bg-[#f2f8f3] transition-colors text-left border border-[#d9e7db] ${
           stat ? "border-t-0 rounded-t-none" : ""
         } ${expanded ? "rounded-b-none" : "rounded-xl"}`}
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-3.5 h-3.5 text-[#c9a84c]" />
+          <div className="w-7 h-7 rounded-lg bg-[#168a4a]/10 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-3.5 h-3.5 text-[#168a4a]" />
           </div>
-          <span className="text-white font-semibold text-sm uppercase tracking-wider">{label}</span>
+          <span className="text-slate-950 font-semibold text-sm uppercase tracking-wider">{label}</span>
           {sections && sectionDefs && (
             <div className="flex items-center gap-1 ml-1">
               {sectionDefs.map((s: SectionDef) => (
                 <span
                   key={s.key}
                   className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: sections[s.key]?.trim() ? s.color : "#2a2a2a" }}
+                  style={{ background: sections[s.key]?.trim() ? s.color : "#b7d2bd" }}
                 />
               ))}
             </div>
           )}
         </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-[#555]" /> : <ChevronDown className="w-4 h-4 text-[#555]" />}
+        {expanded ? <ChevronUp className="w-4 h-4 text-[#6f8274]" /> : <ChevronDown className="w-4 h-4 text-[#6f8274]" />}
       </button>
 
       {/* Collapsed preview */}
       {!expanded && previewText.length > 0 && (
-        <div className="px-4 pb-3 bg-[#0a0a0a] border-x border-b border-[#1a1a1a] rounded-b-xl">
-          <p className="text-[#666] text-xs leading-relaxed line-clamp-2">
+        <div className="px-4 pb-3 bg-[#fff] border-x border-b border-[#d9e7db] rounded-b-xl">
+          <p className="text-[#52665a] text-xs leading-relaxed line-clamp-2">
             {previewText}{previewText.length >= 200 ? "…" : ""}
           </p>
         </div>
@@ -212,13 +212,13 @@ function TaskResponseCard({
 
       {/* Expanded */}
       {expanded && (
-        <div className="bg-[#070707] border-x border-b border-[#1a1a1a] rounded-b-xl">
+        <div className="bg-[#f8fbf8] border-x border-b border-[#d9e7db] rounded-b-xl">
           {response ? (
             sections ? (
               // ── Structured 3-section view ──────────────────────────────────
               <div>
                 {/* Section tab strip */}
-                <div className="flex border-b border-[#1a1a1a]">
+                <div className="flex border-b border-[#d9e7db]">
                   {sectionDefs!.map((s: SectionDef) => {
                     const filled = (sections![s.key] ?? "").trim().length > 0;
                     const active = activeSection === s.key;
@@ -229,7 +229,7 @@ function TaskResponseCard({
                         className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px"
                         style={{
                           borderBottomColor: active ? s.color : "transparent",
-                          color: active ? s.color : filled ? "#666" : "#333",
+                          color: active ? s.color : filled ? "#52665a" : "#9db8a4",
                           background: active ? `${s.color}08` : "transparent",
                         }}
                       >
@@ -238,7 +238,7 @@ function TaskResponseCard({
                         {filled && (
                           <span
                             className="ml-1 text-[9px] tabular-nums"
-                            style={{ color: active ? s.color : "#444", fontFamily: "var(--font-mono, monospace)" }}
+                            style={{ color: active ? s.color : "#8fa095", fontFamily: "var(--font-mono, monospace)" }}
                           >
                             {wordCount(sections[s.key])}w
                           </span>
@@ -266,7 +266,7 @@ function TaskResponseCard({
                         <div className="flex-1 h-px" style={{ background: `${s.color}20` }} />
                         <span
                           className="text-[9px] tabular-nums"
-                          style={{ color: "#444", fontFamily: "var(--font-mono, monospace)" }}
+                          style={{ color: "#8fa095", fontFamily: "var(--font-mono, monospace)" }}
                         >
                           {wordCount(content)} words
                         </span>
@@ -274,19 +274,19 @@ function TaskResponseCard({
 
                       {content ? (
                         <div className="prose prose-invert prose-sm max-w-none
-                          prose-headings:text-white prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-wide
-                          prose-p:text-[#ccc] prose-p:leading-relaxed
-                          prose-li:text-[#ccc]
-                          prose-strong:text-white
-                          prose-code:text-[#c9a84c] prose-code:bg-[#1a1a1a] prose-code:px-1 prose-code:rounded
-                          prose-pre:bg-[#111] prose-pre:border prose-pre:border-[#222]
-                          prose-blockquote:border-l-[#c9a84c] prose-blockquote:text-[#888]
-                          prose-a:text-[#c9a84c]
-                          prose-hr:border-[#1a1a1a]">
+                          prose-headings:text-slate-950 prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-wide
+                          prose-p:text-[#2a4134] prose-p:leading-relaxed
+                          prose-li:text-[#2a4134]
+                          prose-strong:text-slate-950
+                          prose-code:text-[#168a4a] prose-code:bg-[#d9e7db] prose-code:px-1 prose-code:rounded
+                          prose-pre:bg-[#eef7ef] prose-pre:border prose-pre:border-[#cfe0d2]
+                          prose-blockquote:border-l-[#168a4a] prose-blockquote:text-[#3f5847]
+                          prose-a:text-[#168a4a]
+                          prose-hr:border-[#d9e7db]">
                           <Streamdown>{content}</Streamdown>
                         </div>
                       ) : (
-                        <span className="text-[#333] text-xs italic">This section was left blank.</span>
+                        <span className="text-[#9db8a4] text-xs italic">This section was left blank.</span>
                       )}
                     </div>
                   );
@@ -296,22 +296,22 @@ function TaskResponseCard({
               // ── Legacy / unstructured fallback ─────────────────────────────
               <div className="p-5">
                 <div className="prose prose-invert prose-sm max-w-none
-                  prose-headings:text-white prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-wide
-                  prose-p:text-[#ccc] prose-p:leading-relaxed
-                  prose-li:text-[#ccc]
-                  prose-strong:text-white
-                  prose-code:text-[#c9a84c] prose-code:bg-[#1a1a1a] prose-code:px-1 prose-code:rounded
-                  prose-pre:bg-[#111] prose-pre:border prose-pre:border-[#222]
-                  prose-blockquote:border-l-[#c9a84c] prose-blockquote:text-[#888]
-                  prose-a:text-[#c9a84c]
-                  prose-hr:border-[#1a1a1a]">
+                  prose-headings:text-slate-950 prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-wide
+                  prose-p:text-[#2a4134] prose-p:leading-relaxed
+                  prose-li:text-[#2a4134]
+                  prose-strong:text-slate-950
+                  prose-code:text-[#168a4a] prose-code:bg-[#d9e7db] prose-code:px-1 prose-code:rounded
+                  prose-pre:bg-[#eef7ef] prose-pre:border prose-pre:border-[#cfe0d2]
+                  prose-blockquote:border-l-[#168a4a] prose-blockquote:text-[#3f5847]
+                  prose-a:text-[#168a4a]
+                  prose-hr:border-[#d9e7db]">
                   <Streamdown>{response}</Streamdown>
                 </div>
               </div>
             )
           ) : (
             <div className="p-5">
-              <span className="text-[#444] text-xs italic">No response recorded</span>
+              <span className="text-[#8fa095] text-xs italic">No response recorded</span>
             </div>
           )}
         </div>
@@ -329,55 +329,55 @@ function AiChatLog({ messages }: { messages: AiMessage[] }) {
 
   if (visible.length === 0) {
     return (
-      <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl text-center text-[#444] text-xs">
+      <div className="p-4 bg-[#fff] border border-[#d9e7db] rounded-xl text-center text-[#8fa095] text-xs">
         No AI interactions recorded for this assessment.
       </div>
     );
   }
 
   return (
-    <div className="border border-[#1a1a1a] rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between p-4 bg-[#0a0a0a] border-b border-[#1a1a1a]">
+    <div className="border border-[#d9e7db] rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between p-4 bg-[#fff] border-b border-[#d9e7db]">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-[#6b8cba]/10 flex items-center justify-center">
             <MessageSquare className="w-3.5 h-3.5 text-[#6b8cba]" />
           </div>
-          <span className="text-white font-semibold text-sm uppercase tracking-wider">AI Interaction Log</span>
-          <span className="text-[#555] text-xs">({visible.length} messages)</span>
+          <span className="text-slate-950 font-semibold text-sm uppercase tracking-wider">AI Interaction Log</span>
+          <span className="text-[#6f8274] text-xs">({visible.length} messages)</span>
         </div>
       </div>
 
-      <div className="divide-y divide-[#111] bg-[#070707]">
+      <div className="divide-y divide-[#eef7ef] bg-[#f8fbf8]">
         {shown.map((msg, i) => (
-          <div key={i} className={`flex gap-3 p-4 ${msg.role === "assistant" ? "bg-[#0a0a0a]" : ""}`}>
+          <div key={i} className={`flex gap-3 p-4 ${msg.role === "assistant" ? "bg-[#fff]" : ""}`}>
             <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-              msg.role === "user" ? "bg-[#c9a84c]/15" : "bg-[#6b8cba]/15"
+              msg.role === "user" ? "bg-[#168a4a]/15" : "bg-[#6b8cba]/15"
             }`}>
               {msg.role === "user"
-                ? <User className="w-3 h-3 text-[#c9a84c]" />
+                ? <User className="w-3 h-3 text-[#168a4a]" />
                 : <Bot className="w-3 h-3 text-[#6b8cba]" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                  msg.role === "user" ? "text-[#c9a84c]" : "text-[#6b8cba]"
+                  msg.role === "user" ? "text-[#168a4a]" : "text-[#6b8cba]"
                 }`}>
                   {msg.role === "user" ? "Candidate" : "AI Assistant"}
                 </span>
                 {msg.timestamp && (
-                  <span className="text-[#444] text-[9px]">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                  <span className="text-[#8fa095] text-[9px]">{new Date(msg.timestamp).toLocaleTimeString()}</span>
                 )}
               </div>
               <div className="prose prose-invert prose-xs max-w-none
-                prose-p:text-[#bbb] prose-p:leading-relaxed prose-p:my-1
-                prose-li:text-[#bbb] prose-li:my-0
+                prose-p:text-[#344d3d] prose-p:leading-relaxed prose-p:my-1
+                prose-li:text-[#344d3d] prose-li:my-0
                 prose-ul:my-1 prose-ol:my-1
-                prose-strong:text-white
-                prose-headings:text-white prose-headings:text-sm prose-headings:my-1
-                prose-code:text-[#c9a84c] prose-code:bg-[#1a1a1a] prose-code:px-1 prose-code:rounded prose-code:text-[11px]
-                prose-pre:bg-[#111] prose-pre:border prose-pre:border-[#222] prose-pre:my-2
-                prose-blockquote:border-l-[#6b8cba] prose-blockquote:text-[#888] prose-blockquote:my-1
-                prose-a:text-[#c9a84c]">
+                prose-strong:text-slate-950
+                prose-headings:text-slate-950 prose-headings:text-sm prose-headings:my-1
+                prose-code:text-[#168a4a] prose-code:bg-[#d9e7db] prose-code:px-1 prose-code:rounded prose-code:text-[11px]
+                prose-pre:bg-[#eef7ef] prose-pre:border prose-pre:border-[#cfe0d2] prose-pre:my-2
+                prose-blockquote:border-l-[#6b8cba] prose-blockquote:text-[#3f5847] prose-blockquote:my-1
+                prose-a:text-[#168a4a]">
                 <Streamdown>{msg.content}</Streamdown>
               </div>
             </div>
@@ -386,8 +386,8 @@ function AiChatLog({ messages }: { messages: AiMessage[] }) {
       </div>
 
       {visible.length > 3 && (
-        <div className="p-3 bg-[#0a0a0a] border-t border-[#1a1a1a] text-center">
-          <button onClick={() => setExpanded(!expanded)} className="text-[#c9a84c] text-xs hover:underline">
+        <div className="p-3 bg-[#fff] border-t border-[#d9e7db] text-center">
+          <button onClick={() => setExpanded(!expanded)} className="text-[#168a4a] text-xs hover:underline">
             {expanded ? "Show less" : `Show all ${visible.length} messages`}
           </button>
         </div>
@@ -412,14 +412,14 @@ function ExamDetailPanel({ assessmentId }: { assessmentId: number }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 text-[#c9a84c] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#168a4a] animate-spin" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-[#0a0a0a] border border-red-900/30 rounded-xl text-red-400 text-sm">
+      <div className="p-4 bg-[#fff] border border-red-900/30 rounded-xl text-red-400 text-sm">
         Failed to load exam responses. You may not have permission to view this assessment.
       </div>
     );
@@ -427,9 +427,9 @@ function ExamDetailPanel({ assessmentId }: { assessmentId: number }) {
 
   if (!data?.submission) {
     return (
-      <div className="p-6 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl text-center">
-        <CheckCircle2 className="w-8 h-8 text-[#333] mx-auto mb-3" />
-        <p className="text-[#666] text-sm">No submission found for this assessment.</p>
+      <div className="p-6 bg-[#fff] border border-[#d9e7db] rounded-xl text-center">
+        <CheckCircle2 className="w-8 h-8 text-[#9db8a4] mx-auto mb-3" />
+        <p className="text-[#52665a] text-sm">No submission found for this assessment.</p>
       </div>
     );
   }
@@ -439,24 +439,24 @@ function ExamDetailPanel({ assessmentId }: { assessmentId: number }) {
       {/* Meta row */}
       <div className="flex flex-wrap gap-4 px-1">
         {data.campaign?.roleTemplate && (
-          <div className="text-[10px] text-[#555] uppercase tracking-widest">
-            Role: <span className="text-[#888]">{data.campaign.roleTemplate}</span>
+          <div className="text-[10px] text-[#6f8274] uppercase tracking-widest">
+            Role: <span className="text-[#3f5847]">{data.campaign.roleTemplate}</span>
           </div>
         )}
         {data.assessment?.submittedAt && (
-          <div className="text-[10px] text-[#555] uppercase tracking-widest">
-            Submitted: <span className="text-[#888]">{new Date(data.assessment.submittedAt).toLocaleDateString()}</span>
+          <div className="text-[10px] text-[#6f8274] uppercase tracking-widest">
+            Submitted: <span className="text-[#3f5847]">{new Date(data.assessment.submittedAt).toLocaleDateString()}</span>
           </div>
         )}
         {data.submission.wordCount && (
-          <div className="text-[10px] text-[#555] uppercase tracking-widest">
-            Total words: <span className="text-[#888]">{data.submission.wordCount.toLocaleString()}</span>
+          <div className="text-[10px] text-[#6f8274] uppercase tracking-widest">
+            Total words: <span className="text-[#3f5847]">{data.submission.wordCount.toLocaleString()}</span>
           </div>
         )}
         {completionMins && (
-          <div className="text-[10px] text-[#555] uppercase tracking-widest flex items-center gap-1">
+          <div className="text-[10px] text-[#6f8274] uppercase tracking-widest flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span className="text-[#888]">Total time: {completionMins}m</span>
+            <span className="text-[#3f5847]">Total time: {completionMins}m</span>
           </div>
         )}
       </div>
@@ -464,7 +464,7 @@ function ExamDetailPanel({ assessmentId }: { assessmentId: number }) {
       {/* Task responses with stats bars */}
       {taskKeys.length > 0 ? (
         <div className="space-y-4">
-          <h4 className="text-[#555] text-[10px] uppercase tracking-widest px-1">
+          <h4 className="text-[#6f8274] text-[10px] uppercase tracking-widest px-1">
             Task Responses ({taskKeys.length})
           </h4>
           {taskKeys.map((key) => (
@@ -477,14 +477,14 @@ function ExamDetailPanel({ assessmentId }: { assessmentId: number }) {
           ))}
         </div>
       ) : (
-        <div className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl text-[#444] text-xs text-center">
+        <div className="p-4 bg-[#fff] border border-[#d9e7db] rounded-xl text-[#8fa095] text-xs text-center">
           No task responses recorded.
         </div>
       )}
 
       {/* AI interaction log */}
       <div>
-        <h4 className="text-[#555] text-[10px] uppercase tracking-widest px-1 mb-3">
+        <h4 className="text-[#6f8274] text-[10px] uppercase tracking-widest px-1 mb-3">
           AI Interactions ({aiInteractions.filter(m => m.role !== "system").length})
         </h4>
         <AiChatLog messages={aiInteractions} />
@@ -515,25 +515,25 @@ export function ExamResponseHistory({ assessmentId, candidateId }: ExamResponseH
     <div className="mt-6">
       {/* Toggle header */}
       <button
-        className="w-full flex items-center justify-between p-5 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl hover:border-[#c9a84c]/20 transition-all"
+        className="w-full flex items-center justify-between p-5 bg-[#fff] border border-[#d9e7db] rounded-xl hover:border-[#168a4a]/20 transition-all"
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center">
-            <History className="w-4 h-4 text-[#c9a84c]" />
+          <div className="w-8 h-8 rounded-lg bg-[#168a4a]/10 flex items-center justify-center">
+            <History className="w-4 h-4 text-[#168a4a]" />
           </div>
           <div className="text-left">
-            <div className="text-white font-bold text-sm uppercase tracking-widest">Exam Responses & History</div>
-            <div className="text-[#555] text-xs mt-0.5">Full task answers, AI interaction log, and past exams</div>
+            <div className="text-slate-950 font-bold text-sm uppercase tracking-widest">Exam Responses & History</div>
+            <div className="text-[#6f8274] text-xs mt-0.5">Full task answers, AI interaction log, and past exams</div>
           </div>
         </div>
-        {open ? <ChevronUp className="w-5 h-5 text-[#555]" /> : <ChevronDown className="w-5 h-5 text-[#555]" />}
+        {open ? <ChevronUp className="w-5 h-5 text-[#6f8274]" /> : <ChevronDown className="w-5 h-5 text-[#6f8274]" />}
       </button>
 
       {open && (
         <div className="mt-3 space-y-4">
           {historyLoading && (
-            <div className="flex items-center gap-2 text-[#555] text-xs px-1">
+            <div className="flex items-center gap-2 text-[#6f8274] text-xs px-1">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading exam history…
             </div>
           )}
@@ -541,7 +541,7 @@ export function ExamResponseHistory({ assessmentId, candidateId }: ExamResponseH
           {/* Exam history switcher */}
           {hasHistory && (
             <div>
-              <h4 className="text-[#555] text-[10px] uppercase tracking-widest px-1 mb-3">
+              <h4 className="text-[#6f8274] text-[10px] uppercase tracking-widest px-1 mb-3">
                 Exam History ({history.length} exams)
               </h4>
               <div className="grid gap-2">
@@ -557,44 +557,44 @@ export function ExamResponseHistory({ assessmentId, candidateId }: ExamResponseH
                       onClick={() => setSelectedId(item.assessment.id)}
                       className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
                         isSelected
-                          ? "border-[#c9a84c]/40 bg-[#c9a84c]/5"
-                          : "border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#333]"
+                          ? "border-[#168a4a]/40 bg-[#168a4a]/5"
+                          : "border-[#d9e7db] bg-[#fff] hover:border-[#9db8a4]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? "bg-[#c9a84c]/20" : "bg-[#1a1a1a]"
+                          isSelected ? "bg-[#168a4a]/20" : "bg-[#d9e7db]"
                         }`}>
-                          <FileText className={`w-3 h-3 ${isSelected ? "text-[#c9a84c]" : "text-[#555]"}`} />
+                          <FileText className={`w-3 h-3 ${isSelected ? "text-[#168a4a]" : "text-[#6f8274]"}`} />
                         </div>
                         <div>
                           <div className={`text-xs font-bold uppercase tracking-wider ${
-                            isSelected ? "text-[#c9a84c]" : "text-[#888]"
+                            isSelected ? "text-[#168a4a]" : "text-[#3f5847]"
                           }`}>
                             {item.campaign.roleTemplate}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <Calendar className="w-2.5 h-2.5 text-[#444]" />
-                            <span className="text-[#555] text-[10px]">{submittedAt}</span>
+                            <Calendar className="w-2.5 h-2.5 text-[#8fa095]" />
+                            <span className="text-[#6f8274] text-[10px]">{submittedAt}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {item.assessment.id === assessmentId && (
-                          <span className="text-[9px] text-[#555] uppercase tracking-widest bg-[#1a1a1a] px-2 py-0.5 rounded-full">
+                          <span className="text-[9px] text-[#6f8274] uppercase tracking-widest bg-[#d9e7db] px-2 py-0.5 rounded-full">
                             Current
                           </span>
                         )}
                         {overallScore != null && (
                           <div className="flex items-center gap-1">
-                            <Trophy className="w-3 h-3 text-[#c9a84c]" />
-                            <span className={`text-sm font-black ${isSelected ? "text-[#c9a84c]" : "text-[#666]"}`}>
+                            <Trophy className="w-3 h-3 text-[#168a4a]" />
+                            <span className={`text-sm font-black ${isSelected ? "text-[#168a4a]" : "text-[#52665a]"}`}>
                               {Math.round(overallScore)}
                             </span>
                           </div>
                         )}
                         {item.assessment.status === "submitted" && !item.score && (
-                          <span className="text-[9px] text-[#888] uppercase tracking-widest bg-[#1a1a1a] px-2 py-0.5 rounded-full">
+                          <span className="text-[9px] text-[#3f5847] uppercase tracking-widest bg-[#d9e7db] px-2 py-0.5 rounded-full">
                             Pending Score
                           </span>
                         )}
@@ -607,8 +607,8 @@ export function ExamResponseHistory({ assessmentId, candidateId }: ExamResponseH
           )}
 
           {hasHistory && (
-            <div className="border-t border-[#1a1a1a] pt-4">
-              <h4 className="text-[#555] text-[10px] uppercase tracking-widest px-1 mb-3">
+            <div className="border-t border-[#d9e7db] pt-4">
+              <h4 className="text-[#6f8274] text-[10px] uppercase tracking-widest px-1 mb-3">
                 Responses for Selected Exam
               </h4>
             </div>

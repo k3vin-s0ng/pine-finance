@@ -27,19 +27,19 @@ export default function RecruiterReports() {
       <div className="p-6 md:p-8 space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight uppercase">Reports</h1>
-          <p className="text-[#555] text-sm mt-1">All generated PDF score reports across your campaigns.</p>
+          <h1 className="text-2xl font-black text-slate-950 tracking-tight uppercase">Reports</h1>
+          <p className="text-[#6f8274] text-sm mt-1">All generated PDF score reports across your campaigns.</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5">
-            <div className="text-[#555] text-xs uppercase tracking-widest mb-1">Total Reports</div>
-            <div className="text-3xl font-black text-white">{reports?.length ?? 0}</div>
+          <div className="bg-[#fff] border border-[#d9e7db] rounded-xl p-5">
+            <div className="text-[#6f8274] text-xs uppercase tracking-widest mb-1">Total Reports</div>
+            <div className="text-3xl font-black text-slate-950">{reports?.length ?? 0}</div>
           </div>
-          <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-5">
-            <div className="text-[#555] text-xs uppercase tracking-widest mb-1">This Month</div>
-            <div className="text-3xl font-black text-[#c9a84c]">
+          <div className="bg-[#fff] border border-[#d9e7db] rounded-xl p-5">
+            <div className="text-[#6f8274] text-xs uppercase tracking-widest mb-1">This Month</div>
+            <div className="text-3xl font-black text-[#168a4a]">
               {(reports ?? []).filter(r => {
                 const d = new Date(r.report.generatedAt ?? 0);
                 const now = new Date();
@@ -51,12 +51,12 @@ export default function RecruiterReports() {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#444]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8fa095]" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by campaign or role..."
-            className="pl-9 bg-[#0d0d0d] border-[#1a1a1a] text-white placeholder:text-[#444] focus:border-[#c9a84c]/50"
+            className="pl-9 bg-[#fff] border-[#d9e7db] text-slate-950 placeholder:text-[#8fa095] focus:border-[#168a4a]/50"
           />
         </div>
 
@@ -64,29 +64,29 @@ export default function RecruiterReports() {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl animate-pulse" />
+              <div key={i} className="h-20 bg-[#fff] border border-[#d9e7db] rounded-xl animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-[#1a1a1a] rounded-xl">
-            <FileText className="w-10 h-10 text-[#333] mx-auto mb-4" />
-            <div className="text-[#555] font-bold">{search ? "No reports match your search" : "No reports generated yet"}</div>
-            <div className="text-[#333] text-sm mt-1">Reports are generated after AI scoring is complete.</div>
+          <div className="text-center py-20 border border-dashed border-[#d9e7db] rounded-xl">
+            <FileText className="w-10 h-10 text-[#9db8a4] mx-auto mb-4" />
+            <div className="text-[#6f8274] font-bold">{search ? "No reports match your search" : "No reports generated yet"}</div>
+            <div className="text-[#9db8a4] text-sm mt-1">Reports are generated after AI scoring is complete.</div>
           </div>
         ) : (
           <div className="space-y-3">
             {filtered.map(({ report, assessment, campaign }) => (
-              <div key={report.id} className="bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[#c9a84c]/30 rounded-xl p-5 transition-colors">
+              <div key={report.id} className="bg-[#fff] border border-[#d9e7db] hover:border-[#168a4a]/30 rounded-xl p-5 transition-colors">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-[#c9a84c]" />
+                    <div className="w-10 h-10 rounded-lg bg-[#d9e7db] flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-[#168a4a]" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-white font-bold truncate">
+                      <div className="text-slate-950 font-bold truncate">
                         {campaign?.title ?? "Assessment"} — Report #{report.id}
                       </div>
-                      <div className="text-[#555] text-xs mt-0.5">
+                      <div className="text-[#6f8274] text-xs mt-0.5">
                         {campaign?.roleTemplate} · Assessment #{assessment?.id} ·{" "}
                         {report.generatedAt ? new Date(report.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}
                       </div>
@@ -95,13 +95,13 @@ export default function RecruiterReports() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {report.url && (
                       <a href={report.url} target="_blank" rel="noopener noreferrer">
-                        <Button size="sm" variant="outline" className="border-[#1a1a1a] text-[#888] hover:text-white hover:border-[#333] text-xs">
+                        <Button size="sm" variant="outline" className="border-[#d9e7db] text-[#3f5847] hover:text-slate-950 hover:border-[#9db8a4] text-xs">
                           <Download className="w-3 h-3 mr-1" /> PDF
                         </Button>
                       </a>
                     )}
                     <Link href={`/report/${assessment?.id}`}>
-                      <Button size="sm" className="bg-[#c9a84c] hover:bg-[#b8963e] text-black font-bold text-xs">
+                      <Button size="sm" className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs">
                         View <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>

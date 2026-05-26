@@ -661,7 +661,7 @@ function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
           </div>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs max-w-[200px]">
-          <span style={{ color: "var(--accent-gold)" }}>AI interactions</span> — each gold dot is a Pine AI query in the last 2 minutes. Logged for transparency.
+          <span style={{ color: "var(--accent-gold)" }}>AI interactions</span> — each green dot is a Pine AI query in the last 2 minutes. Logged for transparency.
         </TooltipContent>
       </Tooltip>
     </div>
@@ -930,7 +930,7 @@ function AIChatPanel({
       >
         <div
           className="w-6 h-6 rounded flex items-center justify-center"
-          style={{ background: "rgba(201,168,76,0.15)" }}
+          style={{ background: "rgba(22,138,74,0.15)" }}
         >
           <Zap className="w-3.5 h-3.5" style={{ color: "var(--accent-gold)" }} />
         </div>
@@ -1028,9 +1028,9 @@ function AIChatPanel({
                     className="max-w-[90%] rounded-xl text-sm relative group"
                     style={{
                       background: msg.role === "user"
-                        ? "rgba(201,168,76,0.1)"
+                        ? "rgba(22,138,74,0.1)"
                         : "var(--surface-1)",
-                      border: `1px solid ${msg.role === "user" ? "rgba(201,168,76,0.2)" : "var(--border-subtle)"}`,
+                      border: `1px solid ${msg.role === "user" ? "rgba(22,138,74,0.2)" : "var(--border-subtle)"}`,
                       color: "var(--text-primary)",
                     }}
                   >
@@ -1122,7 +1122,7 @@ function AIChatPanel({
             onClick={() => send()}
             disabled={!input.trim() || loading}
             className="self-end px-3 py-3"
-            style={{ background: "var(--accent-gold)", color: "#000" }}
+            style={{ background: "var(--accent-gold)", color: "#fff" }}
           >
             <Send className="w-4 h-4" />
           </Button>
@@ -1307,7 +1307,7 @@ function SourceMaterialContent({
               onMouseDown={e => { e.preventDefault(); onSendToAI(selection.text); setSelection(null); window.getSelection()?.removeAllRanges(); }}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-bold uppercase tracking-widest transition-colors duration-150"
               style={{ color: "var(--accent-gold)" }}
-              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)"}
+              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "rgba(22,138,74,0.1)"}
               onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "transparent"}
             >
               <Zap className="w-3 h-3" />
@@ -1683,7 +1683,7 @@ export default function AssessmentInterface() {
             className="w-6 h-6 rounded-sm flex items-center justify-center"
             style={{ background: "var(--accent-gold)" }}
           >
-            <span className="text-black font-black text-xs">P</span>
+            <span className="text-white font-black text-xs">P</span>
           </div>
           <span className="font-bold text-xs uppercase tracking-widest hidden sm:block" style={{ color: "var(--text-primary)" }}>
             Pine Finance Assessment
@@ -1717,7 +1717,7 @@ export default function AssessmentInterface() {
             className="font-bold text-xs tracking-widest uppercase px-4 py-1.5 transition-all duration-300"
             style={allTasksAnswered ? {
               background: "var(--accent-gold)",
-              color: "#000",
+              color: "#fff",
               border: "none",
             } : {
               background: "var(--surface-2)",
@@ -1734,13 +1734,13 @@ export default function AssessmentInterface() {
       <AlertDialog open={confirmSubmit} onOpenChange={setConfirmSubmit}>
         <AlertDialogContent
           className="max-w-md"
-          style={{ background: "var(--surface-1)", border: `1px solid rgba(201,168,76,0.3)`, color: "var(--text-primary)" }}
+          style={{ background: "var(--surface-1)", border: `1px solid rgba(22,138,74,0.3)`, color: "var(--text-primary)" }}
         >
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-1">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(201,168,76,0.1)" }}
+                style={{ background: "rgba(22,138,74,0.1)" }}
               >
                 <ShieldAlert className="w-5 h-5" style={{ color: "var(--accent-gold)" }} />
               </div>
@@ -1773,7 +1773,7 @@ export default function AssessmentInterface() {
                           <div className="flex items-center gap-2 min-w-0">
                             <div
                               className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                              style={{ background: answered ? "rgba(201,168,76,0.2)" : "var(--surface-2)" }}
+                              style={{ background: answered ? "rgba(22,138,74,0.2)" : "var(--surface-2)" }}
                             >
                               {answered
                                 ? <CheckCircle className="w-2.5 h-2.5" style={{ color: "var(--accent-gold)" }} />
@@ -1841,7 +1841,7 @@ export default function AssessmentInterface() {
               onClick={handleSubmit}
               disabled={submitAssessment.isPending}
               className="font-black text-xs uppercase tracking-widest px-6"
-              style={{ background: "var(--accent-gold)", color: "#000" }}
+              style={{ background: "var(--accent-gold)", color: "#fff" }}
             >
               {submitAssessment.isPending ? (
                 <span className="flex items-center gap-2">
@@ -1955,7 +1955,7 @@ export default function AssessmentInterface() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-shrink-0 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors duration-150"
-                        style={{ background: "rgba(201,168,76,0.1)", borderColor: "rgba(201,168,76,0.3)", color: "var(--accent-gold)" }}
+                        style={{ background: "rgba(22,138,74,0.1)", borderColor: "rgba(22,138,74,0.3)", color: "var(--accent-gold)" }}
                       >
                         Open ↗
                       </a>
@@ -1998,7 +1998,7 @@ export default function AssessmentInterface() {
                       className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black transition-all duration-200"
                       style={{
                         background: isTaskComplete(task.id) ? "var(--accent-gold)" : "var(--surface-2)",
-                        color: isTaskComplete(task.id) ? "#000" : "var(--text-quaternary)",
+                        color: isTaskComplete(task.id) ? "#fff" : "var(--text-quaternary)",
                       }}
                     >
                       {isTaskComplete(task.id)
@@ -2047,7 +2047,7 @@ export default function AssessmentInterface() {
             {/* ── Task Brief Card ── */}
             <div
               className="flex-shrink-0 rounded-xl border overflow-hidden"
-              style={{ background: "var(--surface-1)", borderColor: "rgba(201,168,76,0.2)" }}
+              style={{ background: "var(--surface-1)", borderColor: "rgba(22,138,74,0.2)" }}
             >
               {/* Header */}
               <div
@@ -2165,7 +2165,7 @@ export default function AssessmentInterface() {
                       background: i === currentTask
                         ? "var(--accent-gold)"
                         : isTaskComplete(t.id)
-                        ? "rgba(201,168,76,0.4)"
+                        ? "rgba(22,138,74,0.4)"
                         : "var(--surface-2)",
                     }}
                   />
@@ -2184,7 +2184,7 @@ export default function AssessmentInterface() {
                 <Button
                   onClick={() => setConfirmSubmit(true)}
                   className="font-bold text-xs tracking-widest uppercase"
-                  style={{ background: "var(--accent-gold)", color: "#000" }}
+                  style={{ background: "var(--accent-gold)", color: "#fff" }}
                 >
                   Submit All <CheckCircle className="w-3.5 h-3.5 ml-1" />
                 </Button>
