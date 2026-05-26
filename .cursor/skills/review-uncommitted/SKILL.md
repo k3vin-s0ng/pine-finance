@@ -1,14 +1,14 @@
 ---
 name: review-uncommitted
 description: >-
-  Hands-on pre-commit review of local uncommitted git changes in pine-1 (especially
+  Hands-on pre-commit review of local uncommitted git changes in projects/pine on main (especially
   Codex edits): triage like a PR review, fix real bugs and meaningful issues in-repo,
   explain rationale, skip nits. Use when the user says review-uncommitted, /review-local,
   @review-uncommitted, or asks to review/fix uncommitted changes before commit.
 disable-model-invocation: true
 ---
 
-# Review uncommitted changes (pine-1)
+# Review uncommitted changes (projects/pine, main branch)
 
 Pre-commit counterpart to PR review: inspect **local** diffs (staged + unstaged), then **apply targeted fixes** in the working tree — not just comments.
 
@@ -44,7 +44,7 @@ For each changed file/hunk, classify findings:
 | **Suggestion** | Style, naming, optional refactor | **Report only** — do not edit |
 | **Nit** | Formatting, taste, “could be nicer” | **Skip** |
 
-**Default posture:** skeptical but fair — like reviewing a teammate’s PR. Validate each issue against the actual diff and pine-1 patterns; do not invent problems.
+**Default posture:** skeptical but fair — like reviewing a teammate’s PR. Validate each issue against the actual diff and projects/pine patterns; do not invent problems.
 
 **Hands-on bar:** Only edit what is **broken** or **meaningfully improvable** with a small, obvious diff. No drive-by refactors, no reformatting unrelated files, no new abstractions for one-off cases.
 

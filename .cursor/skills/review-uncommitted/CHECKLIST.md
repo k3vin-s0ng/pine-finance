@@ -1,4 +1,4 @@
-# Pre-commit review checklist (pine-1)
+# Pre-commit review checklist (projects/pine, main branch)
 
 Use while reviewing uncommitted diffs. Not every item applies to every change.
 
