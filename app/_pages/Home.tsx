@@ -40,51 +40,51 @@ function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0d0d0d] border border-[#c9a84c]/30 max-w-lg">
+      <DialogContent className="bg-[#fff] border border-[#168a4a]/30 max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Request a Demo</DialogTitle>
-          <p className="text-sm text-[#888] mt-1">See Pine Finance in action with a personalized walkthrough.</p>
+          <DialogTitle className="text-xl font-bold text-slate-950">Request a Demo</DialogTitle>
+          <p className="text-sm text-[#3f5847] mt-1">See Pine Finance in action with a personalized walkthrough.</p>
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-[#aaa] text-xs mb-1 block">Full Name</Label>
-              <Input placeholder="Jane Smith" className="bg-[#111] border-[#333] text-white placeholder:text-[#555]" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <Label className="text-[#2e4637] text-xs mb-1 block">Full Name</Label>
+              <Input placeholder="Jane Smith" className="bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div>
-              <Label className="text-[#aaa] text-xs mb-1 block">Work Email</Label>
-              <Input placeholder="jane@firm.com" className="bg-[#111] border-[#333] text-white placeholder:text-[#555]" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              <Label className="text-[#2e4637] text-xs mb-1 block">Work Email</Label>
+              <Input placeholder="jane@firm.com" className="bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-[#aaa] text-xs mb-1 block">Company</Label>
-              <Input placeholder="Goldman Sachs" className="bg-[#111] border-[#333] text-white placeholder:text-[#555]" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+              <Label className="text-[#2e4637] text-xs mb-1 block">Company</Label>
+              <Input placeholder="Goldman Sachs" className="bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
             </div>
             <div>
-              <Label className="text-[#aaa] text-xs mb-1 block">Your Role</Label>
-              <Input placeholder="Head of Recruiting" className="bg-[#111] border-[#333] text-white placeholder:text-[#555]" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} />
+              <Label className="text-[#2e4637] text-xs mb-1 block">Your Role</Label>
+              <Input placeholder="Head of Recruiting" className="bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} />
             </div>
           </div>
           <div>
-            <Label className="text-[#aaa] text-xs mb-1 block">Firm Type</Label>
+            <Label className="text-[#2e4637] text-xs mb-1 block">Firm Type</Label>
             <Select onValueChange={v => setForm(f => ({ ...f, segment: v }))}>
-              <SelectTrigger className="bg-[#111] border-[#333] text-white">
+              <SelectTrigger className="bg-[#eef7ef] border-[#9db8a4] text-slate-950">
                 <SelectValue placeholder="Select segment" />
               </SelectTrigger>
-              <SelectContent className="bg-[#111] border-[#333]">
+              <SelectContent className="bg-[#eef7ef] border-[#9db8a4]">
                 {["Investment Banks", "PE", "Hedge Funds", "FP&A", "Accounting"].map(s => (
-                  <SelectItem key={s} value={s} className="text-white hover:bg-[#222]">{s}</SelectItem>
+                  <SelectItem key={s} value={s} className="text-slate-950 hover:bg-[#cfe0d2]">{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label className="text-[#aaa] text-xs mb-1 block">Message (optional)</Label>
-            <Textarea placeholder="Tell us about your hiring process..." className="bg-[#111] border-[#333] text-white placeholder:text-[#555] resize-none" rows={3} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
+            <Label className="text-[#2e4637] text-xs mb-1 block">Message (optional)</Label>
+            <Textarea placeholder="Tell us about your hiring process..." className="bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274] resize-none" rows={3} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} />
           </div>
           <Button
-            className="w-full bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold py-3"
+            className="w-full bg-[#168a4a] hover:bg-[#11743d] text-white font-bold py-3"
             onClick={() => requestDemo.mutate(form)}
             disabled={!form.name || !form.email || requestDemo.isPending}
           >
@@ -108,33 +108,33 @@ function Nav({ onDemo }: { onDemo: () => void }) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#c9a84c]/10 bg-[#060606]/90 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#168a4a]/10 bg-[#f8fbf8]/90 backdrop-blur-md">
       <div className="container flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-sm bg-[#c9a84c] flex items-center justify-center">
-            <span className="text-black font-black text-xs">P</span>
+          <div className="w-7 h-7 rounded-sm bg-[#168a4a] flex items-center justify-center">
+            <span className="text-white font-black text-xs">P</span>
           </div>
-          <span className="font-bold text-white tracking-widest text-sm uppercase">Pine Finance</span>
+          <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine Finance</span>
         </Link>
-        <div className="hidden md:flex items-center gap-8 text-xs font-medium tracking-widest uppercase text-[#666]">
-          <a href="#product" className="hover:text-[#c9a84c] transition-colors">Product</a>
-          <a href="#segments" className="hover:text-[#c9a84c] transition-colors">Solutions</a>
-          <a href="#pricing" className="hover:text-[#c9a84c] transition-colors">Pricing</a>
-          <a href="#how-it-works" className="hover:text-[#c9a84c] transition-colors">How It Works</a>
+        <div className="hidden md:flex items-center gap-8 text-xs font-medium tracking-widest uppercase text-[#52665a]">
+          <a href="#product" className="hover:text-[#168a4a] transition-colors">Product</a>
+          <a href="#segments" className="hover:text-[#168a4a] transition-colors">Solutions</a>
+          <a href="#pricing" className="hover:text-[#168a4a] transition-colors">Pricing</a>
+          <a href="#how-it-works" className="hover:text-[#168a4a] transition-colors">How It Works</a>
         </div>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <Link href={getDashboardPath()}>
-              <Button className="bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold text-xs tracking-widest uppercase px-5">
+              <Button className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs tracking-widest uppercase px-5">
                 Dashboard
               </Button>
             </Link>
           ) : (
             <>
               <a href={loginHref}>
-                <Button variant="ghost" className="text-[#888] hover:text-white text-xs tracking-widest uppercase">Sign In</Button>
+                <Button variant="ghost" className="text-[#3f5847] hover:text-slate-950 text-xs tracking-widest uppercase">Sign In</Button>
               </a>
-              <Button onClick={onDemo} className="bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold text-xs tracking-widest uppercase px-5">
+              <Button onClick={onDemo} className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs tracking-widest uppercase px-5">
                 Request Demo
               </Button>
             </>
@@ -150,60 +150,60 @@ function Hero({ onDemo }: { onDemo: () => void }) {
   const loginHref = useLoginHref();
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#060606]">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#f8fbf8]">
       {/* Atmospheric background */}
       <div className="absolute inset-0">
         {/* Radial glow from right */}
         <div className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, #c9a84c 0%, #8b6914 30%, transparent 70%)" }} />
+          style={{ background: "radial-gradient(circle, #168a4a 0%, #0f5f34 30%, transparent 70%)" }} />
         {/* Light rays */}
         <div className="absolute top-0 right-1/4 w-px h-full opacity-5"
-          style={{ background: "linear-gradient(180deg, transparent, #c9a84c, transparent)" }} />
+          style={{ background: "linear-gradient(180deg, transparent, #168a4a, transparent)" }} />
         <div className="absolute top-0 right-1/3 w-px h-full opacity-3"
-          style={{ background: "linear-gradient(180deg, transparent, #c9a84c, transparent)" }} />
+          style={{ background: "linear-gradient(180deg, transparent, #168a4a, transparent)" }} />
         {/* Subtle grid */}
         <div className="absolute inset-0 opacity-[0.02]"
-          style={{ backgroundImage: "linear-gradient(#c9a84c 1px, transparent 1px), linear-gradient(90deg, #c9a84c 1px, transparent 1px)", backgroundSize: "80px 80px" }} />
+          style={{ backgroundImage: "linear-gradient(#168a4a 1px, transparent 1px), linear-gradient(90deg, #168a4a 1px, transparent 1px)", backgroundSize: "80px 80px" }} />
         {/* Vignette */}
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 50%, transparent 30%, rgba(0,0,0,0.8) 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 50%, transparent 30%, rgba(248,251,248,0.8) 100%)" }} />
       </div>
 
       <div className="container relative z-10 pt-24 pb-16">
         <div className="max-w-4xl">
           {/* Eyebrow */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="h-px w-12 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">The AI Fluency Standard for Finance</span>
+            <div className="h-px w-12 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">The AI Fluency Standard for Finance</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tight mb-8 uppercase">
-            <span className="text-chiaroscuro block">Identify Who</span>
-            <span className="text-chiaroscuro block">Actually Uses</span>
-            <span className="text-gold-gradient block">AI Well.</span>
+          <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tight mb-8 uppercase bg-gradient-to-b from-slate-950 via-slate-950 to-[#168a4a] bg-clip-text text-transparent">
+            <span className="block">Identify Who</span>
+            <span className="block">Actually Uses</span>
+            <span className="block">AI Well.</span>
           </h1>
 
-          <p className="text-[#888] text-lg md:text-xl max-w-xl leading-relaxed mb-10 font-light">
+          <p className="text-[#3f5847] text-lg md:text-xl max-w-xl leading-relaxed mb-10 font-light">
             Finance-specific AI fluency assessments for investment banks, private equity, hedge funds, and FP&A teams. Stop guessing who can use AI well. Start measuring with realistic hiring workflows.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Button
               onClick={onDemo}
-              className="bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold text-sm tracking-widest uppercase px-8 py-6 group"
+              className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-sm tracking-widest uppercase px-8 py-6 group"
             >
               Request Demo
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
             <a href={loginHref}>
-              <Button variant="outline" className="border-[#333] text-[#aaa] hover:border-[#c9a84c]/50 hover:text-white text-sm tracking-widest uppercase px-8 py-6 bg-transparent">
+              <Button variant="outline" className="border-[#9db8a4] text-[#2e4637] hover:border-[#168a4a]/50 hover:text-slate-950 text-sm tracking-widest uppercase px-8 py-6 bg-transparent">
                 Sign In to Platform
               </Button>
             </a>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-[#1a1a1a]">
+          <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-[#d9e7db]">
             {[
               { value: "6", label: "Scoring Dimensions", sub: "Accuracy to Tool Fluency" },
               { value: "4", label: "Role Templates", sub: "IB, PE, HF, FP&A" },
@@ -211,8 +211,8 @@ function Hero({ onDemo }: { onDemo: () => void }) {
             ].map((stat) => (
               <div key={stat.value}>
                 <div className="text-3xl md:text-4xl font-black text-gold-gradient">{stat.value}</div>
-                <div className="text-white text-sm font-semibold mt-1">{stat.label}</div>
-                <div className="text-[#555] text-xs mt-0.5">{stat.sub}</div>
+                <div className="text-slate-950 text-sm font-semibold mt-1">{stat.label}</div>
+                <div className="text-[#6f8274] text-xs mt-0.5">{stat.sub}</div>
               </div>
             ))}
           </div>
@@ -225,25 +225,25 @@ function Hero({ onDemo }: { onDemo: () => void }) {
 // ─── Problem Statement ────────────────────────────────────────────────────────
 function Problem() {
   return (
-    <section className="py-32 bg-[#060606] relative overflow-hidden">
+    <section className="py-32 bg-[#f8fbf8] relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.015]"
-        style={{ backgroundImage: "radial-gradient(circle, #c9a84c 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        style={{ backgroundImage: "radial-gradient(circle, #168a4a 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       <div className="container relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-px w-8 bg-[#c9a84c]" />
-              <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">The Problem</span>
+              <div className="h-px w-8 bg-[#168a4a]" />
+              <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">The Problem</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black leading-tight uppercase mb-6">
-              <span className="text-white">Finance Firms</span><br />
+              <span className="text-slate-950">Finance Firms</span><br />
               <span className="text-chiaroscuro">Can't Measure</span><br />
               <span className="text-gold-gradient">AI Skill.</span>
             </h2>
-            <p className="text-[#777] text-base leading-relaxed mb-6">
+            <p className="text-[#52665a] text-base leading-relaxed mb-6">
               Financial institutions increasingly expect junior and mid-level talent to be fluent in AI tools — yet most firms still have no reliable way to measure AI skill in a job-relevant setting.
             </p>
-            <p className="text-[#777] text-base leading-relaxed">
+            <p className="text-[#52665a] text-base leading-relaxed">
               Existing recruiting processes test technical knowledge and finance knowledge, but they rarely test whether a candidate can effectively use AI to complete real tasks under realistic constraints.
             </p>
           </div>
@@ -265,13 +265,13 @@ function Problem() {
                 desc: "Candidates can talk about AI fluency without proving they can use it under realistic finance constraints.",
               },
             ].map((item) => (
-              <div key={item.title} className="flex gap-4 p-5 bg-[#0d0d0d] border border-[#1a1a1a] rounded-lg hover:border-[#c9a84c]/20 transition-colors group">
-                <div className="w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#c9a84c]/20 transition-colors">
-                  <item.icon className="w-5 h-5 text-[#c9a84c]" />
+              <div key={item.title} className="flex gap-4 p-5 bg-[#fff] border border-[#d9e7db] rounded-lg hover:border-[#168a4a]/20 transition-colors group">
+                <div className="w-10 h-10 rounded-lg bg-[#168a4a]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#168a4a]/20 transition-colors">
+                  <item.icon className="w-5 h-5 text-[#168a4a]" />
                 </div>
                 <div>
-                  <div className="text-white font-semibold text-sm mb-1">{item.title}</div>
-                  <div className="text-[#666] text-sm leading-relaxed">{item.desc}</div>
+                  <div className="text-slate-950 font-semibold text-sm mb-1">{item.title}</div>
+                  <div className="text-[#52665a] text-sm leading-relaxed">{item.desc}</div>
                 </div>
               </div>
             ))}
@@ -285,35 +285,35 @@ function Problem() {
 // ─── Product Overview ─────────────────────────────────────────────────────────
 function Product() {
   return (
-    <section id="product" className="py-32 bg-[#080808] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+    <section id="product" className="py-32 bg-[#f8fbf8] relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
       <div className="container">
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-8 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">The Platform</span>
-            <div className="h-px w-8 bg-[#c9a84c]" />
+            <div className="h-px w-8 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">The Platform</span>
+            <div className="h-px w-8 bg-[#168a4a]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">Hiring Assessments.</span><br />
+            <span className="text-slate-950">Hiring Assessments.</span><br />
             <span className="text-gold-gradient">Sharper Signal.</span>
           </h2>
-          <p className="text-[#666] max-w-xl mx-auto">Pine Finance helps hiring teams evaluate AI fluency with role-specific finance tasks, embedded AI assistance, structured scoring, and recruiter-ready reports.</p>
+          <p className="text-[#52665a] max-w-xl mx-auto">Pine Finance helps hiring teams evaluate AI fluency with role-specific finance tasks, embedded AI assistance, structured scoring, and recruiter-ready reports.</p>
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="relative p-8 bg-[#0a0a0a] border border-[#c9a84c]/30 rounded-xl overflow-hidden glow-gold">
+          <div className="relative p-8 bg-[#fff] border border-[#168a4a]/30 rounded-xl overflow-hidden glow-gold">
             <div className="absolute top-0 right-0 w-48 h-48 opacity-5"
-              style={{ background: "radial-gradient(circle, #c9a84c, transparent)" }} />
+              style={{ background: "radial-gradient(circle, #168a4a, transparent)" }} />
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-[#c9a84c] flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-black" />
+                <div className="w-10 h-10 rounded-lg bg-[#168a4a] flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase">Hiring Product</span>
+                <span className="text-[#168a4a] text-xs font-bold tracking-widest uppercase">Hiring Product</span>
               </div>
-              <h3 className="text-2xl font-black text-white uppercase mb-3">AI Fluency Interviews</h3>
-              <p className="text-[#777] text-sm leading-relaxed mb-6">
+              <h3 className="text-2xl font-black text-slate-950 uppercase mb-3">AI Fluency Interviews</h3>
+              <p className="text-[#52665a] text-sm leading-relaxed mb-6">
                 Structured assessments that evaluate how candidates use AI in realistic finance scenarios — model support, document analysis, reconciliation, and research synthesis.
               </p>
               <div className="space-y-2.5">
@@ -325,8 +325,8 @@ function Product() {
                   "Benchmark reports vs. peer cohorts",
                   "PDF score reports stored and exportable",
                 ].map(f => (
-                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#aaa]">
-                    <CheckCircle className="w-4 h-4 text-[#c9a84c] flex-shrink-0" />
+                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#2e4637]">
+                    <CheckCircle className="w-4 h-4 text-[#168a4a] flex-shrink-0" />
                     {f}
                   </div>
                 ))}
@@ -351,35 +351,35 @@ function ScoringDimensions() {
   ];
 
   return (
-    <section className="py-32 bg-[#060606] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+    <section className="py-32 bg-[#f8fbf8] relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
       <div className="container">
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-8 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">Scoring Engine</span>
-            <div className="h-px w-8 bg-[#c9a84c]" />
+            <div className="h-px w-8 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">Scoring Engine</span>
+            <div className="h-px w-8 bg-[#168a4a]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">Six Dimensions.</span><br />
+            <span className="text-slate-950">Six Dimensions.</span><br />
             <span className="text-gold-gradient">Complete Picture.</span>
           </h2>
-          <p className="text-[#666] max-w-xl mx-auto text-sm">Every score is generated by an LLM evaluator with written rationale — decomposable, auditable, and tied to observable actions.</p>
+          <p className="text-[#52665a] max-w-xl mx-auto text-sm">Every score is generated by an LLM evaluator with written rationale — decomposable, auditable, and tied to observable actions.</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dimensions.map((dim, i) => (
-            <div key={dim.name} className="p-6 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl hover:border-[#c9a84c]/25 transition-all group">
+            <div key={dim.name} className="p-6 bg-[#fff] border border-[#d9e7db] rounded-xl hover:border-[#168a4a]/25 transition-all group">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-9 h-9 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center group-hover:bg-[#c9a84c]/20 transition-colors">
-                  <dim.icon className="w-4 h-4 text-[#c9a84c]" />
+                <div className="w-9 h-9 rounded-lg bg-[#168a4a]/10 flex items-center justify-center group-hover:bg-[#168a4a]/20 transition-colors">
+                  <dim.icon className="w-4 h-4 text-[#168a4a]" />
                 </div>
                 <span className="text-2xl font-black text-gold-gradient">{dim.score}</span>
               </div>
-              <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-2">{dim.name}</h3>
-              <p className="text-[#555] text-xs leading-relaxed">{dim.desc}</p>
-              <div className="mt-4 h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#8b6914] to-[#c9a84c] rounded-full transition-all duration-1000"
+              <h3 className="text-slate-950 font-bold text-sm uppercase tracking-wider mb-2">{dim.name}</h3>
+              <p className="text-[#6f8274] text-xs leading-relaxed">{dim.desc}</p>
+              <div className="mt-4 h-1 bg-[#d9e7db] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#0f5f34] to-[#168a4a] rounded-full transition-all duration-1000"
                   style={{ width: `${dim.score}%` }} />
               </div>
             </div>
@@ -431,47 +431,47 @@ function Segments() {
   ];
 
   return (
-    <section id="segments" className="py-32 bg-[#080808] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+    <section id="segments" className="py-32 bg-[#f8fbf8] relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
       <div className="container">
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-8 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">Solutions</span>
-            <div className="h-px w-8 bg-[#c9a84c]" />
+            <div className="h-px w-8 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">Solutions</span>
+            <div className="h-px w-8 bg-[#168a4a]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">Built for</span><br />
+            <span className="text-slate-950">Built for</span><br />
             <span className="text-gold-gradient">Finance Teams.</span>
           </h2>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           {segments.slice(0, 3).map((seg) => (
-            <div key={seg.name} className="p-6 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl hover:border-[#c9a84c]/30 transition-all group">
-              <div className="w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center mb-4 group-hover:bg-[#c9a84c]/20 transition-colors">
-                <seg.icon className="w-5 h-5 text-[#c9a84c]" />
+            <div key={seg.name} className="p-6 bg-[#fff] border border-[#d9e7db] rounded-xl hover:border-[#168a4a]/30 transition-all group">
+              <div className="w-10 h-10 rounded-lg bg-[#168a4a]/10 flex items-center justify-center mb-4 group-hover:bg-[#168a4a]/20 transition-colors">
+                <seg.icon className="w-5 h-5 text-[#168a4a]" />
               </div>
-              <h3 className="text-white font-bold text-base uppercase tracking-wider mb-1">{seg.name}</h3>
-              <p className="text-[#c9a84c] text-xs mb-3">{seg.buyer}</p>
-              <p className="text-[#777] text-xs leading-relaxed mb-3">{seg.why}</p>
-              <div className="pt-3 border-t border-[#1a1a1a]">
-                <p className="text-[#555] text-xs">{seg.useCase}</p>
+              <h3 className="text-slate-950 font-bold text-base uppercase tracking-wider mb-1">{seg.name}</h3>
+              <p className="text-[#168a4a] text-xs mb-3">{seg.buyer}</p>
+              <p className="text-[#52665a] text-xs leading-relaxed mb-3">{seg.why}</p>
+              <div className="pt-3 border-t border-[#d9e7db]">
+                <p className="text-[#6f8274] text-xs">{seg.useCase}</p>
               </div>
             </div>
           ))}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {segments.slice(3).map((seg) => (
-            <div key={seg.name} className="p-6 bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl hover:border-[#c9a84c]/30 transition-all group">
+            <div key={seg.name} className="p-6 bg-[#fff] border border-[#d9e7db] rounded-xl hover:border-[#168a4a]/30 transition-all group">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#c9a84c]/20 transition-colors">
-                  <seg.icon className="w-5 h-5 text-[#c9a84c]" />
+                <div className="w-10 h-10 rounded-lg bg-[#168a4a]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#168a4a]/20 transition-colors">
+                  <seg.icon className="w-5 h-5 text-[#168a4a]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-base uppercase tracking-wider mb-1">{seg.name}</h3>
-                  <p className="text-[#c9a84c] text-xs mb-2">{seg.buyer}</p>
-                  <p className="text-[#777] text-xs leading-relaxed">{seg.why}</p>
+                  <h3 className="text-slate-950 font-bold text-base uppercase tracking-wider mb-1">{seg.name}</h3>
+                  <p className="text-[#168a4a] text-xs mb-2">{seg.buyer}</p>
+                  <p className="text-[#52665a] text-xs leading-relaxed">{seg.why}</p>
                 </div>
               </div>
             </div>
@@ -508,36 +508,36 @@ function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-32 bg-[#060606] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+    <section id="how-it-works" className="py-32 bg-[#f8fbf8] relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
       <div className="container">
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-8 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">How It Works</span>
-            <div className="h-px w-8 bg-[#c9a84c]" />
+            <div className="h-px w-8 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">How It Works</span>
+            <div className="h-px w-8 bg-[#168a4a]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">From Invite</span><br />
+            <span className="text-slate-950">From Invite</span><br />
             <span className="text-gold-gradient">to Insight.</span>
           </h2>
         </div>
 
         <div className="relative">
-          <div className="hidden lg:block absolute top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+          <div className="hidden lg:block absolute top-8 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
           <div className="grid lg:grid-cols-4 gap-6">
             {steps.map((step, i) => (
               <div key={step.num} className="relative">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-[#0a0a0a] border border-[#c9a84c]/40 flex items-center justify-center flex-shrink-0 relative z-10">
-                    <span className="text-[#c9a84c] font-black text-sm">{step.num}</span>
+                  <div className="w-14 h-14 rounded-xl bg-[#fff] border border-[#168a4a]/40 flex items-center justify-center flex-shrink-0 relative z-10">
+                    <span className="text-[#168a4a] font-black text-sm">{step.num}</span>
                   </div>
                   {i < steps.length - 1 && (
-                    <ChevronRight className="w-4 h-4 text-[#333] hidden lg:block" />
+                    <ChevronRight className="w-4 h-4 text-[#9db8a4] hidden lg:block" />
                   )}
                 </div>
-                <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-2">{step.title}</h3>
-                <p className="text-[#666] text-xs leading-relaxed">{step.desc}</p>
+                <h3 className="text-slate-950 font-bold text-sm uppercase tracking-wider mb-2">{step.title}</h3>
+                <p className="text-[#52665a] text-xs leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -601,46 +601,46 @@ function Pricing({ onDemo }: { onDemo: () => void }) {
   ];
 
   return (
-    <section id="pricing" className="py-32 bg-[#080808] relative">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c]/20 to-transparent" />
+    <section id="pricing" className="py-32 bg-[#f8fbf8] relative">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#168a4a]/20 to-transparent" />
       <div className="container">
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-8 bg-[#c9a84c]" />
-            <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">Pricing</span>
-            <div className="h-px w-8 bg-[#c9a84c]" />
+            <div className="h-px w-8 bg-[#168a4a]" />
+            <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">Pricing</span>
+            <div className="h-px w-8 bg-[#168a4a]" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black uppercase mb-4">
-            <span className="text-white">Simple,</span><br />
+            <span className="text-slate-950">Simple,</span><br />
             <span className="text-gold-gradient">Transparent Pricing.</span>
           </h2>
-          <p className="text-[#666] max-w-md mx-auto text-sm">Start with per-candidate pricing or commit to an annual plan for better economics.</p>
+          <p className="text-[#52665a] max-w-md mx-auto text-sm">Start with per-candidate pricing or commit to an annual plan for better economics.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan) => (
             <div key={plan.name}
               className={`relative p-8 rounded-xl border transition-all ${plan.highlight
-                ? "bg-[#0d0d0d] border-[#c9a84c]/50 glow-gold"
-                : "bg-[#0a0a0a] border-[#1a1a1a] hover:border-[#333]"
+                ? "bg-[#fff] border-[#168a4a]/50 glow-gold"
+                : "bg-[#fff] border-[#d9e7db] hover:border-[#9db8a4]"
               }`}>
               {plan.highlight && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#c9a84c] text-black text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</span>
+                  <span className="bg-[#168a4a] text-white text-xs font-bold px-4 py-1 rounded-full tracking-widest uppercase">Most Popular</span>
                 </div>
               )}
               <div className="mb-6">
-                <h3 className="text-[#888] text-xs font-bold tracking-widest uppercase mb-2">{plan.name}</h3>
+                <h3 className="text-[#3f5847] text-xs font-bold tracking-widest uppercase mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
-                  <span className={`text-4xl font-black ${plan.highlight ? "text-gold-gradient" : "text-white"}`}>{plan.price}</span>
-                  <span className="text-[#555] text-sm">/{plan.unit}</span>
+                  <span className={`text-4xl font-black ${plan.highlight ? "text-gold-gradient" : "text-slate-950"}`}>{plan.price}</span>
+                  <span className="text-[#6f8274] text-sm">/{plan.unit}</span>
                 </div>
-                <p className="text-[#666] text-xs mt-2 leading-relaxed">{plan.desc}</p>
+                <p className="text-[#52665a] text-xs mt-2 leading-relaxed">{plan.desc}</p>
               </div>
               <div className="space-y-2.5 mb-8">
                 {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#aaa]">
-                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#c9a84c]" : "text-[#444]"}`} />
+                  <div key={f} className="flex items-center gap-2.5 text-sm text-[#2e4637]">
+                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#168a4a]" : "text-[#8fa095]"}`} />
                     {f}
                   </div>
                 ))}
@@ -648,8 +648,8 @@ function Pricing({ onDemo }: { onDemo: () => void }) {
               <Button
                 onClick={onDemo}
                 className={`w-full font-bold text-xs tracking-widest uppercase py-5 ${plan.highlight
-                  ? "bg-[#c9a84c] hover:bg-[#b8943e] text-black"
-                  : "bg-[#111] hover:bg-[#1a1a1a] text-white border border-[#333]"
+                  ? "bg-[#168a4a] hover:bg-[#11743d] text-white"
+                  : "bg-[#eef7ef] hover:bg-[#d9e7db] text-slate-950 border border-[#9db8a4]"
                 }`}
               >
                 {plan.cta}
@@ -667,34 +667,34 @@ function CTA({ onDemo }: { onDemo: () => void }) {
   const loginHref = useLoginHref();
 
   return (
-    <section className="py-32 bg-[#060606] relative overflow-hidden">
+    <section className="py-32 bg-[#f8fbf8] relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-10 rounded-full"
-          style={{ background: "radial-gradient(ellipse, #c9a84c, transparent 70%)" }} />
+          style={{ background: "radial-gradient(ellipse, #168a4a, transparent 70%)" }} />
       </div>
       <div className="container relative z-10 text-center">
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="h-px w-8 bg-[#c9a84c]" />
-          <span className="text-[#c9a84c] text-xs font-bold tracking-[0.3em] uppercase">Get Started</span>
-          <div className="h-px w-8 bg-[#c9a84c]" />
+          <div className="h-px w-8 bg-[#168a4a]" />
+          <span className="text-[#168a4a] text-xs font-bold tracking-[0.3em] uppercase">Get Started</span>
+          <div className="h-px w-8 bg-[#168a4a]" />
         </div>
         <h2 className="text-5xl md:text-7xl font-black uppercase mb-6">
           <span className="text-chiaroscuro">Ready to Measure</span><br />
           <span className="text-gold-gradient">AI Fluency?</span>
         </h2>
-        <p className="text-[#666] max-w-lg mx-auto mb-10 text-base">
+        <p className="text-[#52665a] max-w-lg mx-auto mb-10 text-base">
           Join the firms that have moved from guessing to knowing. Start with a design-partner pilot — fully customized for your role and hiring process.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             onClick={onDemo}
-            className="bg-[#c9a84c] hover:bg-[#b8943e] text-black font-bold text-sm tracking-widest uppercase px-10 py-6 group"
+            className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-sm tracking-widest uppercase px-10 py-6 group"
           >
             Request Demo
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
           <a href={loginHref}>
-            <Button variant="outline" className="border-[#333] text-[#aaa] hover:border-[#c9a84c]/50 hover:text-white text-sm tracking-widest uppercase px-10 py-6 bg-transparent">
+            <Button variant="outline" className="border-[#9db8a4] text-[#2e4637] hover:border-[#168a4a]/50 hover:text-slate-950 text-sm tracking-widest uppercase px-10 py-6 bg-transparent">
               Sign In
             </Button>
           </a>
@@ -707,20 +707,20 @@ function CTA({ onDemo }: { onDemo: () => void }) {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="border-t border-[#111] bg-[#060606] py-12">
+    <footer className="border-t border-[#eef7ef] bg-[#f8fbf8] py-12">
       <div className="container">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-sm bg-[#c9a84c] flex items-center justify-center">
-              <span className="text-black font-black text-xs">P</span>
+            <div className="w-6 h-6 rounded-sm bg-[#168a4a] flex items-center justify-center">
+              <span className="text-white font-black text-xs">P</span>
             </div>
-            <span className="font-bold text-white tracking-widest text-sm uppercase">Pine Finance</span>
+            <span className="font-bold text-slate-950 tracking-widest text-sm uppercase">Pine Finance</span>
           </div>
-          <p className="text-[#444] text-xs">© 2025 Pine Finance. The AI Fluency Standard for Finance.</p>
-          <div className="flex gap-6 text-xs text-[#444]">
-            <a href="#" className="hover:text-[#c9a84c] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[#c9a84c] transition-colors">Terms</a>
-            <a href="#" className="hover:text-[#c9a84c] transition-colors">Security</a>
+          <p className="text-[#8fa095] text-xs">© 2025 Pine Finance. The AI Fluency Standard for Finance.</p>
+          <div className="flex gap-6 text-xs text-[#8fa095]">
+            <a href="#" className="hover:text-[#168a4a] transition-colors">Privacy</a>
+            <a href="#" className="hover:text-[#168a4a] transition-colors">Terms</a>
+            <a href="#" className="hover:text-[#168a4a] transition-colors">Security</a>
           </div>
         </div>
       </div>
@@ -733,7 +733,7 @@ export default function Home() {
   const [demoOpen, setDemoOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#060606]">
+    <div className="min-h-screen bg-[#f8fbf8]">
       <Nav onDemo={() => setDemoOpen(true)} />
       <Hero onDemo={() => setDemoOpen(true)} />
       <Problem />

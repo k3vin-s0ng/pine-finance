@@ -373,37 +373,37 @@ async function generatePdfReport(params: {
 <meta charset="UTF-8">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #0a0a0a; color: #e8e0d0; padding: 40px; }
-  .header { border-bottom: 2px solid #c9a84c; padding-bottom: 24px; margin-bottom: 32px; }
-  .logo { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #c9a84c; text-transform: uppercase; }
-  .subtitle { font-size: 12px; letter-spacing: 2px; color: #888; margin-top: 4px; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #fff; color: #e8e0d0; padding: 40px; }
+  .header { border-bottom: 2px solid #168a4a; padding-bottom: 24px; margin-bottom: 32px; }
+  .logo { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #168a4a; text-transform: uppercase; }
+  .subtitle { font-size: 12px; letter-spacing: 2px; color: #3f5847; margin-top: 4px; }
   h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 16px 0 4px; }
-  .meta { font-size: 13px; color: #888; margin-bottom: 8px; }
-  .overall-box { background: linear-gradient(135deg, #1a1a1a, #111); border: 1px solid #c9a84c; border-radius: 8px; padding: 24px; margin: 24px 0; display: flex; align-items: center; gap: 32px; }
-  .overall-score { font-size: 64px; font-weight: 900; color: #c9a84c; line-height: 1; }
-  .overall-label { font-size: 13px; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+  .meta { font-size: 13px; color: #3f5847; margin-bottom: 8px; }
+  .overall-box { background: linear-gradient(135deg, #d9e7db, #eef7ef); border: 1px solid #168a4a; border-radius: 8px; padding: 24px; margin: 24px 0; display: flex; align-items: center; gap: 32px; }
+  .overall-score { font-size: 64px; font-weight: 900; color: #168a4a; line-height: 1; }
+  .overall-label { font-size: 13px; color: #3f5847; letter-spacing: 2px; text-transform: uppercase; }
   .percentile { font-size: 18px; color: #e8e0d0; margin-top: 8px; }
-  .section-title { font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #c9a84c; margin: 28px 0 16px; border-left: 3px solid #c9a84c; padding-left: 12px; }
-  .dimension { margin-bottom: 20px; padding: 16px; background: #111; border-radius: 6px; border-left: 3px solid #333; }
+  .section-title { font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #168a4a; margin: 28px 0 16px; border-left: 3px solid #168a4a; padding-left: 12px; }
+  .dimension { margin-bottom: 20px; padding: 16px; background: #eef7ef; border-radius: 6px; border-left: 3px solid #9db8a4; }
   .dim-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .dim-name { font-size: 14px; font-weight: 700; color: #e8e0d0; }
-  .dim-score { font-size: 22px; font-weight: 900; color: #c9a84c; }
-  .progress-bar { height: 6px; background: #222; border-radius: 3px; margin-bottom: 10px; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, #8b6914, #c9a84c); border-radius: 3px; }
-  .dim-rationale { font-size: 12px; color: #aaa; line-height: 1.6; }
-  .summary-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px; margin: 16px 0; }
-  .summary-text { font-size: 13px; color: #ccc; line-height: 1.8; }
-  .list-item { font-size: 12px; color: #bbb; margin: 6px 0; padding-left: 16px; position: relative; }
-  .list-item::before { content: "▸"; position: absolute; left: 0; color: #c9a84c; }
+  .dim-score { font-size: 22px; font-weight: 900; color: #168a4a; }
+  .progress-bar { height: 6px; background: #cfe0d2; border-radius: 3px; margin-bottom: 10px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #0f5f34, #168a4a); border-radius: 3px; }
+  .dim-rationale { font-size: 12px; color: #2e4637; line-height: 1.6; }
+  .summary-box { background: #eef7ef; border: 1px solid #9db8a4; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .summary-text { font-size: 13px; color: #2a4134; line-height: 1.8; }
+  .list-item { font-size: 12px; color: #344d3d; margin: 6px 0; padding-left: 16px; position: relative; }
+  .list-item::before { content: "▸"; position: absolute; left: 0; color: #168a4a; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .col-box { background: #111; border-radius: 6px; padding: 16px; }
-  .col-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+  .col-box { background: #eef7ef; border-radius: 6px; padding: 16px; }
+  .col-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #3f5847; margin-bottom: 12px; }
   .benchmark-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
-  .bench-label { font-size: 11px; color: #888; width: 100px; }
-  .bench-bar { flex: 1; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
-  .bench-fill-candidate { height: 100%; background: #c9a84c; border-radius: 4px; }
-  .bench-fill-peer { height: 100%; background: #444; border-radius: 4px; }
-  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; font-size: 11px; color: #555; text-align: center; }
+  .bench-label { font-size: 11px; color: #3f5847; width: 100px; }
+  .bench-bar { flex: 1; height: 8px; background: #cfe0d2; border-radius: 4px; overflow: hidden; }
+  .bench-fill-candidate { height: 100%; background: #168a4a; border-radius: 4px; }
+  .bench-fill-peer { height: 100%; background: #8fa095; border-radius: 4px; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #cfe0d2; font-size: 11px; color: #6f8274; text-align: center; }
 </style>
 </head>
 <body>
@@ -419,11 +419,11 @@ async function generatePdfReport(params: {
   <div>
     <div class="overall-label">Overall Score</div>
     <div class="overall-score">${Math.round(score.overallScore ?? 0)}</div>
-    <div style="font-size:11px;color:#666;margin-top:4px;">out of 100</div>
+    <div style="font-size:11px;color:#52665a;margin-top:4px;">out of 100</div>
   </div>
   <div style="flex:1;">
-    <div class="percentile">Top <strong style="color:#c9a84c">${100 - peerBenchmark}%</strong> of ${roleTemplate} candidates</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;">Benchmark Percentile: ${peerBenchmark}th</div>
+    <div class="percentile">Top <strong style="color:#168a4a">${100 - peerBenchmark}%</strong> of ${roleTemplate} candidates</div>
+    <div style="font-size:12px;color:#52665a;margin-top:4px;">Benchmark Percentile: ${peerBenchmark}th</div>
     <div style="margin-top:12px;">
       <div class="progress-bar"><div class="progress-fill" style="width:${score.overallScore ?? 0}%"></div></div>
     </div>
@@ -463,8 +463,8 @@ ${dimensions.map(d => `
   <div class="benchmark-row">
     <div class="bench-label">${d.name}</div>
     <div class="bench-bar"><div class="bench-fill-candidate" style="width:${d.score ?? 0}%"></div></div>
-    <div style="font-size:11px;color:#c9a84c;width:32px;text-align:right">${Math.round(d.score ?? 0)}</div>
-    <div style="font-size:11px;color:#555;width:60px;text-align:right">Peer: ~65</div>
+    <div style="font-size:11px;color:#168a4a;width:32px;text-align:right">${Math.round(d.score ?? 0)}</div>
+    <div style="font-size:11px;color:#6f8274;width:60px;text-align:right">Peer: ~65</div>
   </div>`).join('')}
 </div>
 

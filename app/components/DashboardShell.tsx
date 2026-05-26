@@ -48,20 +48,20 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-[#1a1a1a]">
+      <div className="px-5 py-5 border-b border-[#d9e7db]">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-sm bg-[#c9a84c] flex items-center justify-center">
-            <span className="text-black font-black text-xs">P</span>
+          <div className="w-7 h-7 rounded-sm bg-[#168a4a] flex items-center justify-center">
+            <span className="text-white font-black text-xs">P</span>
           </div>
-          <span className="font-bold text-white tracking-widest text-xs uppercase">Pine Finance</span>
+          <span className="font-bold text-slate-950 tracking-widest text-xs uppercase">Pine Finance</span>
         </Link>
       </div>
 
       {/* Role badge */}
-      <div className="px-5 py-4 border-b border-[#1a1a1a]">
-        <div className="text-[#555] text-[10px] font-bold tracking-widest uppercase mb-1">Signed in as</div>
-        <div className="text-white text-sm font-semibold truncate">{user?.name ?? "User"}</div>
-        <div className="text-[#c9a84c] text-[10px] font-bold tracking-widest uppercase mt-0.5">{getRoleLabel(user?.role)}</div>
+      <div className="px-5 py-4 border-b border-[#d9e7db]">
+        <div className="text-[#6f8274] text-[10px] font-bold tracking-widest uppercase mb-1">Signed in as</div>
+        <div className="text-slate-950 text-sm font-semibold truncate">{user?.name ?? "User"}</div>
+        <div className="text-[#168a4a] text-[10px] font-bold tracking-widest uppercase mt-0.5">{getRoleLabel(user?.role)}</div>
       </div>
 
       {/* Nav */}
@@ -72,8 +72,8 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
             <Link key={item.href} href={item.href}>
               <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
                 isActive
-                  ? "bg-[#c9a84c]/10 text-[#c9a84c] border border-[#c9a84c]/20"
-                  : "text-[#666] hover:text-[#aaa] hover:bg-[#111]"
+                  ? "bg-[#168a4a]/10 text-[#168a4a] border border-[#168a4a]/20"
+                  : "text-[#52665a] hover:text-[#2e4637] hover:bg-[#eef7ef]"
               }`}>
                 <item.icon className="w-4 h-4 flex-shrink-0" />
                 <span className="font-medium text-xs tracking-wide uppercase">{item.label}</span>
@@ -84,16 +84,16 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-[#1a1a1a] space-y-1">
+      <div className="px-3 py-4 border-t border-[#d9e7db] space-y-1">
         <Link href="/">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#555] hover:text-[#aaa] hover:bg-[#111] transition-all cursor-pointer">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6f8274] hover:text-[#2e4637] hover:bg-[#eef7ef] transition-all cursor-pointer">
             <ChevronLeft className="w-4 h-4" />
             <span className="font-medium text-xs tracking-wide uppercase">Back to Site</span>
           </div>
         </Link>
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#555] hover:text-red-400 hover:bg-red-400/5 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6f8274] hover:text-red-400 hover:bg-red-400/5 transition-all"
         >
           <LogOut className="w-4 h-4" />
           <span className="font-medium text-xs tracking-wide uppercase">Sign Out</span>
@@ -103,17 +103,17 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
   );
 
   return (
-    <div className="min-h-screen bg-[#060606] flex">
+    <div className="min-h-screen bg-[#f8fbf8] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-56 flex-col bg-[#080808] border-r border-[#1a1a1a] fixed top-0 left-0 bottom-0 z-40">
+      <aside className="hidden lg:flex w-56 flex-col bg-[#f8fbf8] border-r border-[#d9e7db] fixed top-0 left-0 bottom-0 z-40">
         <SidebarContent />
       </aside>
 
       {/* Mobile Sidebar */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/80" onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-56 bg-[#080808] border-r border-[#1a1a1a]">
+          <div className="absolute inset-0 bg-green-950/40" onClick={() => setSidebarOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-56 bg-[#f8fbf8] border-r border-[#d9e7db]">
             <SidebarContent />
           </aside>
         </div>
@@ -122,27 +122,27 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
       {/* Main content */}
       <main className="flex-1 lg:ml-56 min-h-screen flex flex-col">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-[#060606]/90 backdrop-blur-sm border-b border-[#1a1a1a] px-6 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-[#f8fbf8]/90 backdrop-blur-sm border-b border-[#d9e7db] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-[#666] hover:text-white"
+              className="lg:hidden text-[#52665a] hover:text-slate-950"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              {title && <h1 className="text-white font-bold text-sm uppercase tracking-widest">{title}</h1>}
-              {subtitle && <p className="text-[#555] text-xs mt-0.5">{subtitle}</p>}
+              {title && <h1 className="text-slate-950 font-bold text-sm uppercase tracking-widest">{title}</h1>}
+              {subtitle && <p className="text-[#6f8274] text-xs mt-0.5">{subtitle}</p>}
             </div>
             {actions && <div className="ml-4">{actions}</div>}
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <div className="text-white text-xs font-semibold">{user?.name}</div>
-              <div className="text-[#c9a84c] text-[10px] font-bold tracking-widest uppercase">{getRoleLabel(user?.role)}</div>
+              <div className="text-slate-950 text-xs font-semibold">{user?.name}</div>
+              <div className="text-[#168a4a] text-[10px] font-bold tracking-widest uppercase">{getRoleLabel(user?.role)}</div>
             </div>
-            <div className="w-8 h-8 rounded-full bg-[#c9a84c]/20 border border-[#c9a84c]/30 flex items-center justify-center">
-              <span className="text-[#c9a84c] text-xs font-bold">{user?.name?.[0] ?? "U"}</span>
+            <div className="w-8 h-8 rounded-full bg-[#168a4a]/20 border border-[#168a4a]/30 flex items-center justify-center">
+              <span className="text-[#168a4a] text-xs font-bold">{user?.name?.[0] ?? "U"}</span>
             </div>
           </div>
         </header>

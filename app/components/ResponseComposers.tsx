@@ -21,10 +21,10 @@ function wordCount(text?: string | null) {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
-const LABEL = "text-[#555] text-[10px] font-bold tracking-widest uppercase mb-1 select-none";
+const LABEL = "text-[#6f8274] text-[10px] font-bold tracking-widest uppercase mb-1 select-none";
 const SECTION_BASE =
-  "rounded border border-[#1a1a1a] bg-[#0a0a0a] transition-all duration-150";
-const ACTIVE_BORDER = "border-l-2 border-l-[#c9a84c]";
+  "rounded border border-[#d9e7db] bg-[#fff] transition-all duration-150";
+const ACTIVE_BORDER = "border-l-2 border-l-[#168a4a]";
 const INACTIVE_BORDER = "border-l-2 border-l-transparent";
 
 interface SectionProps {
@@ -58,7 +58,7 @@ function Section({
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className={LABEL}>{label}</span>
         {wc > 0 && (
-          <span className="text-[10px] text-[#444] tabular-nums">{wc} words</span>
+          <span className="text-[10px] text-[#8fa095] tabular-nums">{wc} words</span>
         )}
       </div>
       {active ? (
@@ -68,11 +68,11 @@ function Section({
           onChange={(e) => onChange(e.target.value)}
           onPaste={onPaste}
           placeholder={placeholder ?? `Write your ${label.toLowerCase()} here…`}
-          className="border-0 bg-transparent text-[13px] text-white/90 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 pb-3"
+          className="border-0 bg-transparent text-[13px] text-slate-900 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 pb-3"
           style={{ minHeight: `${minRows * 22}px` }}
         />
       ) : (
-        <p className="px-3 pb-2.5 text-[12px] text-[#444] truncate">
+        <p className="px-3 pb-2.5 text-[12px] text-[#8fa095] truncate">
           {(value ?? "").trim() ? (value ?? "").trim().slice(0, 80) + ((value ?? "").trim().length > 80 ? "…" : "") : (
             <span className="italic">{placeholder ?? `Write your ${label.toLowerCase()} here…`}</span>
           )}
@@ -197,8 +197,8 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
   };
 
   return (
-    <div className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]`}>
-      <div className="flex items-center gap-1 px-3 pt-2.5 pb-1 border-b border-[#1a1a1a]">
+    <div className={`${SECTION_BASE} border-l-2 border-l-[#168a4a]`}>
+      <div className="flex items-center gap-1 px-3 pt-2.5 pb-1 border-b border-[#d9e7db]">
         <span className={`${LABEL} flex-[35]`}>Metric</span>
         <span className={`${LABEL} flex-[30]`}>Value</span>
         <span className={`${LABEL} flex-[30]`}>Source Citation</span>
@@ -208,24 +208,24 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
       {rows.map((row, i) => (
         <div
           key={i}
-          className="flex items-center gap-1 px-3 py-1 border-b border-[#111] last:border-0"
+          className="flex items-center gap-1 px-3 py-1 border-b border-[#eef7ef] last:border-0"
         >
           <input
-            className="flex-[35] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5"
+            className="flex-[35] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
             placeholder="e.g. Net Revenue"
             value={row.metric}
             onChange={(e) => updateRow(i, "metric", e.target.value)}
             onPaste={onPaste as any}
           />
           <input
-            className="flex-[30] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5 font-mono tabular-nums"
+            className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5 font-mono tabular-nums"
             placeholder="$4,759M"
             value={row.value}
             onChange={(e) => updateRow(i, "value", e.target.value)}
             onPaste={onPaste as any}
           />
           <input
-            className="flex-[30] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5"
+            className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
             placeholder="e.g. 10-K Item 7"
             value={row.source}
             onChange={(e) => updateRow(i, "source", e.target.value)}
@@ -233,7 +233,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
           />
           <button
             onClick={() => deleteRow(i)}
-            className="w-5 h-5 flex items-center justify-center text-[#333] hover:text-[#c9a84c]/60 transition-colors flex-shrink-0"
+            className="w-5 h-5 flex items-center justify-center text-[#9db8a4] hover:text-[#168a4a]/60 transition-colors flex-shrink-0"
           >
             <X size={11} />
           </button>
@@ -243,7 +243,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
       <div className="px-3 py-2">
         <button
           onClick={addRow}
-          className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#c9a84c]/70 transition-colors"
+          className="flex items-center gap-1.5 text-[11px] text-[#8fa095] hover:text-[#168a4a]/70 transition-colors"
         >
           <Plus size={11} />
           Add Row
@@ -281,25 +281,25 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
         className={`${SECTION_BASE} ${activeSection === "table" ? ACTIVE_BORDER : INACTIVE_BORDER}`}
         onClick={() => setActiveSection("table")}
       >
-        <div className="flex items-center gap-1 px-3 pt-2.5 pb-1 border-b border-[#1a1a1a]">
+        <div className="flex items-center gap-1 px-3 pt-2.5 pb-1 border-b border-[#d9e7db]">
           <span className={`${LABEL} flex-[28]`}>Account</span>
           <span className={`${LABEL} flex-[22]`}>Stated Balance</span>
           <span className={`${LABEL} flex-[22]`}>Corrected Balance</span>
           <span className={`${LABEL} flex-[28]`}>Adjustment Reason</span>
         </div>
         {(v.entries ?? []).map((entry, i) => (
-          <div key={i} className="flex items-center gap-1 px-3 py-1.5 border-b border-[#111] last:border-0">
-            <span className="flex-[28] text-[12px] text-[#666] truncate pr-1">{entry.account}</span>
-            <span className="flex-[22] text-[12px] text-[#555] font-mono tabular-nums">{entry.stated}</span>
+          <div key={i} className="flex items-center gap-1 px-3 py-1.5 border-b border-[#eef7ef] last:border-0">
+            <span className="flex-[28] text-[12px] text-[#52665a] truncate pr-1">{entry.account}</span>
+            <span className="flex-[22] text-[12px] text-[#6f8274] font-mono tabular-nums">{entry.stated}</span>
             <input
-              className="flex-[22] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5 font-mono tabular-nums"
+              className="flex-[22] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5 font-mono tabular-nums"
               placeholder="Enter corrected…"
               value={entry.corrected}
               onChange={(e) => updateEntry(i, "corrected", e.target.value)}
               onPaste={onPaste as any}
             />
             <input
-              className="flex-[28] bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-transparent focus:border-[#c9a84c]/40 transition-colors py-0.5"
+              className="flex-[28] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
               placeholder="Reason for adjustment…"
               value={entry.reason}
               onChange={(e) => updateEntry(i, "reason", e.target.value)}
@@ -331,10 +331,10 @@ export type FlagsValue = { flags: FlagEntry[] };
 const EMPTY_FLAG = (): FlagEntry => ({ location: "", issue: "", severity: "", recommendation: "" });
 
 const SEVERITY_COLORS: Record<string, string> = {
-  Critical: "text-[#c9a84c]",
-  High: "text-[#c9a84c]/70",
-  Medium: "text-[#c9a84c]/50",
-  Low: "text-[#c9a84c]/30",
+  Critical: "text-[#168a4a]",
+  High: "text-[#168a4a]/70",
+  Medium: "text-[#168a4a]/50",
+  Low: "text-[#168a4a]/30",
 };
 
 export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
@@ -367,26 +367,26 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
       {flags.map((flag, i) => (
         <div
           key={i}
-          className={`${SECTION_BASE} border-l-2 border-l-[#c9a84c]/40 relative`}
+          className={`${SECTION_BASE} border-l-2 border-l-[#168a4a]/40 relative`}
         >
           {flags.length > 1 && (
             <button
               onClick={() => deleteFlag(i)}
-              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center text-[#333] hover:text-[#c9a84c]/60 transition-colors z-10"
+              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center text-[#9db8a4] hover:text-[#168a4a]/60 transition-colors z-10"
             >
               <X size={11} />
             </button>
           )}
 
           <div className="px-3 pt-2.5 pb-1">
-            <span className={`${LABEL} text-[#c9a84c]/60`}>Flag {i + 1}</span>
+            <span className={`${LABEL} text-[#168a4a]/60`}>Flag {i + 1}</span>
           </div>
 
           <div className="flex items-center gap-3 px-3 pb-2">
             <div className="flex-1">
               <p className={`${LABEL} mb-1`}>Location</p>
               <input
-                className="w-full bg-transparent text-[12px] text-white/80 placeholder:text-[#333] outline-none border-b border-[#1a1a1a] focus:border-[#c9a84c]/40 transition-colors py-0.5"
+                className="w-full bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-[#d9e7db] focus:border-[#168a4a]/40 transition-colors py-0.5"
                 placeholder="e.g. Item 7, Page 12"
                 value={flag.location}
                 onChange={(e) => updateFlag(i, "location", e.target.value)}
@@ -401,15 +401,15 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
                 onValueChange={(value) => updateFlag(i, "severity", value)}
               >
                 <SelectTrigger
-                  className={`h-7 text-[12px] bg-transparent border-[#1a1a1a] ${
+                  className={`h-7 text-[12px] bg-transparent border-[#d9e7db] ${
                     flag.severity
                       ? SEVERITY_COLORS[flag.severity] ?? ""
-                      : "text-[#333]"
+                      : "text-[#9db8a4]"
                   }`}
                 >
                   <SelectValue placeholder="Select…" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0d0d0d] border-[#1a1a1a]">
+                <SelectContent className="bg-[#fff] border-[#d9e7db]">
                   {["Critical", "High", "Medium", "Low"].map((s) => (
                     <SelectItem
                       key={s}
@@ -431,7 +431,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
               onChange={(e) => updateFlag(i, "issue", e.target.value)}
               onPaste={onPaste}
               placeholder="Describe the specific issue, discrepancy, or risk you identified. Be precise."
-              className="border border-[#1a1a1a] bg-[#060606] text-[12px] text-white/80 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="border border-[#d9e7db] bg-[#f8fbf8] text-[12px] text-slate-800 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={3}
             />
           </div>
@@ -443,7 +443,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
               onChange={(e) => updateFlag(i, "recommendation", e.target.value)}
               onPaste={onPaste}
               placeholder="How should this flag be addressed or mitigated?"
-              className="border border-[#1a1a1a] bg-[#060606] text-[12px] text-white/80 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="border border-[#d9e7db] bg-[#f8fbf8] text-[12px] text-slate-800 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={2}
             />
           </div>
@@ -452,7 +452,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
 
       <button
         onClick={addFlag}
-        className="flex items-center gap-1.5 text-[11px] text-[#444] hover:text-[#c9a84c]/70 transition-colors px-1 py-1"
+        className="flex items-center gap-1.5 text-[11px] text-[#8fa095] hover:text-[#168a4a]/70 transition-colors px-1 py-1"
       >
         <Plus size={11} />
         Add Flag

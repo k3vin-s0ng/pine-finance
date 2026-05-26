@@ -16,7 +16,7 @@ import SourceMaterialUploader, { type SourceMaterial } from "@/app/components/So
 
 const ROLE_TEMPLATES = ["IB Analyst", "FP&A Analyst", "PE Associate", "Hedge Fund Research Analyst"];
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-[#1a1a1a] text-[#888] border-[#222]",
+  draft: "bg-[#d9e7db] text-[#3f5847] border-[#cfe0d2]",
   active: "bg-green-500/10 text-green-400 border-green-500/20",
   closed: "bg-red-500/10 text-red-400 border-red-500/20",
 };
@@ -102,12 +102,12 @@ export default function RecruiterCampaigns() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight uppercase">Campaigns</h1>
-            <p className="text-[#555] text-sm mt-1">All your assessment campaigns in one place.</p>
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight uppercase">Campaigns</h1>
+            <p className="text-[#6f8274] text-sm mt-1">All your assessment campaigns in one place.</p>
           </div>
           <Button
             onClick={() => setShowCreate(true)}
-            className="bg-[#c9a84c] hover:bg-[#b8963e] text-black font-bold text-sm"
+            className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" /> New Campaign
           </Button>
@@ -120,21 +120,21 @@ export default function RecruiterCampaigns() {
             { label: "Active", value: (campaigns ?? []).filter(c => c.status === "active").length },
             { label: "Closed", value: (campaigns ?? []).filter(c => c.status === "closed").length },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl p-4 text-center">
-              <div className="text-[#555] text-xs uppercase tracking-widest mb-1">{label}</div>
-              <div className="text-2xl font-black text-white">{value}</div>
+            <div key={label} className="bg-[#fff] border border-[#d9e7db] rounded-xl p-4 text-center">
+              <div className="text-[#6f8274] text-xs uppercase tracking-widest mb-1">{label}</div>
+              <div className="text-2xl font-black text-slate-950">{value}</div>
             </div>
           ))}
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#444]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8fa095]" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search campaigns..."
-            className="pl-9 bg-[#0d0d0d] border-[#1a1a1a] text-white placeholder:text-[#444] focus:border-[#c9a84c]/50"
+            className="pl-9 bg-[#fff] border-[#d9e7db] text-slate-950 placeholder:text-[#8fa095] focus:border-[#168a4a]/50"
           />
         </div>
 
@@ -142,16 +142,16 @@ export default function RecruiterCampaigns() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-24 bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl animate-pulse" />
+              <div key={i} className="h-24 bg-[#fff] border border-[#d9e7db] rounded-xl animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-[#1a1a1a] rounded-xl">
-            <Target className="w-10 h-10 text-[#333] mx-auto mb-4" />
-            <div className="text-[#555] font-bold">{search ? "No campaigns match your search" : "No campaigns yet"}</div>
-            <div className="text-[#333] text-sm mt-1 mb-4">Create your first campaign to start assessing candidates.</div>
+          <div className="text-center py-20 border border-dashed border-[#d9e7db] rounded-xl">
+            <Target className="w-10 h-10 text-[#9db8a4] mx-auto mb-4" />
+            <div className="text-[#6f8274] font-bold">{search ? "No campaigns match your search" : "No campaigns yet"}</div>
+            <div className="text-[#9db8a4] text-sm mt-1 mb-4">Create your first campaign to start assessing candidates.</div>
             {!search && (
-              <Button onClick={() => setShowCreate(true)} className="bg-[#c9a84c] hover:bg-[#b8963e] text-black font-bold text-sm">
+              <Button onClick={() => setShowCreate(true)} className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-sm">
                 <Plus className="w-4 h-4 mr-1.5" /> New Campaign
               </Button>
             )}
@@ -161,17 +161,17 @@ export default function RecruiterCampaigns() {
             {filtered.map(campaign => {
               const mats = (campaign.sourceMaterials as SourceMaterial[] | null) ?? [];
               return (
-                <div key={campaign.id} className="bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[#c9a84c]/30 rounded-xl p-5 transition-colors">
+                <div key={campaign.id} className="bg-[#fff] border border-[#d9e7db] hover:border-[#168a4a]/30 rounded-xl p-5 transition-colors">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center flex-shrink-0">
-                        <Target className="w-5 h-5 text-[#c9a84c]" />
+                      <div className="w-10 h-10 rounded-lg bg-[#d9e7db] flex items-center justify-center flex-shrink-0">
+                        <Target className="w-5 h-5 text-[#168a4a]" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-white font-bold truncate">{campaign.title}</div>
+                        <div className="text-slate-950 font-bold truncate">{campaign.title}</div>
                         <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                          <span className="text-[#555] text-xs">{campaign.roleTemplate}</span>
-                          <span className="flex items-center gap-1 text-[#444] text-xs">
+                          <span className="text-[#6f8274] text-xs">{campaign.roleTemplate}</span>
+                          <span className="flex items-center gap-1 text-[#8fa095] text-xs">
                             <Clock className="w-3 h-3" /> {campaign.timeLimitMinutes}m
                           </span>
                           <Badge className={`text-[10px] px-2 py-0.5 border capitalize ${STATUS_COLORS[campaign.status] ?? ""}`}>
@@ -183,7 +183,7 @@ export default function RecruiterCampaigns() {
                             </span>
                           )}
                           {mats.length > 0 && (
-                            <span className="text-[10px] font-bold tracking-widest uppercase text-[#c9a84c]">
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-[#168a4a]">
                               {mats.length} Custom Doc{mats.length > 1 ? "s" : ""}
                             </span>
                           )}
@@ -191,7 +191,7 @@ export default function RecruiterCampaigns() {
                       </div>
                     </div>
                     <Link href={`/dashboard/recruiter/campaigns/${campaign.id}`}>
-                      <Button size="sm" className="bg-[#c9a84c] hover:bg-[#b8963e] text-black font-bold text-xs flex-shrink-0">
+                      <Button size="sm" className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs flex-shrink-0">
                         View <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
@@ -205,12 +205,12 @@ export default function RecruiterCampaigns() {
 
       {/* Create Campaign Dialog — 2-step flow */}
       <Dialog open={showCreate} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <DialogContent className="bg-[#0d0d0d] border-[#1a1a1a] text-white max-w-md">
+        <DialogContent className="bg-[#fff] border-[#d9e7db] text-slate-950 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-black uppercase tracking-tight">
+            <DialogTitle className="text-slate-950 font-black uppercase tracking-tight">
               {step === 1 ? "New Campaign" : "Attach Source Materials"}
             </DialogTitle>
-            <DialogDescription className="text-[#555]">
+            <DialogDescription className="text-[#6f8274]">
               {step === 1
                 ? "Set up a new assessment campaign for candidates."
                 : "Optionally upload custom documents (10-K, earnings release, model) for this campaign."}
@@ -222,7 +222,7 @@ export default function RecruiterCampaigns() {
             {[1, 2].map(s => (
               <div
                 key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#c9a84c]" : "bg-[#222]"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#168a4a]" : "bg-[#cfe0d2]"}`}
               />
             ))}
           </div>
@@ -230,51 +230,51 @@ export default function RecruiterCampaigns() {
           {step === 1 && (
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <Label className="text-[#888] text-xs uppercase tracking-widest">Campaign Title</Label>
+                <Label className="text-[#3f5847] text-xs uppercase tracking-widest">Campaign Title</Label>
                 <Input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. Summer 2025 IB Analyst"
-                  className="bg-[#111] border-[#222] text-white placeholder:text-[#444]"
+                  className="bg-[#eef7ef] border-[#cfe0d2] text-slate-950 placeholder:text-[#8fa095]"
                   onKeyDown={e => e.key === "Enter" && handleCreate()}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[#888] text-xs uppercase tracking-widest">Role Template</Label>
+                <Label className="text-[#3f5847] text-xs uppercase tracking-widest">Role Template</Label>
                 <Select value={roleTemplate} onValueChange={setRoleTemplate}>
-                  <SelectTrigger className="bg-[#111] border-[#222] text-white">
+                  <SelectTrigger className="bg-[#eef7ef] border-[#cfe0d2] text-slate-950">
                     <SelectValue placeholder="Select role..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#111] border-[#222]">
+                  <SelectContent className="bg-[#eef7ef] border-[#cfe0d2]">
                     {ROLE_TEMPLATES.map(r => (
-                      <SelectItem key={r} value={r} className="text-white hover:bg-[#1a1a1a]">{r}</SelectItem>
+                      <SelectItem key={r} value={r} className="text-slate-950 hover:bg-[#d9e7db]">{r}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[#888] text-xs uppercase tracking-widest">Time Limit (minutes)</Label>
+                <Label className="text-[#3f5847] text-xs uppercase tracking-widest">Time Limit (minutes)</Label>
                 <Select value={timeLimit} onValueChange={setTimeLimit}>
-                  <SelectTrigger className="bg-[#111] border-[#222] text-white">
+                  <SelectTrigger className="bg-[#eef7ef] border-[#cfe0d2] text-slate-950">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#111] border-[#222]">
+                  <SelectContent className="bg-[#eef7ef] border-[#cfe0d2]">
                     {["30", "45", "60", "90", "120"].map(t => (
-                      <SelectItem key={t} value={t} className="text-white hover:bg-[#1a1a1a]">{t} minutes</SelectItem>
+                      <SelectItem key={t} value={t} className="text-slate-950 hover:bg-[#d9e7db]">{t} minutes</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[#111] border border-[#222]">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-[#eef7ef] border border-[#cfe0d2]">
                 <div>
-                  <p className="text-sm font-semibold text-white">Auto-Score on Submission</p>
-                  <p className="text-xs text-[#555] mt-0.5">AI scoring fires automatically when candidate submits</p>
+                  <p className="text-sm font-semibold text-slate-950">Auto-Score on Submission</p>
+                  <p className="text-xs text-[#6f8274] mt-0.5">AI scoring fires automatically when candidate submits</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAutoScore(a => !a)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    autoScore ? "bg-[#c9a84c]" : "bg-[#333]"
+                    autoScore ? "bg-[#168a4a]" : "bg-[#9db8a4]"
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -285,7 +285,7 @@ export default function RecruiterCampaigns() {
               <Button
                 onClick={handleCreate}
                 disabled={createCampaign.isPending}
-                className="w-full bg-[#c9a84c] hover:bg-[#b8963e] text-black font-black uppercase tracking-wider"
+                className="w-full bg-[#168a4a] hover:bg-[#11743d] text-white font-black uppercase tracking-wider"
               >
                 {createCampaign.isPending ? "Creating…" : "Create Campaign →"}
               </Button>
@@ -294,19 +294,19 @@ export default function RecruiterCampaigns() {
 
           {step === 2 && createdCampaignId !== null && (
             <div className="space-y-4 mt-2">
-              <div className="p-3 rounded-lg bg-[#0a1a0a] border border-green-500/20">
+              <div className="p-3 rounded-lg bg-[#eef7ef] border border-green-500/20">
                 <p className="text-xs text-green-400 font-semibold">
                   ✓ Campaign "{createdTitle}" created. Optionally attach source materials below.
                 </p>
               </div>
               <div>
-                <Label className="text-[#aaa] text-xs mb-2 block tracking-wider uppercase">Source Materials</Label>
+                <Label className="text-[#2e4637] text-xs mb-2 block tracking-wider uppercase">Source Materials</Label>
                 <SourceMaterialUploader
                   campaignId={createdCampaignId}
                   materials={liveMaterials}
                   onChanged={handleMaterialsChanged}
                 />
-                <p className="text-[10px] text-[#444] mt-2">
+                <p className="text-[10px] text-[#8fa095] mt-2">
                   If no files are uploaded, candidates will see the default Acme Financial case study.
                 </p>
               </div>
@@ -314,13 +314,13 @@ export default function RecruiterCampaigns() {
                 <Button
                   variant="outline"
                   onClick={handleFinish}
-                  className="flex-1 border-[#333] text-[#888] hover:text-white bg-transparent"
+                  className="flex-1 border-[#9db8a4] text-[#3f5847] hover:text-slate-950 bg-transparent"
                 >
                   {liveMaterials.length === 0 ? "Skip & Finish" : "Done"}
                 </Button>
                 <Button
                   onClick={handleFinish}
-                  className="flex-1 bg-[#c9a84c] hover:bg-[#b8963e] text-black font-black uppercase tracking-wider"
+                  className="flex-1 bg-[#168a4a] hover:bg-[#11743d] text-white font-black uppercase tracking-wider"
                 >
                   Finish
                 </Button>

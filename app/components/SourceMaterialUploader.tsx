@@ -120,30 +120,30 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
           {materials.map((m) => (
             <li
               key={m.fileKey}
-              className="flex items-center gap-3 p-2.5 rounded-lg bg-[#111] border border-[#2a2a2a] group"
+              className="flex items-center gap-3 p-2.5 rounded-lg bg-[#eef7ef] border border-[#b7d2bd] group"
             >
               {m.mimeType === "application/pdf" ? (
-                <FileText className="h-4 w-4 text-[#c9a84c] shrink-0" />
+                <FileText className="h-4 w-4 text-[#168a4a] shrink-0" />
               ) : (
-                <File className="h-4 w-4 text-[#888] shrink-0" />
+                <File className="h-4 w-4 text-[#3f5847] shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <a
                   href={m.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-white hover:text-[#c9a84c] truncate block transition-colors"
+                  className="text-sm text-slate-950 hover:text-[#168a4a] truncate block transition-colors"
                 >
                   {m.label}
                 </a>
-                <span className="text-[10px] text-[#555]">{formatBytes(m.sizeBytes)}</span>
+                <span className="text-[10px] text-[#6f8274]">{formatBytes(m.sizeBytes)}</span>
               </div>
               {!readOnly && (
                 <button
                   type="button"
                   onClick={() => removeMaterial.mutate({ campaignId, fileKey: m.fileKey })}
                   disabled={isBusy}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[#555] hover:text-red-400 disabled:opacity-30"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[#6f8274] hover:text-red-400 disabled:opacity-30"
                   title="Remove"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -173,27 +173,27 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
             onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
             className={`w-full flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-dashed transition-colors text-center cursor-pointer
               ${dragOver
-                ? "border-[#c9a84c] bg-[#c9a84c]/5"
-                : "border-[#333] hover:border-[#555] bg-transparent"
+                ? "border-[#168a4a] bg-[#168a4a]/5"
+                : "border-[#9db8a4] hover:border-[#6f8274] bg-transparent"
               }
               ${isBusy ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
             {uploading ? (
-              <Loader2 className="h-5 w-5 text-[#c9a84c] animate-spin" />
+              <Loader2 className="h-5 w-5 text-[#168a4a] animate-spin" />
             ) : (
-              <Upload className="h-5 w-5 text-[#555]" />
+              <Upload className="h-5 w-5 text-[#6f8274]" />
             )}
-            <span className="text-xs text-[#666]">
+            <span className="text-xs text-[#52665a]">
               {uploading ? "Uploading…" : "Drop a file or click to upload"}
             </span>
-            <span className="text-[10px] text-[#444]">PDF, TXT, MD, CSV · max 16 MB</span>
+            <span className="text-[10px] text-[#8fa095]">PDF, TXT, MD, CSV · max 16 MB</span>
           </button>
         </>
       )}
 
       {materials.length === 0 && readOnly && (
-        <p className="text-xs text-[#555] italic">No custom source materials — default Acme Financial case study will be used.</p>
+        <p className="text-xs text-[#6f8274] italic">No custom source materials — default Acme Financial case study will be used.</p>
       )}
     </div>
   );
