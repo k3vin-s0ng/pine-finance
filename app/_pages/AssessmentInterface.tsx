@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import Image from "next/image";
 import { useParams, useLocation } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -1681,7 +1680,6 @@ export default function AssessmentInterface() {
         style={{ background: "var(--surface-1)", borderColor: "var(--border-subtle)" }}
       >
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Pine" width={24} height={24} className="h-6 w-6 rounded-sm" priority />
           <span className="font-bold text-xs uppercase tracking-widest hidden sm:block" style={{ color: "var(--text-primary)" }}>
             Pine Assessment
           </span>

@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import Image from "next/image";
 import { Link, useLocation } from "@/app/lib/wouter";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import { Button } from "@/app/components/ui/button";
@@ -50,9 +49,8 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-[#d9e7db]">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Pine" width={28} height={28} className="h-7 w-7 rounded-sm" priority />
-          <span className="font-bold text-slate-950 tracking-widest text-xs uppercase">Pine</span>
+        <Link href="/" className="flex items-center">
+          <span className="font-black text-slate-950 tracking-widest text-lg uppercase">Pine</span>
         </Link>
       </div>
 
