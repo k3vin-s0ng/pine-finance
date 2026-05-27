@@ -19,7 +19,7 @@ import {
   Clock, CheckCircle, Circle, XCircle, BarChart3, Trash2, Upload
 } from "lucide-react";
 
-const ROLE_TEMPLATES = ["IB Analyst", "FP&A Analyst", "PE Associate", "Hedge Fund Research Analyst"] as const;
+const ROLE_TEMPLATES = ["IB Analyst", "PE Associate", "Hedge Fund Research Analyst", "Management Consultant"] as const;
 
 function StatusBadge({ status }: { status: string }) {
   const config = {

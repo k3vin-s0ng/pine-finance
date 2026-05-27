@@ -198,6 +198,175 @@ Management expects continued momentum in advisory and underwriting activity in H
 *Note: Model uses mid-year convention. FCF = EBITDA × (1 - tax rate) - ΔWC - Capex*
 `,
   },
+  "OCC_EXAM": {
+    label: "OCC Examination Summary (2024)",
+    icon: ShieldAlert,
+    content: `# Office of the Comptroller of the Currency — Examination Summary
+**Cornerstone Community Bank, N.A. — Atlanta, GA · Charter #24817**
+**Examination as of December 31, 2024 (Confidential Supervisory Information — fictional, for assessment use)**
+
+---
+
+## COMPOSITE RATING
+
+**CAMELS Composite: 3** (downgraded from 2 at the prior examination)
+
+| Component | 2023 | 2024 | Examiner Commentary |
+|---|---|---|---|
+| **C**apital | 2 | 2 | Adequate but declining; Tier 1 ratio fell from 12.4% to 11.1% over two years. |
+| **A**sset Quality | 2 | **3** | NPLs more than tripled to 3.8% (peer avg 1.9%); CRE concentration of 312% of total capital exceeds the 300% supervisory guideline; allowance coverage of nonperforming loans is thin. |
+| **M**anagement | 2 | **3** | Compliance oversight has not kept pace with growth; three BSA/AML Matters Requiring Attention (MRAs) remain open; board reporting on emerging credit and compliance risk is insufficient. |
+| **E**arnings | 2 | **3** | Net income declined from $41M (2022) to $29M (2024); efficiency ratio deteriorated from 68.2% to 74.8%; rising provisions pressure pre-provision earnings. |
+| **L**iquidity | 2 | 2 | Core deposit funding adequate; contingency funding plan satisfactory. |
+| **S**ensitivity to Market Risk | 2 | 2 | Interest-rate risk within board limits. |
+
+---
+
+## MATTERS REQUIRING ATTENTION (MRAs)
+
+The bank has **3 open BSA/AML MRAs** (0 in 2022, 1 in 2023, 3 in 2024):
+
+1. **BSA/AML staffing and oversight.** The BSA Officer's span of control is too broad for the bank's transaction volume and customer-risk profile. Staffing has not scaled with asset growth from $5.4B to $6.2B.
+2. **SAR filing timeliness.** A backlog of Suspicious Activity Reports was filed beyond the regulatory deadline, and several alerts were not dispositioned within policy timeframes.
+3. **Customer Due Diligence / Enhanced Due Diligence.** CDD/EDD on higher-risk relationships (money services businesses, cash-intensive merchants) is incomplete; beneficial-ownership documentation gaps were noted.
+
+---
+
+## CREDIT QUALITY ASSESSMENT
+
+Asset quality is the primary driver of the composite downgrade. Nonperforming loans rose to 3.8% of total loans, concentrated in commercial real estate and construction. The allowance for credit losses (1.3% of loans) covers only ~34% of nonperforming loans, which examiners consider potentially understated given the migration trend. CRE concentration at 312% of total risk-based capital exceeds the interagency guideline of 300% and warrants heightened risk-management practices the bank has not fully implemented.
+
+## MANAGEMENT EVALUATION
+
+Management has delivered consistent balance-sheet growth but under-invested in risk and compliance infrastructure. The board has not received adequate reporting on escalating BSA/AML and credit concentrations. The Community Reinvestment Act rating was downgraded to **Needs Improvement** at the most recent CRA examination (see Compliance Program Overview).
+`,
+  },
+  "FINANCIALS": {
+    label: "Selected Financials (FY2022–FY2024)",
+    icon: BarChart3,
+    content: `# Cornerstone Community Bank — Selected Financial Statements
+**FY2022–FY2024 ($ in millions unless noted) · fictional, for assessment use**
+
+## Summary Regulatory & Financial Metrics
+
+| Metric | FY2022 | FY2023 | FY2024 | Note |
+|---|---|---|---|---|
+| Total Assets | $5,400 | $5,800 | $6,200 | Steady growth |
+| Net Revenue | $187 | $198 | $203 | Slowing momentum |
+| Net Income | $41 | $38 | $29 | Declining |
+| NPL Ratio | 1.2% | 2.1% | 3.8% | Peer avg 1.9% |
+| Allowance / Loans | 1.1% | 1.2% | 1.3% | Covers only ~34% of NPLs |
+| CRE Concentration (% capital) | 248% | 271% | 312% | Exceeds 300% guideline |
+| Efficiency Ratio | 68.2% | 71.4% | 74.8% | Deteriorating |
+| Tier 1 Capital Ratio | 12.4% | 11.8% | 11.1% | Declining |
+| CAMELS Composite | 2 | 2 | 3 | Downgraded 2024 |
+| BSA/AML MRAs Outstanding | 0 | 1 | 3 | Escalating |
+| CRA Rating | Satisfactory | Satisfactory | Needs Improvement | Downgraded |
+
+## Income Statement (condensed)
+
+| | FY2022 | FY2023 | FY2024 |
+|---|---|---|---|
+| Net interest income | $151 | $160 | $165 |
+| Noninterest income | $36 | $38 | $38 |
+| **Net revenue** | **$187** | **$198** | **$203** |
+| Noninterest expense | $(127.5) | $(141.4) | $(151.8) |
+| **Pre-provision net revenue** | **$59.5** | **$56.6** | **$51.2** |
+| Provision for credit losses | $(5.0) | $(7.0) | $(14.5) |
+| Pre-tax income | $54.5 | $49.6 | $36.7 |
+| Income tax | $(13.5) | $(11.6) | $(7.7) |
+| **Net income** | **$41.0** | **$38.0** | **$29.0** |
+
+## Balance Sheet (selected, FY2024)
+
+| | FY2024 |
+|---|---|
+| Total assets | $6,200 |
+| Gross loans | $4,600 |
+| Allowance for credit losses | $(60) |
+| Total deposits | $5,120 |
+| Total equity (book) | $620 |
+| Tier 1 capital ratio | 11.1% |
+
+## Loan Portfolio Breakdown (FY2024, gross $ and % of loans)
+
+| Category | Balance | % | Nonperforming |
+|---|---|---|---|
+| CRE — non-owner-occupied | $1,200 | 26.1% | $74 |
+| Construction & land development | $380 | 8.3% | $58 |
+| Multifamily | $290 | 6.3% | $9 |
+| Commercial & industrial | $920 | 20.0% | $22 |
+| Residential mortgage (1–4 family) | $1,140 | 24.8% | $5 |
+| Consumer & other | $670 | 14.6% | $7 |
+| **Total** | **$4,600** | **100%** | **$175 (3.8%)** |
+
+Total CRE (non-owner-occupied + construction + multifamily) = **$1,870M = 312% of total risk-based capital**. Construction & land = 63% of capital. Construction shows the highest nonperforming rate (~15%).
+
+## Allowance for Credit Losses — Roll-forward
+
+| | FY2024 |
+|---|---|
+| Beginning ACL | $54 |
+| Provision | $14.5 |
+| Net charge-offs | $(8.5) |
+| **Ending ACL** | **$60 (1.3% of loans)** |
+`,
+  },
+  "COMPLIANCE": {
+    label: "Compliance Program Overview",
+    icon: FileText,
+    content: `# Cornerstone Community Bank — Compliance Program Overview
+**Management Self-Assessment, 2024 · fictional, for assessment use**
+
+## BSA/AML Program
+Administered by a BSA Officer supported by two analysts. Transaction-monitoring alerts have grown ~40% over two years alongside asset growth, but staffing is unchanged. The self-assessment acknowledges the three open OCC MRAs: staffing/oversight, SAR filing timeliness (a filing backlog exists), and CDD/EDD on higher-risk customers (money services businesses and cash-intensive merchants). Remediation is "in progress" but not yet validated; estimated remediation cost is not quantified.
+
+## Community Reinvestment Act (CRA)
+| Exam | Rating |
+|---|---|
+| 2018 | Satisfactory |
+| 2021 | Satisfactory |
+| 2024 | **Needs Improvement** |
+
+The 2024 downgrade cited a lending-test deficiency: declining origination volume in low- and moderate-income (LMI) census tracts within the assessment area, and limited community-development lending relative to capacity.
+
+## Fair Lending Self-Assessment
+No formal enforcement actions. Internal review flagged statistical disparities in mortgage denial rates warranting further analysis; remediation plan pending.
+
+## Customer Complaint Log (summary)
+| Category | FY2023 | FY2024 |
+|---|---|---|
+| Overdraft / NSF fees | 41 | 67 |
+| Loan servicing / escrow | 22 | 38 |
+| Mortgage application / denial | 9 | 18 |
+| Other | 15 | 21 |
+| **Total** | **87** | **144** |
+
+Complaint volume rose 66% year-over-year, sharpest in fee-related and mortgage-denial categories.
+`,
+  },
+  "LOAN_TAPE": {
+    label: "Loan Portfolio Tape (Q3 2024)",
+    icon: Table2,
+    content: `# Cornerstone Community Bank — Loan Portfolio Tape
+**Representative sample, Q3 2024 snapshot · fictional, for assessment use**
+
+| Loan ID | Category | Balance ($M) | Days Past Due | Collateral | Originated | Rate |
+|---|---|---|---|---|---|---|
+| L-1042 | Construction & land | 24.0 | 90+ | Land — stalled mixed-use | 2022-06 | 8.25% |
+| L-1119 | Construction & land | 18.5 | 60 | Partially built retail | 2022-11 | 8.50% |
+| L-2071 | CRE non-owner-occ | 31.0 | 90+ | Office (suburban) | 2021-03 | 5.10% |
+| L-2088 | CRE non-owner-occ | 22.4 | 30 | Retail strip center | 2021-09 | 5.40% |
+| L-2095 | CRE non-owner-occ | 19.8 | Current | Industrial warehouse | 2023-02 | 6.75% |
+| L-3050 | C&I | 12.0 | 30 | UCC blanket lien | 2022-08 | 7.20% |
+| L-3061 | C&I | 8.6 | Current | Equipment | 2023-05 | 7.60% |
+| L-4007 | Multifamily | 27.5 | Current | 120-unit apartment | 2020-10 | 4.80% |
+| L-5012 | Residential 1–4 | 1.2 | Current | Owner-occupied home | 2021-07 | 4.25% |
+| L-6033 | Consumer | 0.4 | 30 | Auto | 2023-01 | 9.10% |
+
+**Tape observations:** Delinquency is concentrated in construction and non-owner-occupied CRE originated in 2021–2022 at lower rates; several large construction credits are 60–90+ days past due, consistent with the rise in the bank's NPL ratio. Newer CRE originations carry higher rates but are early in their seasoning. Residential and consumer books are performing.
+`,
+  },
 };
 
 // ─── Task Prompts ─────────────────────────────────────────────────────────────
@@ -267,68 +436,68 @@ const TASK_PROMPTS = {
       ],
     },
   ],
-  "FP&A Analyst": [
+  "Management Consultant": [
     {
       id: "t1",
-      responseType: "variance" as const,
-      title: "Q4 2024 Variance Analysis",
-      imperative: "Calculate the Q4 revenue beat vs. implied run-rate, break down outperformance by segment, and assess whether it is structural or seasonal.",
+      responseType: "flags" as const,
+      title: "Red Flag Identification",
+      imperative: "Identify the three highest-priority regulatory and credit risks in the Cornerstone data, ranked by severity, each citing the specific data point and explaining why it threatens regulatory approval or post-close value.",
       dataPoints: [
-        { label: "Q4 Revenue", value: "$1,312M", delta: 1 },
-        { label: "YoY", value: "+16.8%", delta: 1 },
-        { label: "Beat", value: "$122M", delta: 1 },
-        { label: "Eff. Ratio", value: "70.1%", delta: 1 },
+        { label: "CAMELS", value: "3", delta: -1 },
+        { label: "NPL", value: "3.8%", delta: -1 },
+        { label: "CRE", value: "312%", delta: -1 },
+        { label: "BSA MRAs", value: "3", delta: -1 },
       ],
-      context: "FY2024 full-year net revenue was $4,759M and operating expenses were $3,421M (efficiency ratio 71.9%). Implied Q4 run-rate revenue is $1,190M. Actual Q4 2024 results: net revenue $1,312M (+16.8% YoY) and efficiency ratio 70.1%.",
-      deliverable: "Quantify items that should be excluded from the FY2025 baseline forecast.",
-      prompt: "Acme Financial's FY2024 full-year net revenue was $4,759M and operating expenses were $3,421M (efficiency ratio 71.9%). Implied Q4 run-rate revenue is $1,190M and operating expenses are $855M based on the annual figures. Actual Q4 2024 results: net revenue $1,312M (+16.8% YoY) and efficiency ratio 70.1%. Calculate the Q4 revenue beat versus the implied run-rate ($122M favorable) and the operating leverage implied by the 180bps efficiency ratio improvement. Break down the outperformance by segment where the earnings release provides data, assess whether the Q4 beat is structural (repeatable) or seasonal/one-time, and quantify the items that should be excluded from the FY2025 baseline forecast.",
+      context: "Vantage Financial Group (NYSE: VFG), a $38B regional bank (Charlotte, NC), has signed an LOI to acquire Cornerstone Community Bank ($6.2B, Atlanta GA) for $920M in stock (1.48x P/B), targeted to close Q3 2025 pending OCC and Federal Reserve approval. IBM Promontory has been engaged for independent regulatory due diligence. 60-minute, 3-task senior-analyst simulation.",
+      deliverable: "Used in regulatory due-diligence findings — cite specific figures and rank by severity.",
+      prompt: "Vantage Financial Group (NYSE: VFG), a $38B regional bank (Charlotte, NC), has signed an LOI to acquire Cornerstone Community Bank ($6.2B, Atlanta GA) for $920M in stock (1.48x P/B), targeted to close Q3 2025 pending OCC and Federal Reserve approval. IBM Promontory has been engaged for independent regulatory due diligence. Identify the three highest-priority regulatory and credit risks in the Cornerstone data that could materially affect the deal, ranked by severity. For each risk, cite the specific data point and explain why it is a deal risk specifically: either because it threatens regulatory approval or because it impairs post-close value.",
       aiSuggestions: [
-        "How do I calculate implied run-rate from annual figures?",
-        "Help me assess whether Q4 beat is structural or seasonal",
-        "What items typically get excluded from baseline forecasts?",
-        "How do I quantify operating leverage from efficiency ratio improvement?",
+        "Explain OCC CAMELS methodology",
+        "What does a CAMELS downgrade to 3 mean for an acquisition target?",
+        "What is the 300% CRE concentration guideline?",
+        "How do open BSA/AML MRAs affect merger approval?",
       ],
     },
     {
       id: "t2",
       responseType: "memo" as const,
-      title: "Efficiency Ratio Roadmap",
-      imperative: "Calculate the maximum FY2025 opex base to hit the 70.0% target and identify the cost actions required to get there.",
+      title: "Due Diligence Memo — Risk Section",
+      imperative: "Draft the Risk Findings section of Promontory's due-diligence memo to Vantage's board: lead with a clear proceed, renegotiate, or walk-away recommendation in no more than 250 words.",
       dataPoints: [
-        { label: "FY2024 Eff.", value: "71.9%" },
-        { label: "Target", value: "<70.0%" },
-        { label: "Max Opex", value: "$3,631M" },
-        { label: "Headroom", value: "$210M" },
+        { label: "Deal Value", value: "$920M" },
+        { label: "P/B", value: "1.48x" },
+        { label: "Close", value: "Q3 2025" },
+        { label: "CAMELS", value: "3", delta: -1 },
       ],
-      context: "Efficiency ratio improved from 74.2% in FY2023 to 71.9% in FY2024, reaching 70.1% in Q4 2024. Total FY2024 operating expenses were $3,421M on net revenue of $4,759M. Management has guided to an efficiency ratio below 70.0% for FY2025.",
-      deliverable: "Flag any cost headwinds (compensation inflation, regulatory spend, technology) that could impede progress.",
-      prompt: "Acme Financial's efficiency ratio improved from 74.2% in FY2023 to 71.9% in FY2024, and reached 70.1% in Q4 2024. Total FY2024 operating expenses were $3,421M on net revenue of $4,759M. Management has publicly guided to an efficiency ratio below 70.0% for FY2025. Assuming FY2025 net revenue of $5,187M (per the DCF model's +9.0% growth assumption), calculate the maximum operating expense base that achieves the 70.0% target ($3,631M). That implies only $210M of incremental expense capacity on $428M of incremental revenue — a 49.1% incremental efficiency ratio. Analyze what cost lines drove the 230bps improvement in FY2024, identify the specific actions required to hold expenses below $3,631M in FY2025, and flag any cost headwinds (compensation inflation, regulatory spend, technology investment) that could impede progress.",
+      context: "Vantage Financial Group (NYSE: VFG), a $38B regional bank (Charlotte, NC), has signed an LOI to acquire Cornerstone Community Bank ($6.2B, Atlanta GA) for $920M in stock (1.48x P/B), targeted to close Q3 2025 pending OCC and Federal Reserve approval. IBM Promontory has been engaged for independent regulatory due diligence. 60-minute, 3-task senior-analyst simulation. Think like a former OCC examiner — what would make a regulator hold up or deny approval of this deal?",
+      deliverable: "Boardroom-ready, ≤250 words, lead with the recommendation.",
+      prompt: "Draft the Risk Findings section of Promontory's due-diligence memo to Vantage's board. The memo should be boardroom-ready, no more than 250 words, prioritized, written for a non-technical audience, and lead with a clear recommendation: proceed, renegotiate, or walk away. Think like a former OCC examiner — what would make a regulator hold up or deny approval of this deal?",
       aiSuggestions: [
-        "How do I calculate incremental efficiency ratio?",
-        "What cost lines typically drive efficiency ratio improvement in financial services?",
-        "Help me structure the cost headwinds section",
-        "What is a realistic compensation inflation assumption for 2025?",
+        "How should I structure a board-level risk memo?",
+        "What would make the OCC or Fed delay approval?",
+        "Help me frame a proceed/renegotiate/walk recommendation",
+        "How do I write this for a non-technical board?",
       ],
     },
     {
       id: "t3",
-      responseType: "reconciliation" as const,
-      title: "FY2025 Budget Reconciliation",
-      imperative: "Write a concise budget planning memo to the CFO summarizing FY2024 performance and recommending FY2025 resource allocation priorities.",
+      responseType: "memo" as const,
+      title: "Deal Structure Recommendation",
+      imperative: "Recommend two specific deal-structure adjustments that reduce Vantage's regulatory and financial exposure, then identify the single most important question to answer before finalizing.",
       dataPoints: [
-        { label: "Revenue", value: "$4,759M" },
-        { label: "Net Income", value: "$892M" },
-        { label: "ROE", value: "18.4%" },
-        { label: "FY25E Rev.", value: "$5,187M" },
+        { label: "Price", value: "$920M" },
+        { label: "NPL", value: "3.8%", delta: -1 },
+        { label: "CRA", value: "Needs Improvement", delta: -1 },
+        { label: "BSA MRAs", value: "3", delta: -1 },
       ],
-      context: "FY2024 key metrics: net revenue $4,759M (+13.2% YoY), net income $892M (18.7% margin), EPS $6.14 (+20.9% YoY), ROE 18.4%, efficiency ratio 71.9%. Capital Markets $2,107M (+18.6%), Investment Banking $1,842M (+12.3%), Asset Management $934M (+7.1%). DCF projects FY2025 revenue of $5,187M (+9.0%).",
-      deliverable: "Identify 2 segments for incremental investment and 1 area for reallocation — with dollar estimates and rationale.",
-      prompt: "Write a concise budget planning memo addressed to the CFO summarizing Acme Financial's FY2024 performance and recommending FY2025 resource allocation priorities. FY2024 key metrics: net revenue $4,759M (+13.2% YoY), net income $892M (18.7% margin), EPS $6.14 (+20.9% YoY), ROE 18.4%, efficiency ratio 71.9%. Segment performance: Capital Markets $2,107M (+18.6%), Investment Banking $1,842M (+12.3%), Asset Management $934M (+7.1%). The DCF model projects FY2025 revenue of $5,187M (+9.0%). Your memo should: (1) summarize FY2024 performance in 2–3 sentences with specific figures, (2) identify the 2 segments that warrant incremental investment and quantify the recommended budget increase as a percentage of segment revenue, and (3) identify 1 area where spending should be reduced or reallocated, with a dollar estimate and rationale.",
+      context: "Vantage Financial Group (NYSE: VFG), a $38B regional bank (Charlotte, NC), has signed an LOI to acquire Cornerstone Community Bank ($6.2B, Atlanta GA) for $920M in stock (1.48x P/B), targeted to close Q3 2025 pending OCC and Federal Reserve approval. IBM Promontory has been engaged for independent regulatory due diligence. 60-minute, 3-task senior-analyst simulation.",
+      deliverable: "Two structural adjustments with mechanism + risk mitigated, plus your key outstanding question.",
+      prompt: "Assuming Vantage proceeds, recommend two specific deal-structure adjustments that reduce Vantage's regulatory and financial exposure. For each adjustment, explain the mechanism and the risk it mitigates. Then identify the single most important question you would need answered before finalizing.",
       aiSuggestions: [
-        "How do I structure a CFO budget planning memo?",
-        "Which segments show the best ROI for incremental investment?",
-        "Help me frame the reallocation recommendation",
-        "What percentage budget increase is typical for high-growth segments?",
+        "How do escrow / holdback mechanisms work in bank M&A?",
+        "What regulatory approval conditions can be negotiated?",
+        "How are BSA/AML remediation costs handled in deal terms?",
+        "What is a material-adverse-change clause?",
       ],
     },
   ],
@@ -463,6 +632,17 @@ const TASK_PROMPTS = {
     },
   ],
 };
+
+type SourceMaterialKey = keyof typeof SOURCE_MATERIALS;
+
+const DEFAULT_SOURCE_MATERIAL_KEYS: SourceMaterialKey[] = ["10K", "Earnings", "Model"];
+const ROLE_SOURCE_MATERIAL_KEYS: Partial<Record<keyof typeof TASK_PROMPTS, SourceMaterialKey[]>> = {
+  "Management Consultant": ["OCC_EXAM", "FINANCIALS", "COMPLIANCE", "LOAN_TAPE"],
+};
+
+function getSourceMaterialKeysForRole(roleTemplate: keyof typeof TASK_PROMPTS): SourceMaterialKey[] {
+  return ROLE_SOURCE_MATERIAL_KEYS[roleTemplate] ?? DEFAULT_SOURCE_MATERIAL_KEYS;
+}
 
 // ─── Timer ────────────────────────────────────────────────────────────────────
 function Timer({ totalSeconds, onExpire }: { totalSeconds: number; onExpire: () => void }) {
@@ -1414,10 +1594,10 @@ export default function AssessmentInterface() {
   }, [urlToken, assessmentId]);
 
   useEffect(() => {
-    if (assessmentData?.assessment.status === "invited") {
+    if (assessmentData?.assessment.status === "invited" && assessmentData?.campaign) {
       startAssessment.mutate({ id: assessmentId });
     }
-  }, [assessmentData?.assessment.status]);
+  }, [assessmentData?.assessment.status, assessmentData?.campaign]);
 
   useEffect(() => {
     if (hadRestoredDraft) {
@@ -1429,6 +1609,10 @@ export default function AssessmentInterface() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hadRestoredDraft]);
+
+  const roleTemplate = (assessmentData?.campaign?.roleTemplate ?? "IB Analyst") as keyof typeof TASK_PROMPTS;
+  const hardcodedMaterialKeys = useMemo(() => getSourceMaterialKeysForRole(roleTemplate), [roleTemplate]);
+  const defaultHardcodedMaterialKey = hardcodedMaterialKeys[0] ?? "10K";
 
   // Custom source materials uploaded by recruiter
   const customMaterials = useMemo(
@@ -1448,12 +1632,11 @@ export default function AssessmentInterface() {
     if (hasCustomMaterials) {
       setActiveTab(customMaterials[0].fileKey);
     } else {
-      setActiveTab("10K");
+      setActiveTab(defaultHardcodedMaterialKey);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasCustomMaterials]);
+  }, [hasCustomMaterials, defaultHardcodedMaterialKey]);
 
-  const roleTemplate = (assessmentData?.campaign?.roleTemplate ?? "IB Analyst") as keyof typeof TASK_PROMPTS;
   const tasks = TASK_PROMPTS[roleTemplate] ?? TASK_PROMPTS["IB Analyst"];
   const totalMinutes = assessmentData?.assessment.timeLimitMinutes ?? 60;
   const taskIds = tasks.map(t => t.id);
@@ -1463,13 +1646,13 @@ export default function AssessmentInterface() {
   // Source material labels for AI chips
   const sourceMaterialLabels = useMemo(() => {
     if (hasCustomMaterials) return customMaterials.map(m => m.label);
-    return Object.values(SOURCE_MATERIALS).map(m => m.label);
-  }, [hasCustomMaterials, customMaterials]);
+    return hardcodedMaterialKeys.map(key => SOURCE_MATERIALS[key].label);
+  }, [hasCustomMaterials, customMaterials, hardcodedMaterialKeys]);
   const activeMaterialLabel = useMemo(() => {
     if (hasCustomMaterials) {
       return customMaterials.find(m => m.fileKey === activeTab)?.label;
     }
-    return (SOURCE_MATERIALS as Record<string, { label: string }>)[activeTab]?.label;
+    return SOURCE_MATERIALS[activeTab as SourceMaterialKey]?.label;
   }, [activeTab, hasCustomMaterials, customMaterials]);
 
   const currentTaskId = tasks[currentTask]?.id ?? "";
@@ -1666,6 +1849,30 @@ export default function AssessmentInterface() {
           </h1>
           <p className="text-sm" style={{ color: "var(--text-tertiary)" }}>
             Your responses are being scored. Redirecting to your dashboard…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Orphaned assessment: campaign was deleted out from under it. Without a
+  // campaign we silently lose roleTemplate, sourceMaterials, and timeLimit,
+  // so the candidate would see a hardcoded IB-Analyst fallback that is not
+  // what the recruiter set up. Surface this explicitly instead of pretending
+  // the assessment still works.
+  if (assessmentData && !assessmentData.campaign) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--surface-base)" }}>
+        <div className="max-w-md text-center">
+          <AlertTriangle className="w-16 h-16 mx-auto mb-4" style={{ color: "var(--data-warning, #c4a35a)" }} />
+          <h1 className="text-2xl font-black uppercase tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+            Assessment Unavailable
+          </h1>
+          <p className="text-sm leading-relaxed mb-2" style={{ color: "var(--text-tertiary)" }}>
+            The campaign for this assessment has been removed by the recruiter, so it can no longer be opened.
+          </p>
+          <p className="text-xs" style={{ color: "var(--text-quaternary)" }}>
+            Please contact your recruiter to request a fresh invite.
           </p>
         </div>
       </div>
@@ -1879,7 +2086,7 @@ export default function AssessmentInterface() {
                 </button>
               ))
             ) : (
-              (Object.keys(SOURCE_MATERIALS) as Array<keyof typeof SOURCE_MATERIALS>).map(key => {
+              hardcodedMaterialKeys.map(key => {
                 const mat = SOURCE_MATERIALS[key];
                 return (
                   <button
@@ -1912,7 +2119,7 @@ export default function AssessmentInterface() {
               })()
             ) : (
               <SourceMaterialContent
-                content={(SOURCE_MATERIALS as Record<string, { label: string; icon: React.ElementType; content: string }>)[activeTab]?.content ?? ""}
+                content={SOURCE_MATERIALS[activeTab as SourceMaterialKey]?.content ?? ""}
                 onSendToAI={text => setPendingAIMessage(text)}
                 onCiteInResponse={handleCiteInResponse}
               />

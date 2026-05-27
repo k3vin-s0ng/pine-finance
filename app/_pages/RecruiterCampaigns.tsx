@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { Target, Search, Plus, ArrowRight, Clock } from "lucide-react";
 import SourceMaterialUploader, { type SourceMaterial } from "@/app/components/SourceMaterialUploader";
 
-const ROLE_TEMPLATES = ["IB Analyst", "FP&A Analyst", "PE Associate", "Hedge Fund Research Analyst"];
+const ROLE_TEMPLATES = ["IB Analyst", "PE Associate", "Hedge Fund Research Analyst", "Management Consultant"];
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-[#d9e7db] text-[#3f5847] border-[#cfe0d2]",
   active: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -76,7 +76,7 @@ export default function RecruiterCampaigns() {
     if (!title.trim() || !roleTemplate) return toast.error("Please fill in all fields");
     createCampaign.mutate({
       title: title.trim(),
-      roleTemplate: roleTemplate as "IB Analyst" | "FP&A Analyst" | "PE Associate" | "Hedge Fund Research Analyst",
+      roleTemplate: roleTemplate as "IB Analyst" | "PE Associate" | "Hedge Fund Research Analyst" | "Management Consultant",
       timeLimitMinutes: parseInt(timeLimit),
       autoScore,
     });

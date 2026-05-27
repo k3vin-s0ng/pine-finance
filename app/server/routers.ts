@@ -59,12 +59,12 @@ export function getPineChatRoleBoundary(roleTemplate: string) {
   switch (roleTemplate) {
     case "IB Analyst":
       return "Role boundary: be comfortable with IB concepts, valuation methods, transaction framing, and source triangulation. Stay strict: do not write pitch-book-ready language or supply completed valuation outputs.";
-    case "FP&A Analyst":
-      return "Role boundary: emphasize operating drivers, variance logic, budget math setup, and forecast verification. Stay strict: do not fill the forecast, bridge, or budget recommendation for the candidate.";
     case "PE Associate":
       return "Role boundary: emphasize investment judgment, diligence framing, LBO mechanics, and risk checks. Stay strict: do not write the investment memo, deal recommendation, or final IRR answer.";
     case "Hedge Fund Research Analyst":
       return "Role boundary: emphasize thesis testing, variant perception, catalyst framing, and valuation cross-checks. Stay strict: do not hand over a final long/short thesis, price target, or fully computed return.";
+    case "Management Consultant":
+      return "Role boundary: explain regulatory frameworks, CAMELS methodology, bank M&A deal mechanics, and tradeoffs. Ask clarifying questions and point out verification opportunities. Stay strict: do not write the candidate's memo, risk ranking, or final recommendation.";
     default:
       return "Role boundary: adapt to the stated finance role, but stay strict about research-assistant behavior and candidate-owned work product.";
   }
@@ -222,9 +222,9 @@ type LLMScoreResult = Awaited<ReturnType<typeof generateScoreWithLLM>>;
 
 const TASK_RESPONSE_TYPES: Record<string, Record<string, StructuredTaskResponse["responseType"]>> = {
   "IB Analyst": { t1: "extraction", t2: "memo", t3: "flags" },
-  "FP&A Analyst": { t1: "variance", t2: "memo", t3: "reconciliation" },
   "PE Associate": { t1: "thesis", t2: "flags", t3: "memo" },
   "Hedge Fund Research Analyst": { t1: "thesis", t2: "extraction", t3: "flags" },
+  "Management Consultant": { t1: "flags", t2: "memo", t3: "memo" },
 };
 
 function parseMarkdownTableRows(raw: string) {
@@ -538,7 +538,7 @@ export const appRouter = router({
     create: recruiterProcedure
       .input(z.object({
         title: z.string().min(1),
-        roleTemplate: z.enum(["IB Analyst", "FP&A Analyst", "PE Associate", "Hedge Fund Research Analyst"]),
+        roleTemplate: z.enum(["IB Analyst", "PE Associate", "Hedge Fund Research Analyst", "Management Consultant"]),
         description: z.string().optional(),
         timeLimitMinutes: z.number().min(15).max(180).default(60),
         autoScore: z.boolean().default(true),
@@ -1086,10 +1086,15 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const assessment = await getAssessmentById(input.assessmentId);
-        if (!assessment) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!assessment) throw new TRPCError({ code: "NOT_FOUND", message: "Assessment not found." });
 
         const campaign = await getCampaignById(assessment.campaignId);
-        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!campaign) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This assessment's campaign was deleted; please ask your recruiter for a fresh invite.",
+          });
+        }
 
         const sourceMaterials = (campaign.sourceMaterials as SourceMaterial[] | null | undefined) ?? [];
         let sourceMaterialsBlock = "";

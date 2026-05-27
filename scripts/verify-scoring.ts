@@ -72,14 +72,14 @@ assert(
     (det.accuracyEvidence?.totalChecks ?? 0) >= 3,
 );
 
-assert("FP&A has no accuracy keys → null accuracy only", (() => {
-  const fpa = computeDeterministicScores({
-    roleTemplate: "FP&A Analyst",
-    tasks: [{ taskId: "t1", responseType: "variance", value: { driver: "x" } }],
+assert("Management Consultant has no accuracy keys → null accuracy only", (() => {
+  const consultant = computeDeterministicScores({
+    roleTemplate: "Management Consultant",
+    tasks: [{ taskId: "t1", responseType: "flags", value: { driver: "x" } }],
     completionTimeSeconds: 1000,
     timeLimitSeconds: 3600,
   });
-  return fpa.accuracy === null && fpa.efficiency > 0;
+  return consultant.accuracy === null && consultant.efficiency > 0;
 })());
 
 // 8. Behavioral events produce non-null process scores.

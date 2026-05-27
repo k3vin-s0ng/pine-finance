@@ -21,7 +21,7 @@ export type User = BaseRecord & {
 };
 export type InsertUser = Partial<Omit<User, "id" | "createdAt" | "updatedAt">> & { openId: string };
 
-export type RoleTemplate = "IB Analyst" | "FP&A Analyst" | "PE Associate" | "Hedge Fund Research Analyst";
+export type RoleTemplate = "IB Analyst" | "PE Associate" | "Hedge Fund Research Analyst" | "Management Consultant";
 export type SourceMaterial = { label: string; fileKey: string; url: string; mimeType: string; sizeBytes: number };
 
 export type Campaign = BaseRecord & {

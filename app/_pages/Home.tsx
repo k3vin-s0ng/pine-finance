@@ -73,7 +73,7 @@ function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <SelectValue placeholder="Select segment" />
               </SelectTrigger>
               <SelectContent className="bg-[#eef7ef] border-[#9db8a4]">
-                {["Investment Banks", "PE", "Hedge Funds", "FP&A", "Accounting"].map(s => (
+                {["Investment Banks", "PE", "Hedge Funds", "Consulting", "Accounting"].map(s => (
                   <SelectItem key={s} value={s} className="text-slate-950 hover:bg-[#cfe0d2]">{s}</SelectItem>
                 ))}
               </SelectContent>
@@ -181,7 +181,7 @@ function Hero({ onDemo }: { onDemo: () => void }) {
           </h1>
 
           <p className="text-[#3f5847] text-lg md:text-xl max-w-xl leading-relaxed mb-10 font-light">
-            Finance-specific AI fluency assessments for investment banks, private equity, hedge funds, and FP&A teams. Stop guessing who can use AI well. Start measuring with realistic hiring workflows.
+            Finance-specific AI fluency assessments for investment banks, private equity, hedge funds, and management consulting teams. Stop guessing who can use AI well. Start measuring with realistic hiring workflows.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -203,7 +203,7 @@ function Hero({ onDemo }: { onDemo: () => void }) {
           <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-[#d9e7db]">
             {[
               { value: "6", label: "Scoring Dimensions", sub: "Accuracy to Tool Fluency" },
-              { value: "4", label: "Role Templates", sub: "IB, PE, HF, FP&A" },
+              { value: "4", label: "Role Templates", sub: "IB, PE, HF, Consulting" },
               { value: "3×", label: "Better Signal", sub: "vs. traditional interviews" },
             ].map((stat) => (
               <div key={stat.value}>
@@ -317,7 +317,7 @@ function Product() {
                 {[
                   "Timed, browser-based assessment environment",
                   "Embedded AI workspace with approved tools",
-                  "Role-specific task templates (IB, PE, HF, FP&A)",
+                  "Role-specific task templates (IB, PE, HF, Consulting)",
                   "6-dimension automated scoring with LLM rationale",
                   "Benchmark reports vs. peer cohorts",
                   "PDF score reports stored and exportable",
@@ -413,10 +413,10 @@ function Segments() {
     },
     {
       icon: Calculator,
-      name: "FP&A",
-      buyer: "VP Finance, CFO Office, FP&A Lead",
-      useCase: "Analyst assessment for planning and reporting workflows",
-      why: "Recurring planning cycles and high need for accurate, AI-assisted analysis",
+      name: "Management Consulting",
+      buyer: "HR Lead, Practice COO, Talent Partner",
+      useCase: "Senior-analyst assessment for diligence, synthesis, and client-ready recommendations",
+      why: "High leverage on structured judgment, source triangulation, and clear executive communication",
     },
     {
       icon: BookOpen,
@@ -485,7 +485,7 @@ function HowItWorks() {
     {
       num: "01",
       title: "Create Campaign",
-      desc: "Recruiters create an assessment campaign, select a role template (IB Analyst, FP&A Analyst, PE Associate, or Hedge Fund Research Analyst), and set time limits.",
+      desc: "Recruiters create an assessment campaign, select a role template (IB Analyst, PE Associate, Hedge Fund Research Analyst, or Management Consultant), and set time limits.",
     },
     {
       num: "02",

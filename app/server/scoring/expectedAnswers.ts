@@ -64,9 +64,6 @@ export const EXPECTED_TASK_ANSWERS: Record<string, Record<string, ExpectedTaskAn
     },
   },
 
-  // Variance/memo tasks; no NumericalAnswersBlock in pine-1 composers yet — no keys defined.
-  "FP&A Analyst": {},
-
   // Thesis/flags/memo only; numerical keys reserved for future composer block.
   "PE Associate": {
     t1: {
@@ -81,4 +78,7 @@ export const EXPECTED_TASK_ANSWERS: Record<string, Record<string, ExpectedTaskAn
 
   // No Manus answer keys; tasks are thesis/extraction/flags without keyed numerical fields yet.
   "Hedge Fund Research Analyst": {},
+
+  // Qualitative consulting tasks; no keyed numerical answers.
+  "Management Consultant": {},
 };
