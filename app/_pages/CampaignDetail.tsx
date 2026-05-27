@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useParams, Link } from "@/app/lib/wouter";
 import DashboardShell from "@/app/components/DashboardShell";
 import { Button } from "@/app/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { trpc } from "@/app/lib/trpc";
 import { toast } from "sonner";
+import type { Score } from "@/app/lib/schema";
 import {
   Users, ChevronRight, Clock, Eye, UserPlus, Zap, CheckCircle,
   Loader2, AlertCircle, Timer, BarChart3, Copy
@@ -50,7 +51,7 @@ function StatusBadge({ status }: { status: string }) {
 function CandidateCompareModal({
   candidates, open, onClose,
 }: {
-  candidates: Array<{ name: string; score: any }>;
+  candidates: Array<{ id: string; name: string; score: Score }>;
   open: boolean;
   onClose: () => void;
 }) {
@@ -62,7 +63,7 @@ function CandidateCompareModal({
   };
   const radarData = dims.map(d => ({
     dim: dimLabels[d],
-    ...Object.fromEntries(candidates.map(c => [c.name, c.score?.[d] ?? 0])),
+    ...Object.fromEntries(candidates.map(c => [c.id, c.score?.[d] ?? 0])),
   }));
   const COLORS = ["#168a4a", "#3f5847", "#4c8fc9", "#c94c4c"];
 
@@ -82,7 +83,7 @@ function CandidateCompareModal({
                 <PolarGrid stroke="#d9e7db" />
                 <PolarAngleAxis dataKey="dim" tick={{ fill: "#6f8274", fontSize: 10 }} />
                 {candidates.map((c, i) => (
-                  <Radar key={c.name} name={c.name} dataKey={c.name}
+                  <Radar key={c.id} name={c.name} dataKey={c.id}
                     stroke={COLORS[i]} fill={COLORS[i]} fillOpacity={0.1} />
                 ))}
                 <Tooltip contentStyle={{ background: "#fff", border: "1px solid #d9e7db", borderRadius: 6 }} />
@@ -95,7 +96,7 @@ function CandidateCompareModal({
             <div className="grid gap-2" style={{ gridTemplateColumns: `140px repeat(${candidates.length}, 1fr)` }}>
               <div />
               {candidates.map(c => (
-                <div key={c.name} className="text-center">
+                <div key={c.id} className="text-center">
                   <div className="w-8 h-8 rounded-full bg-[#168a4a]/20 flex items-center justify-center mx-auto mb-1">
                     <span className="text-[#168a4a] font-bold text-xs">{c.name[0]}</span>
                   </div>
@@ -104,16 +105,16 @@ function CandidateCompareModal({
                 </div>
               ))}
               {dims.map(dim => (
-                <>
+                <Fragment key={dim}>
                   <div key={`label-${dim}`} className="flex items-center text-[#6f8274] text-[10px] font-bold uppercase tracking-wider py-2 border-t border-[#eef7ef]">
                     {dimLabels[dim]}
                   </div>
                   {candidates.map(c => (
-                    <div key={`${c.name}-${dim}`} className="py-2 border-t border-[#eef7ef]">
+                    <div key={`${c.id}-${dim}`} className="py-2 border-t border-[#eef7ef]">
                       <ScoreBar score={c.score?.[dim] ?? 0} />
                     </div>
                   ))}
-                </>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -248,11 +249,14 @@ export default function CampaignDetail() {
   };
 
   const compareData = (candidates ?? [])
-    .filter(c => selectedCandidates.includes(c.assessment.id) && c.score)
-    .map(c => ({
-      name: c.candidate?.name ?? c.assessment.invitedEmail ?? "Candidate",
-      score: c.score,
-    }));
+    .flatMap(c => {
+      if (!selectedCandidates.includes(c.assessment.id) || !c.score) return [];
+      return [{
+        id: `assessment-${c.assessment.id}`,
+        name: c.candidate?.name ?? c.assessment.invitedEmail ?? "Candidate",
+        score: c.score,
+      }];
+    });
 
   const dims = ["accuracy", "efficiency", "judgment", "verification", "communication", "toolFluency"] as const;
   const dimLabels: Record<string, string> = {
@@ -427,7 +431,7 @@ export default function CampaignDetail() {
                   {/* Dimension Scores */}
                   {dims.slice(0, 4).map(d => (
                     <div key={d} className="text-center text-sm text-[#3f5847]">
-                      {row.score ? Math.round((row.score as any)[d] ?? 0) : <span className="text-[#9db8a4]">—</span>}
+                      {row.score ? Math.round(row.score[d] ?? 0) : <span className="text-[#9db8a4]">—</span>}
                     </div>
                   ))}
 
