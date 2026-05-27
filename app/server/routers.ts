@@ -8,6 +8,7 @@ import { storageDelete, storagePut } from "./storage";
 import {
   upsertUser, getUserByOpenId, updateUserRole,
   createCampaign, getCampaignsByRecruiter, getCampaignById, updateCampaign, deleteCampaignAndRelatedData, getCampaignDeletionStorageKeys,
+  deleteAssessmentAndRelatedData, getAssessmentDeletionStorageKeys,
   createAssessment, getAssessmentsByCampaign, getAssessmentById, getAssessmentWithCampaign, getAssessmentsByCandidate, updateAssessmentStatus,
   createSubmission, getSubmissionByAssessment,
   createScore, getScoreByAssessment, getScoresByCampaign,
@@ -639,6 +640,21 @@ export const appRouter = router({
         const storageKeys = await getCampaignDeletionStorageKeys(input.id);
         await Promise.all(storageKeys.map((key) => storageDelete(key)));
         await deleteCampaignAndRelatedData(input.id);
+        return { success: true };
+      }),
+    deleteCandidate: recruiterProcedure
+      .input(z.object({ assessmentId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const assessment = await getAssessmentById(input.assessmentId);
+        if (!assessment) throw new TRPCError({ code: "NOT_FOUND" });
+        const campaign = await getCampaignById(assessment.campaignId);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const storageKeys = await getAssessmentDeletionStorageKeys(input.assessmentId);
+        await Promise.all(storageKeys.map((key) => storageDelete(key)));
+        await deleteAssessmentAndRelatedData(input.assessmentId);
         return { success: true };
       }),
     getCandidatesWithScores: recruiterProcedure

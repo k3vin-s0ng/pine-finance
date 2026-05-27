@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { Link } from "@/app/lib/wouter";
 import DashboardShell from "@/app/components/DashboardShell";
+import {
+  DeleteCandidateAssessmentDialog,
+  type DeleteCandidateAssessmentTarget,
+} from "@/app/components/DeleteCandidateAssessmentDialog";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { trpc } from "@/app/lib/trpc";
-import { Users, Search, ArrowRight, Trophy, Mail } from "lucide-react";
+import { Users, Search, ArrowRight, Trophy, Mail, Trash2 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   invited: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -18,7 +22,9 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function RecruiterCandidates() {
   const [search, setSearch] = useState("");
+  const [candidateToDelete, setCandidateToDelete] = useState<DeleteCandidateAssessmentTarget | null>(null);
   const { data: candidates, isLoading } = trpc.recruiter.allCandidates.useQuery();
+  const utils = trpc.useUtils();
 
   const filtered = (candidates ?? []).filter(({ assessment, campaign, candidate }) => {
     const q = search.toLowerCase();
@@ -131,6 +137,7 @@ export default function RecruiterCandidates() {
                       )}
                     </td>
                     <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
                       {score && (
                         <Link href={`/report/${assessment.id}`}>
                           <Button size="sm" variant="ghost" className="text-[#168a4a] hover:text-[#11743d] text-xs h-7 px-2">
@@ -138,6 +145,21 @@ export default function RecruiterCandidates() {
                           </Button>
                         </Link>
                       )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-[#6f8274] hover:text-red-500 h-7 w-7 p-0"
+                          aria-label={`Delete ${candidate?.name ?? assessment.invitedEmail ?? "candidate"}`}
+                          onClick={() => setCandidateToDelete({
+                            assessmentId: assessment.id,
+                            name: candidate?.name ?? assessment.invitedEmail ?? "Pending candidate",
+                            email: candidate?.email ?? assessment.invitedEmail ?? null,
+                            campaignTitle: campaign?.title ?? null,
+                          })}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -145,6 +167,18 @@ export default function RecruiterCandidates() {
             </table>
           </div>
         )}
+        <DeleteCandidateAssessmentDialog
+          target={candidateToDelete}
+          onOpenChange={(open) => {
+            if (!open) setCandidateToDelete(null);
+          }}
+          onDeleted={async () => {
+            await Promise.all([
+              utils.recruiter.allCandidates.invalidate(),
+              utils.recruiter.allReports.invalidate(),
+            ]);
+          }}
+        />
       </div>
     </DashboardShell>
   );

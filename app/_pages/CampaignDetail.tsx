@@ -3,6 +3,10 @@
 import { Fragment, useState } from "react";
 import { useParams, Link } from "@/app/lib/wouter";
 import DashboardShell from "@/app/components/DashboardShell";
+import {
+  DeleteCandidateAssessmentDialog,
+  type DeleteCandidateAssessmentTarget,
+} from "@/app/components/DeleteCandidateAssessmentDialog";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
@@ -13,7 +17,7 @@ import { toast } from "sonner";
 import type { Score } from "@/app/lib/schema";
 import {
   Users, ChevronRight, Clock, Eye, UserPlus, Zap, CheckCircle,
-  Loader2, AlertCircle, Timer, BarChart3, Copy
+  Loader2, AlertCircle, Timer, BarChart3, Copy, Trash2
 } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -211,6 +215,7 @@ export default function CampaignDetail() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [scoringIds, setScoringIds] = useState<Set<number>>(new Set());
+  const [candidateToDelete, setCandidateToDelete] = useState<DeleteCandidateAssessmentTarget | null>(null);
 
   const { data: campaign } = trpc.campaigns.get.useQuery({ id: campaignId });
   const { data: candidates, isLoading, refetch } = trpc.campaigns.getCandidatesWithStatus.useQuery({ campaignId });
@@ -378,7 +383,7 @@ export default function CampaignDetail() {
           <>
             {/* Header */}
             <div className="hidden lg:grid px-6 py-2 text-[#6f8274] text-[10px] font-bold tracking-widest uppercase border-b border-[#eef7ef]"
-              style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 120px" }}>
+              style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 144px" }}>
               <div />
               <div>Candidate</div>
               <div>Status</div>
@@ -398,7 +403,7 @@ export default function CampaignDetail() {
                 <div
                   key={row.assessment.id}
                   className={`grid px-6 py-4 items-center border-b border-[#fff] hover:bg-[#fff] transition-colors ${isSelected ? "bg-[#168a4a]/5" : ""}`}
-                  style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 120px" }}
+                  style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 144px" }}
                 >
                   {/* Checkbox */}
                   <div
@@ -460,6 +465,20 @@ export default function CampaignDetail() {
                         </Button>
                       </Link>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[#6f8274] hover:text-red-500 p-1 h-7 w-7"
+                      aria-label={`Delete ${displayName}`}
+                      onClick={() => setCandidateToDelete({
+                        assessmentId: row.assessment.id,
+                        name: displayName,
+                        email: displayEmail,
+                        campaignTitle: campaign?.title ?? null,
+                      })}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               );
@@ -479,6 +498,24 @@ export default function CampaignDetail() {
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         lastInviteResult={null}
+      />
+      <DeleteCandidateAssessmentDialog
+        target={candidateToDelete}
+        onOpenChange={(open) => {
+          if (!open) setCandidateToDelete(null);
+        }}
+        onDeleted={async () => {
+          if (candidateToDelete) {
+            setSelectedCandidates(prev => prev.filter(id => id !== candidateToDelete.assessmentId));
+          }
+          await Promise.all([
+            utils.campaigns.getCandidatesWithStatus.invalidate({ campaignId }),
+            utils.campaigns.getCandidatesWithScores.invalidate({ campaignId }),
+            utils.recruiter.allCandidates.invalidate(),
+            utils.recruiter.allReports.invalidate(),
+          ]);
+          await refetch();
+        }}
       />
     </DashboardShell>
   );

@@ -266,6 +266,32 @@ export async function deleteCampaignAndRelatedData(id: number) {
   ]);
 }
 
+export async function getAssessmentDeletionStorageKeys(assessmentId: number): Promise<string[]> {
+  const pdfReports = stripMany(await (await col<PdfReport>("pdfReports"))?.find({ assessmentId }).toArray() ?? []);
+  return Array.from(new Set(
+    pdfReports.map((report) => report.storageKey).filter((key): key is string => Boolean(key)),
+  ));
+}
+
+export async function deleteAssessmentAndRelatedData(assessmentId: number) {
+  const assessments = await col<Assessment>("assessments");
+  const submissions = await col<Submission>("submissions");
+  const scores = await col<Score>("scores");
+  const pdfReports = await col<PdfReport>("pdfReports");
+  const behaviorEvents = await col<BehaviorEvent>("behaviorEvents");
+  if (!assessments || !submissions || !scores || !pdfReports || !behaviorEvents) {
+    throw new Error("DB unavailable");
+  }
+
+  await Promise.all([
+    scores.deleteMany({ assessmentId }),
+    submissions.deleteMany({ assessmentId }),
+    pdfReports.deleteMany({ assessmentId }),
+    behaviorEvents.deleteMany({ assessmentId }),
+    assessments.deleteOne({ id: assessmentId }),
+  ]);
+}
+
 export async function createAssessment(data: InsertAssessment): Promise<number> {
   return insertWithId<Assessment>("assessments", Object.assign({ status: "invited", timeLimitMinutes: 60 }, data));
 }
