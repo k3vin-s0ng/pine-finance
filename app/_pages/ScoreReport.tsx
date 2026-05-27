@@ -7,12 +7,13 @@ import { trpc } from "@/app/lib/trpc";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import {
   Download, ArrowLeft, Target, Zap, Shield, CheckCircle,
-  BookOpen, BarChart3, Award, TrendingUp, Loader2, FileText
+  BookOpen, BarChart3, Award, Loader2, FileText
 } from "lucide-react";
 import { ExamResponseHistory } from "@/app/components/ExamResponseHistory";
 import { CandidateBehaviorTab } from "@/app/components/CandidateBehaviorTab";
 import { ProcessTraceTimeline } from "@/app/components/ProcessTraceTimeline";
 import { EvidencePanel } from "@/app/components/EvidencePanel";
+import type { Score } from "@/app/lib/schema";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ReferenceLine
@@ -28,6 +29,19 @@ const DIMENSION_CONFIG = {
 };
 
 type DimKey = keyof typeof DIMENSION_CONFIG;
+type DimensionScoreKey = Extract<keyof Score, DimKey>;
+type DimensionRationaleKey = Extract<keyof Score, `${DimKey}Rationale`>;
+
+const DIMENSION_KEYS: DimensionScoreKey[] = ["accuracy", "efficiency", "judgment", "verification", "communication", "toolFluency"];
+
+const DIMENSION_RATIONALE_KEYS: Record<DimensionScoreKey, DimensionRationaleKey> = {
+  accuracy: "accuracyRationale",
+  efficiency: "efficiencyRationale",
+  judgment: "judgmentRationale",
+  verification: "verificationRationale",
+  communication: "communicationRationale",
+  toolFluency: "toolFluencyRationale",
+};
 
 function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
   const radius = (size - 20) / 2;
@@ -160,18 +174,18 @@ export default function ScoreReport() {
   }
 
   const score = report.score;
-  const dims: DimKey[] = ["accuracy", "efficiency", "judgment", "verification", "communication", "toolFluency"];
+  const dims = DIMENSION_KEYS;
   const benchmarkDims = benchmarkData?.dimensions as Record<string, number> | undefined;
 
   const radarData = dims.map(d => ({
     subject: DIMENSION_CONFIG[d].label,
-    score: Math.round((score as any)[d] ?? 0),
+    score: Math.round(score[d] ?? 0),
     benchmark: benchmarkDims ? Math.round(benchmarkDims[d] ?? 72) : 72,
   }));
 
   const barData = dims.map(d => ({
     name: DIMENSION_CONFIG[d].label,
-    score: Math.round((score as any)[d] ?? 0),
+    score: Math.round(score[d] ?? 0),
     benchmark: benchmarkDims ? Math.round(benchmarkDims[d] ?? 72) : 72,
     color: DIMENSION_CONFIG[d].color,
   }));
@@ -306,8 +320,8 @@ export default function ScoreReport() {
               <DimensionCard
                 key={d}
                 dimKey={d}
-                score={(score as any)[d] ?? 0}
-                rationale={(score as any)[`${d}Rationale`] ?? ""}
+                score={score[d] ?? 0}
+                rationale={score[DIMENSION_RATIONALE_KEYS[d]] ?? ""}
               />
             ))}
           </div>

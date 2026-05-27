@@ -3,6 +3,7 @@ import { parseNumericalInput, withinTolerance } from "./numericalParser";
 import {
   computeBehavioralScores,
   type BehavioralSummaryEvidence,
+  type BehavioralResponseProfile,
   type BehaviorScoringEvent,
   type JudgmentEvidence,
   type ToolFluencyEvidence,
@@ -39,14 +40,50 @@ export type EfficiencyEvidence = {
   completionTimeSeconds: number;
   timeLimitSeconds: number;
   timeRatio: number;
-  band: "rushed" | "good" | "optimal" | "tight" | "expired";
+  completenessRatio: number;
+  abandoned: boolean;
+  band: "abandoned" | "rushed" | "good" | "optimal" | "tight" | "expired";
 };
+
+export type AiInteractionForScoring = {
+  role: string;
+  content: string;
+};
+
+export type TaskCompletenessEvidence = {
+  taskId: string;
+  wordCount: number;
+  typedWordEstimate: number;
+  responseChars: number;
+  pastedChars: number;
+  aiPastedChars: number;
+  assistantSimilarity: number;
+  substantive: boolean;
+  aiPasted: boolean;
+  reason: string;
+};
+
+export type CompletenessEvidence = {
+  definedTaskCount: number;
+  attemptedTaskCount: number;
+  completenessRatio: number;
+  taskWordThreshold: number;
+  typedWordThreshold: number;
+  tasks: TaskCompletenessEvidence[];
+  overallMultiplier: number;
+  accuracyMultiplier: number;
+  communicationMultiplier: number;
+};
+
+export type ResponseRelianceEvidence = BehavioralResponseProfile;
 
 export type DeterministicScores = {
   accuracy: number | null;
   accuracyEvidence: AccuracyEvidence | null;
   efficiency: number;
   efficiencyEvidence: EfficiencyEvidence;
+  completenessEvidence: CompletenessEvidence;
+  responseRelianceEvidence: ResponseRelianceEvidence;
   behavioralEvidence: BehavioralSummaryEvidence | null;
   judgment: number | null;
   judgmentEvidence: JudgmentEvidence | null;
@@ -55,6 +92,205 @@ export type DeterministicScores = {
   toolFluency: number | null;
   toolFluencyEvidence: ToolFluencyEvidence | null;
 };
+
+const SUBSTANTIVE_WORD_THRESHOLD = 15;
+const SUBSTANTIVE_TYPED_WORD_THRESHOLD = 12;
+
+function clampScore(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function countWords(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function normalizeForComparison(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[`*_#>\-[\]().,;:!?$%]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function wordSetSimilarity(candidate: string, assistant: string) {
+  const candidateWords = new Set(candidate.split(" ").filter((word) => word.length > 3));
+  if (candidateWords.size === 0) return 0;
+  const assistantWords = new Set(assistant.split(" ").filter((word) => word.length > 3));
+  let overlap = 0;
+  for (const word of candidateWords) {
+    if (assistantWords.has(word)) overlap += 1;
+  }
+  return overlap / candidateWords.size;
+}
+
+function assistantSimilarity(response: string, assistantMessages: string[]) {
+  const normalizedResponse = normalizeForComparison(response);
+  if (normalizedResponse.length < 120) return 0;
+
+  let best = 0;
+  for (const message of assistantMessages) {
+    const normalizedAssistant = normalizeForComparison(message);
+    if (normalizedAssistant.length < 120) continue;
+
+    if (normalizedAssistant.includes(normalizedResponse)) {
+      best = Math.max(best, 1);
+      continue;
+    }
+    if (normalizedResponse.includes(normalizedAssistant)) {
+      best = Math.max(best, Math.min(1, normalizedAssistant.length / normalizedResponse.length));
+      continue;
+    }
+
+    best = Math.max(best, wordSetSimilarity(normalizedResponse, normalizedAssistant));
+  }
+
+  return Math.round(best * 1000) / 1000;
+}
+
+function getEventRecord(event: BehaviorScoringEvent) {
+  return event.eventData && typeof event.eventData === "object" && !Array.isArray(event.eventData)
+    ? (event.eventData as Record<string, unknown>)
+    : {};
+}
+
+function eventNumber(value: unknown) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getPasteStatsByTask(behaviorEvents: BehaviorScoringEvent[]) {
+  const stats = new Map<string, { pastedChars: number; aiPastedChars: number; largestPasteChars: number }>();
+  let totalPastedChars = 0;
+  let totalAiPastedChars = 0;
+  let largestPasteChars = 0;
+
+  for (const event of behaviorEvents) {
+    if (event.eventType !== "paste") continue;
+    const taskId = event.taskId ?? "";
+    const data = getEventRecord(event);
+    const clipboardLength = eventNumber(data.clipboardLength);
+    const source = data.source;
+    totalPastedChars += clipboardLength;
+    largestPasteChars = Math.max(largestPasteChars, clipboardLength);
+    const taskStats = stats.get(taskId) ?? { pastedChars: 0, aiPastedChars: 0, largestPasteChars: 0 };
+    taskStats.pastedChars += clipboardLength;
+    taskStats.largestPasteChars = Math.max(taskStats.largestPasteChars, clipboardLength);
+    if (source === "ai") {
+      taskStats.aiPastedChars += clipboardLength;
+      totalAiPastedChars += clipboardLength;
+    }
+    stats.set(taskId, taskStats);
+  }
+
+  return { stats, totalPastedChars, totalAiPastedChars, largestPasteChars };
+}
+
+function completenessMultiplier(ratio: number) {
+  if (ratio >= 1) return 1;
+  if (ratio >= 0.67) return 0.6;
+  if (ratio >= 0.34) return 0.35;
+  if (ratio > 0) return 0.2;
+  return 0.1;
+}
+
+export function analyzeSubmissionIntegrity(params: {
+  taskResponses: Record<string, string>;
+  definedTaskIds: string[];
+  aiInteractions?: AiInteractionForScoring[];
+  behaviorEvents?: BehaviorScoringEvent[];
+}): { completeness: CompletenessEvidence; responseReliance: ResponseRelianceEvidence } {
+  const { taskResponses, definedTaskIds, aiInteractions = [], behaviorEvents = [] } = params;
+  const taskIds = definedTaskIds.length > 0 ? definedTaskIds : Object.keys(taskResponses);
+  const assistantMessages = aiInteractions
+    .filter((message) => message.role === "assistant")
+    .map((message) => message.content ?? "");
+  const pasteStats = getPasteStatsByTask(behaviorEvents);
+  let attemptedTaskCount = 0;
+  let totalResponseChars = 0;
+  let totalResponseWords = 0;
+  let typedCharsEstimate = 0;
+  let aiPastedTaskCount = 0;
+
+  const tasks = taskIds.map((taskId) => {
+    const response = taskResponses[taskId] ?? "";
+    const responseChars = response.length;
+    const wordCount = countWords(response);
+    const taskPasteStats = pasteStats.stats.get(taskId) ?? { pastedChars: 0, aiPastedChars: 0, largestPasteChars: 0 };
+    const similarity = assistantSimilarity(response, assistantMessages);
+    const aiPasted =
+      taskPasteStats.aiPastedChars >= Math.max(120, responseChars * 0.35) ||
+      similarity >= 0.82;
+    const taskTypedChars = Math.max(0, responseChars - taskPasteStats.pastedChars);
+    const typedWordEstimate =
+      responseChars > 0 ? Math.floor(wordCount * (taskTypedChars / responseChars)) : 0;
+    const substantive =
+      wordCount >= SUBSTANTIVE_WORD_THRESHOLD &&
+      typedWordEstimate >= SUBSTANTIVE_TYPED_WORD_THRESHOLD &&
+      !aiPasted;
+    let reason = "substantive candidate-authored response";
+
+    if (!response.trim()) reason = "empty response";
+    else if (aiPasted) reason = "response appears largely AI-pasted";
+    else if (wordCount < SUBSTANTIVE_WORD_THRESHOLD) reason = "too short to evaluate";
+    else if (typedWordEstimate < SUBSTANTIVE_TYPED_WORD_THRESHOLD) reason = "insufficient candidate-authored text after paste adjustment";
+
+    if (substantive) attemptedTaskCount += 1;
+    if (aiPasted) aiPastedTaskCount += 1;
+    totalResponseChars += responseChars;
+    totalResponseWords += wordCount;
+    typedCharsEstimate += taskTypedChars;
+
+    return {
+      taskId,
+      wordCount,
+      typedWordEstimate,
+      responseChars,
+      pastedChars: taskPasteStats.pastedChars,
+      aiPastedChars: taskPasteStats.aiPastedChars,
+      assistantSimilarity: similarity,
+      substantive,
+      aiPasted,
+      reason,
+    };
+  });
+
+  const definedTaskCount = Math.max(taskIds.length, 1);
+  const completenessRatio = attemptedTaskCount / definedTaskCount;
+  const totalPastedChars = pasteStats.totalPastedChars;
+  const totalAiPastedChars = Math.max(
+    pasteStats.totalAiPastedChars,
+    tasks.filter((task) => task.aiPasted).reduce((sum, task) => sum + task.responseChars, 0),
+  );
+  const pasteShare = totalResponseChars > 0 ? totalPastedChars / totalResponseChars : 0;
+  const aiPasteShare = totalResponseChars > 0 ? totalAiPastedChars / totalResponseChars : 0;
+  const baseMultiplier = completenessMultiplier(completenessRatio);
+  const aiPasteCap = aiPastedTaskCount > 0 || aiPasteShare >= 0.35 ? 0.55 : 1;
+
+  return {
+    completeness: {
+      definedTaskCount,
+      attemptedTaskCount,
+      completenessRatio: Math.round(completenessRatio * 1000) / 1000,
+      taskWordThreshold: SUBSTANTIVE_WORD_THRESHOLD,
+      typedWordThreshold: SUBSTANTIVE_TYPED_WORD_THRESHOLD,
+      tasks,
+      overallMultiplier: Math.min(baseMultiplier, aiPasteCap),
+      accuracyMultiplier: Math.min(baseMultiplier, aiPasteCap),
+      communicationMultiplier: Math.min(baseMultiplier, aiPasteCap),
+    },
+    responseReliance: {
+      totalResponseChars,
+      totalResponseWords,
+      totalPastedChars,
+      totalAiPastedChars,
+      largestPasteChars: pasteStats.largestPasteChars,
+      pasteShare: Math.round(pasteShare * 1000) / 1000,
+      aiPasteShare: Math.round(aiPasteShare * 1000) / 1000,
+      typedCharsEstimate,
+      aiPastedTaskCount,
+    },
+  };
+}
 
 // ─── Accuracy ────────────────────────────────────────────────────────────────
 
@@ -189,11 +425,13 @@ export function computeAccuracyScore(
 export function computeEfficiency(
   completionTimeSeconds: number,
   timeLimitSeconds: number,
+  completenessRatio = 1,
 ): { score: number; evidence: EfficiencyEvidence } {
   const ratio = completionTimeSeconds / timeLimitSeconds;
 
   let score: number;
   let band: EfficiencyEvidence["band"];
+  let abandoned = false;
 
   if (ratio > 1.0) {
     score = 50;
@@ -211,16 +449,26 @@ export function computeEfficiency(
     band = "good";
   } else {
     const fraction = ratio / 0.3;
-    score = Math.round(55 + 20 * fraction);
+    score = Math.round(10 + 45 * fraction);
     band = "rushed";
   }
 
+  if (completenessRatio < 0.67 && ratio < 0.3) {
+    abandoned = true;
+    band = "abandoned";
+    score = Math.min(score, Math.round(35 * completenessRatio));
+  } else if (completenessRatio < 1) {
+    score = Math.min(score, Math.round(score * (0.35 + 0.65 * completenessRatio)));
+  }
+
   return {
-    score,
+    score: clampScore(score),
     evidence: {
       completionTimeSeconds,
       timeLimitSeconds,
       timeRatio: ratio,
+      completenessRatio: Math.round(completenessRatio * 1000) / 1000,
+      abandoned,
       band,
     },
   };
@@ -231,21 +479,45 @@ export function computeEfficiency(
 export function computeDeterministicScores(params: {
   roleTemplate: string;
   tasks: StructuredTaskResponse[];
+  taskResponses?: Record<string, string>;
+  definedTaskIds?: string[];
+  aiInteractions?: AiInteractionForScoring[];
   completionTimeSeconds: number;
   timeLimitSeconds: number;
   behaviorEvents?: BehaviorScoringEvent[];
 }): DeterministicScores {
-  const { roleTemplate, tasks, completionTimeSeconds, timeLimitSeconds, behaviorEvents = [] } = params;
+  const {
+    roleTemplate,
+    tasks,
+    taskResponses = {},
+    definedTaskIds = tasks.map((task) => task.taskId),
+    aiInteractions = [],
+    completionTimeSeconds,
+    timeLimitSeconds,
+    behaviorEvents = [],
+  } = params;
 
   const accuracy = computeAccuracyScore(roleTemplate, tasks);
-  const efficiency = computeEfficiency(completionTimeSeconds, timeLimitSeconds);
-  const behavioral = computeBehavioralScores(behaviorEvents);
+  const integrity = analyzeSubmissionIntegrity({
+    taskResponses,
+    definedTaskIds,
+    aiInteractions,
+    behaviorEvents,
+  });
+  const efficiency = computeEfficiency(
+    completionTimeSeconds,
+    timeLimitSeconds,
+    integrity.completeness.completenessRatio,
+  );
+  const behavioral = computeBehavioralScores(behaviorEvents, integrity.responseReliance);
 
   return {
     accuracy: accuracy.score,
     accuracyEvidence: accuracy.evidence,
     efficiency: efficiency.score,
     efficiencyEvidence: efficiency.evidence,
+    completenessEvidence: integrity.completeness,
+    responseRelianceEvidence: integrity.responseReliance,
     behavioralEvidence: behavioral.summary,
     judgment: behavioral.judgment,
     judgmentEvidence: behavioral.judgmentEvidence,

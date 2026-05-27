@@ -65,6 +65,8 @@ export type InsertSubmission = Omit<Submission, "id" | "createdAt" | "updatedAt"
 export type ScoreEvidence = {
   accuracyChecks?: unknown;
   efficiencyBand?: unknown;
+  completeness?: unknown;
+  responseReliance?: unknown;
   behavioral?: {
     summary?: unknown;
     judgment?: unknown;
@@ -72,6 +74,7 @@ export type ScoreEvidence = {
     toolFluency?: unknown;
   };
   blend?: unknown;
+  integrityGate?: unknown;
 };
 
 export type Score = BaseRecord & {

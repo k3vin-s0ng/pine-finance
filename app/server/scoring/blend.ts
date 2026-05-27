@@ -1,4 +1,8 @@
-import type { DeterministicScores } from "./deterministic";
+import type {
+  CompletenessEvidence,
+  DeterministicScores,
+  ResponseRelianceEvidence,
+} from "./deterministic";
 
 export type ScoreDimension =
   | "accuracy"
@@ -29,6 +33,25 @@ export type DimensionBlendEvidence = {
 export type BlendEvidence = {
   dimensions: Record<ScoreDimension, DimensionBlendEvidence>;
   overallWeights: Record<ScoreDimension, number>;
+};
+
+export type IntegrityGateEvidence = {
+  before: DimensionScoreSet;
+  after: DimensionScoreSet;
+  completenessRatio: number;
+  aiPasteShare: number;
+  attemptedTaskCount: number;
+  definedTaskCount: number;
+  multipliers: {
+    overall: number;
+    accuracy: number;
+    communication: number;
+  };
+  caps: {
+    judgment: number | null;
+    verification: number | null;
+    toolFluency: number | null;
+  };
 };
 
 export const OVERALL_SCORE_WEIGHTS: Record<ScoreDimension, number> = {
@@ -64,6 +87,15 @@ const DIMENSIONS: ScoreDimension[] = [
 
 function clampScore(value: number) {
   return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function scaleScore(value: number | null, multiplier: number) {
+  return value === null ? null : clampScore(value * multiplier);
+}
+
+function capScore(value: number | null, cap: number | null) {
+  if (value === null || cap === null) return value;
+  return Math.min(value, cap);
 }
 
 function blendDimension(params: {
@@ -146,6 +178,53 @@ export function blendScores(
     evidence: {
       dimensions,
       overallWeights: OVERALL_SCORE_WEIGHTS,
+    },
+  };
+}
+
+export function applyIntegrityGates(
+  scores: DimensionScoreSet,
+  completeness: CompletenessEvidence,
+  responseReliance: ResponseRelianceEvidence,
+): { scores: DimensionScoreSet; evidence: IntegrityGateEvidence } {
+  const severeAiPaste = responseReliance.aiPastedTaskCount > 0 || responseReliance.aiPasteShare >= 0.5;
+  const moderateAiPaste = responseReliance.aiPasteShare >= 0.25;
+  const caps = {
+    judgment: severeAiPaste ? 45 : moderateAiPaste ? 65 : null,
+    verification: severeAiPaste ? 45 : moderateAiPaste ? 65 : null,
+    toolFluency: severeAiPaste ? 55 : moderateAiPaste ? 70 : null,
+  };
+
+  const gatedDimensions: Record<ScoreDimension, number | null> = {
+    accuracy: scaleScore(scores.accuracy, completeness.accuracyMultiplier),
+    efficiency: scores.efficiency,
+    judgment: capScore(scores.judgment, caps.judgment),
+    verification: capScore(scores.verification, caps.verification),
+    communication: scaleScore(scores.communication, completeness.communicationMultiplier),
+    toolFluency: capScore(scores.toolFluency, caps.toolFluency),
+  };
+  const dimensionOverall = computeOverallScore(gatedDimensions);
+  const gatedOverall = scaleScore(dimensionOverall, completeness.overallMultiplier);
+  const gatedScores = {
+    ...gatedDimensions,
+    overallScore: gatedOverall,
+  };
+
+  return {
+    scores: gatedScores,
+    evidence: {
+      before: scores,
+      after: gatedScores,
+      completenessRatio: completeness.completenessRatio,
+      aiPasteShare: responseReliance.aiPasteShare,
+      attemptedTaskCount: completeness.attemptedTaskCount,
+      definedTaskCount: completeness.definedTaskCount,
+      multipliers: {
+        overall: completeness.overallMultiplier,
+        accuracy: completeness.accuracyMultiplier,
+        communication: completeness.communicationMultiplier,
+      },
+      caps,
     },
   };
 }

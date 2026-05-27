@@ -699,24 +699,35 @@ interface BehaviorEvent {
   timestamp: number;
 }
 
-function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
+function BehaviorStrip({ events, typedPct, pastedPct, typingSignal }: {
   events: BehaviorEvent[];
   typedPct: number;
   pastedPct: number;
-  lastTypedAt: number; // ms timestamp of last keydown
+  typingSignal: number;
 }) {
-  const now = Date.now();
   const windowMs = 120_000; // 2 min window
+  const IDLE_TIMEOUT = 2000; // ms after last composition update before fading to idle
+  const BAR_COUNT = 8;
+  const IDLE_BAR_HEIGHTS = Array(BAR_COUNT).fill(2) as number[];
 
   // Animated phase for the waveform heartbeat
   const phaseRef = useRef(0);
   const rafRef = useRef<number | null>(null);
-  const [barHeights, setBarHeights] = useState<number[]>(() => Array(8).fill(2));
+  const [waveform, setWaveform] = useState<{
+    barHeights: number[];
+    isActive: boolean;
+    nowMs: number;
+  }>(() => ({
+    barHeights: IDLE_BAR_HEIGHTS,
+    isActive: false,
+    nowMs: 0,
+  }));
 
   useEffect(() => {
-    const IDLE_TIMEOUT = 2000; // ms after last keystroke before fading to idle
+    if (typingSignal === 0) return;
+
     const SPEED = 3.5;         // radians per second
-    const BAR_COUNT = 8;
+    const activityStartedAt = Date.now();
     let lastTime: number | null = null;
 
     const tick = (ts: number) => {
@@ -726,15 +737,16 @@ function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
       }
       lastTime = ts;
 
-      const msSinceTyped = Date.now() - lastTypedAt;
-      const isActive = lastTypedAt > 0 && msSinceTyped < IDLE_TIMEOUT;
+      const nowMs = Date.now();
+      const msSinceTyped = nowMs - activityStartedAt;
+      const isActive = msSinceTyped < IDLE_TIMEOUT;
 
       // Fade-in/out multiplier: 0 → 1 over 200ms, 1 → 0 over 400ms
-      const fadeIn = lastTypedAt > 0 ? Math.min(1, msSinceTyped < 200 ? msSinceTyped / 200 : 1) : 0;
+      const fadeIn = Math.min(1, msSinceTyped < 200 ? msSinceTyped / 200 : 1);
       const fadeOut = msSinceTyped > IDLE_TIMEOUT - 400
         ? Math.max(0, 1 - (msSinceTyped - (IDLE_TIMEOUT - 400)) / 400)
         : 1;
-      const envelope = isActive ? fadeIn * fadeOut : (lastTypedAt > 0 ? 0 : 0);
+      const envelope = isActive ? fadeIn * fadeOut : 0;
 
       // Amplitude scales with how much the candidate has typed (typedPct)
       const amplitude = 3 + (typedPct / 100) * 6; // 3–9 px
@@ -746,17 +758,23 @@ function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
         return Math.max(2, Math.min(14, animated));
       });
 
-      setBarHeights(heights);
-      rafRef.current = requestAnimationFrame(tick);
+      setWaveform({ barHeights: heights, isActive, nowMs });
+
+      if (isActive || msSinceTyped < IDLE_TIMEOUT + 450) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        rafRef.current = null;
+      }
     };
 
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [lastTypedAt, typedPct]);
+  }, [typingSignal, typedPct]);
 
-  const isActive = lastTypedAt > 0 && Date.now() - lastTypedAt < 2000;
+  const { barHeights, isActive, nowMs } = waveform;
+  const isRecent = (event: BehaviorEvent) => nowMs === 0 || nowMs - event.timestamp < windowMs;
 
   return (
     <div
@@ -798,14 +816,14 @@ function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
           <div className="flex items-center gap-1.5 cursor-default">
             <Clipboard className="w-3 h-3" style={{ color: "var(--text-quaternary)" }} />
             <div className="flex gap-0.5">
-              {events.filter(e => e.type === "paste" && now - e.timestamp < windowMs).slice(-5).map((e, i) => (
+              {events.filter(e => e.type === "paste" && isRecent(e)).slice(-5).map((e, i) => (
                 <div
                   key={i}
                   className="w-1 h-1 rounded-full"
                   style={{ background: "var(--data-neutral)" }}
                 />
               ))}
-              {events.filter(e => e.type === "paste" && now - e.timestamp < windowMs).length === 0 && (
+              {events.filter(e => e.type === "paste" && isRecent(e)).length === 0 && (
                 <div className="w-1 h-1 rounded-full" style={{ background: "var(--border-emphasis)" }} />
               )}
             </div>
@@ -828,14 +846,14 @@ function BehaviorStrip({ events, typedPct, pastedPct, lastTypedAt }: {
           <div className="flex items-center gap-1.5 cursor-default">
             <Zap className="w-3 h-3" style={{ color: "var(--text-quaternary)" }} />
             <div className="flex gap-0.5">
-              {events.filter(e => e.type === "ai" && now - e.timestamp < windowMs).slice(-5).map((e, i) => (
+              {events.filter(e => e.type === "ai" && isRecent(e)).slice(-5).map((e, i) => (
                 <div
                   key={i}
                   className="w-1 h-1 rounded-full"
                   style={{ background: "var(--accent-gold)" }}
                 />
               ))}
-              {events.filter(e => e.type === "ai" && now - e.timestamp < windowMs).length === 0 && (
+              {events.filter(e => e.type === "ai" && isRecent(e)).length === 0 && (
                 <div className="w-1 h-1 rounded-full" style={{ background: "var(--border-emphasis)" }} />
               )}
             </div>
@@ -1029,6 +1047,7 @@ function AIChatPanel({
   activeMaterialLabel,
   onInteraction,
   onCiteInResponse,
+  onAssistantCopy,
   sourceMaterialLabels,
   onPushBehaviorEvent,
   taskStartTimeRef,
@@ -1040,6 +1059,7 @@ function AIChatPanel({
   activeMaterialLabel?: string;
   onInteraction: (msg: { role: string; content: string; taskKey: string; timestamp: number }) => void;
   onCiteInResponse: (text: string, source: "ai" | "source_material") => void;
+  onAssistantCopy: () => void;
   sourceMaterialLabels: string[];
   onPushBehaviorEvent: (event: { eventType: string; taskId?: string; eventData?: unknown; clientTimestamp: number }) => void;
   taskStartTimeRef: React.MutableRefObject<Record<string, number>>;
@@ -1207,6 +1227,7 @@ function AIChatPanel({
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className="max-w-[90%] rounded-xl text-sm relative group"
+                    onCopy={msg.role === "assistant" ? onAssistantCopy : undefined}
                     style={{
                       background: msg.role === "user"
                         ? "rgba(22,138,74,0.1)"
@@ -1239,15 +1260,6 @@ function AIChatPanel({
                     {msg.role === "assistant" && (
                       <div
                         className="px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                        onCopy={() => {
-                          const sel = window.getSelection()?.toString() ?? "";
-                          onPushBehaviorEvent({
-                            eventType: "paste",
-                            taskId: currentTaskId,
-                            eventData: { source: "ai", clipboardLength: sel.length },
-                            clientTimestamp: Date.now(),
-                          });
-                        }}
                       >
                         <button
                           onClick={() => onCiteInResponse(msg.content, "ai")}
@@ -1313,7 +1325,7 @@ function AIChatPanel({
   );
 }
 
-// ─── Source Material Content with TOC ────────────────────────────────────────
+// ─── Source Material Content ─────────────────────────────────────────────────
 function SourceMaterialContent({
   content,
   onSendToAI,
@@ -1323,26 +1335,7 @@ function SourceMaterialContent({
   onSendToAI: (text: string) => void;
   onCiteInResponse: (text: string, source: "ai" | "source_material") => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<{ text: string; x: number; y: number } | null>(null);
-  const [toc, setToc] = useState<Array<{ id: string; text: string; level: number }>>([]);
-
-  // Build TOC from rendered headings
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const headings = containerRef.current.querySelectorAll("h2, h3");
-    const items: Array<{ id: string; text: string; level: number }> = [];
-    headings.forEach((h, i) => {
-      const id = `toc-heading-${i}`;
-      h.id = id;
-      items.push({
-        id,
-        text: h.textContent ?? "",
-        level: h.tagName === "H2" ? 2 : 3,
-      });
-    });
-    setToc(items);
-  }, [content]);
 
   const handleMouseUp = () => {
     const sel = window.getSelection();
@@ -1356,45 +1349,10 @@ function SourceMaterialContent({
     setSelection({ text, x: rect.left + rect.width / 2, y: rect.top - 8 });
   };
 
-  const scrollToHeading = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Sticky mini-TOC */}
-      {toc.length > 0 && (
-        <div
-          className="flex-shrink-0 px-4 py-2 border-b overflow-x-auto"
-          style={{ background: "var(--surface-1)", borderColor: "var(--border-subtle)" }}
-        >
-          <div className="flex gap-1 items-center flex-wrap">
-            <span className="text-[9px] font-bold uppercase tracking-widest mr-1" style={{ color: "var(--text-quaternary)" }}>
-              Jump:
-            </span>
-            {toc.map(item => (
-              <button
-                key={item.id}
-                onClick={() => scrollToHeading(item.id)}
-                className="text-[10px] px-2 py-0.5 rounded whitespace-nowrap transition-colors duration-150"
-                style={{
-                  color: item.level === 2 ? "var(--text-secondary)" : "var(--text-tertiary)",
-                  paddingLeft: item.level === 3 ? "1rem" : undefined,
-                  background: "transparent",
-                }}
-                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-gold)"}
-                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = item.level === 2 ? "var(--text-secondary)" : "var(--text-tertiary)"}
-              >
-                {item.text}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Content */}
       <div
-        ref={containerRef}
         className="flex-1 overflow-y-auto px-6 py-5 relative"
         onMouseUp={handleMouseUp}
         style={{ background: "var(--surface-base)" }}
@@ -1641,7 +1599,8 @@ export default function AssessmentInterface() {
   const totalMinutes = assessmentData?.assessment.timeLimitMinutes ?? 60;
   const taskIds = tasks.map(t => t.id);
   const { progress: taskProgress, formatElapsed } = useTaskProgress(currentTask, taskIds, responses);
-  const { textareaProps: compositionProps, getRatio, lastTypedAt } = useCompositionTracker(tasks[currentTask]?.id ?? "", taskIds);
+  const { textareaProps: compositionProps, getRatio } = useCompositionTracker(tasks[currentTask]?.id ?? "", taskIds);
+  const [compositionPulse, setCompositionPulse] = useState(0);
 
   // Source material labels for AI chips
   const sourceMaterialLabels = useMemo(() => {
@@ -1717,6 +1676,7 @@ export default function AssessmentInterface() {
   }, [currentTaskId, pushEvent]);
 
   const updateComposerValue = (value: any) => {
+    setCompositionPulse(prev => prev + 1);
     setComposerValues(prev => ({ ...prev, [currentTaskId]: value }));
     // Sync serialized string to responses for draft persistence and submission
     const serialized = serializeComposerValue(currentResponseType, value);
@@ -2262,7 +2222,7 @@ export default function AssessmentInterface() {
                 events={behaviorEvents}
                 typedPct={typedPct}
                 pastedPct={pastedPct}
-                lastTypedAt={lastTypedAt}
+                typingSignal={compositionPulse}
               />
             </div>
 
@@ -2357,6 +2317,7 @@ export default function AssessmentInterface() {
             activeMaterialLabel={activeMaterialLabel}
             onInteraction={handleAIInteraction}
             onCiteInResponse={handleCiteInResponse}
+            onAssistantCopy={() => { lastCopiedFromRef.current = "ai"; }}
             sourceMaterialLabels={sourceMaterialLabels}
             onPushBehaviorEvent={pushEvent}
             taskStartTimeRef={taskStartTimeRef}

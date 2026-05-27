@@ -35,9 +35,13 @@ import {
   formatSourceMaterialsForPrompt,
 } from "./materials";
 import {
+  analyzeSubmissionIntegrity,
+  applyIntegrityGates,
   blendScores,
   computeDeterministicScores,
+  type CompletenessEvidence,
   type DimensionScoreSet,
+  type ResponseRelianceEvidence,
   type StructuredTaskResponse,
 } from "./scoring";
 import type { ScoreEvidence, SourceMaterial } from "@/app/lib/schema";
@@ -119,8 +123,12 @@ async function generateScoreWithLLM(params: {
   aiInteractions: Array<{ role: string; content: string }>;
   completionTimeSeconds: number;
   timeLimitSeconds: number;
+  integrityEvidence: {
+    completeness: CompletenessEvidence;
+    responseReliance: ResponseRelianceEvidence;
+  };
 }) {
-  const { roleTemplate, taskResponses, aiInteractions, completionTimeSeconds, timeLimitSeconds } = params;
+  const { roleTemplate, taskResponses, aiInteractions, completionTimeSeconds, timeLimitSeconds, integrityEvidence } = params;
 
   const taskSummary = Object.entries(taskResponses)
     .map(([k, v]) => `Task ${k}: ${v?.substring(0, 800) ?? "(empty)"}`)
@@ -132,17 +140,40 @@ async function generateScoreWithLLM(params: {
     .join("\n");
 
   const timeRatio = completionTimeSeconds / timeLimitSeconds;
-  const timeNote = timeRatio < 0.5 ? "completed very quickly" : timeRatio > 0.95 ? "used nearly all time" : "completed at a reasonable pace";
+  const timeUseNote =
+    timeRatio < 0.3
+      ? "used a very small share of the time limit; if work is incomplete, treat this as likely abandonment rather than efficiency"
+      : timeRatio > 0.95
+        ? "used nearly all available time"
+        : "used a moderate share of the time limit";
+  const incompleteTasks = integrityEvidence.completeness.tasks
+    .filter((task) => !task.substantive)
+    .map((task) => `${task.taskId}: ${task.reason} (${task.wordCount} words, ~${task.typedWordEstimate} typed words)`);
+  const aiPastedTasks = integrityEvidence.completeness.tasks
+    .filter((task) => task.aiPasted)
+    .map((task) => `${task.taskId}: assistant similarity ${Math.round(task.assistantSimilarity * 100)}%, AI-pasted chars ${task.aiPastedChars}`);
+  const integrityBlock = [
+    `Completeness: ${integrityEvidence.completeness.attemptedTaskCount}/${integrityEvidence.completeness.definedTaskCount} substantive tasks (${Math.round(integrityEvidence.completeness.completenessRatio * 100)}%).`,
+    incompleteTasks.length ? `Incomplete/non-substantive tasks:\n${incompleteTasks.join("\n")}` : "All defined tasks appear substantively attempted.",
+    aiPastedTasks.length ? `Likely AI-pasted deliverables:\n${aiPastedTasks.join("\n")}` : "No task was flagged as a likely verbatim AI-pasted deliverable.",
+    `Paste/reliance: ${Math.round(integrityEvidence.responseReliance.aiPasteShare * 100)}% AI-paste share, ${Math.round(integrityEvidence.responseReliance.pasteShare * 100)}% total-paste share, ~${integrityEvidence.responseReliance.typedCharsEstimate} typed chars.`,
+  ].join("\n");
 
   const systemPrompt = `You are an expert finance talent evaluator scoring a candidate's AI fluency assessment for the role: ${roleTemplate}.
 
 Evaluate the candidate on exactly these 6 dimensions, each scored 0-100:
 1. Accuracy – Was the financial content correct and precise?
-2. Efficiency – How quickly and cleanly was the task completed? (Candidate ${timeNote}, using ${Math.round(completionTimeSeconds / 60)} of ${Math.round(timeLimitSeconds / 60)} minutes)
+2. Efficiency – Was time used productively to complete quality work? Do not reward raw speed by itself. Candidate ${timeUseNote}, using ${Math.round(completionTimeSeconds / 60)} of ${Math.round(timeLimitSeconds / 60)} minutes.
 3. Judgment – Did the candidate use AI appropriately rather than blindly accepting outputs?
 4. Verification – Did the candidate check claims, validate sources, and catch errors?
 5. Communication – Was the final output professional, clear, and client-ready?
 6. Tool Fluency – Did the candidate structure prompts well and iterate effectively?
+
+Integrity rules:
+- Heavily penalize empty, near-empty, or non-substantive tasks. Do not infer quality for missing work.
+- If a task is flagged as likely copied from the assistant, do not credit the pasted text as the candidate's accuracy or communication.
+- A fast submission with incomplete work indicates abandonment, not strong efficiency.
+- Pasted AI output as the deliverable is a major judgment and verification failure unless the response shows clear candidate transformation and source-backed checking.
 
 For each dimension, provide:
 - A score (integer 0-100)
@@ -161,7 +192,10 @@ TASK RESPONSES:
 ${taskSummary}
 
 AI INTERACTION LOG (${aiInteractions.length} total interactions):
-${aiLog}`;
+${aiLog}
+
+SCORING INTEGRITY SIGNALS:
+${integrityBlock}`;
 
   const response = await invokeLLM({
     messages: [
@@ -226,6 +260,11 @@ const TASK_RESPONSE_TYPES: Record<string, Record<string, StructuredTaskResponse[
   "Hedge Fund Research Analyst": { t1: "thesis", t2: "extraction", t3: "flags" },
   "Management Consultant": { t1: "flags", t2: "memo", t3: "memo" },
 };
+
+function getDefinedTaskIds(roleTemplate: string, taskResponses: Record<string, string>) {
+  const taskIds = Object.keys(TASK_RESPONSE_TYPES[roleTemplate] ?? {});
+  return taskIds.length > 0 ? taskIds : Object.keys(taskResponses);
+}
 
 function parseMarkdownTableRows(raw: string) {
   const tableLines = raw
@@ -298,22 +337,34 @@ async function buildBlendedScore(params: {
   roleTemplate: string;
   taskResponses: Record<string, string>;
   taskResponsesStructured?: Record<string, unknown>;
+  aiInteractions: Array<{ role: string; content: string }>;
   llmScore: LLMScoreResult;
   completionTimeSeconds: number;
   timeLimitSeconds: number;
 }) {
   const behaviorEvents = await getBehaviorEventsByAssessment(params.assessmentId);
+  const definedTaskIds = getDefinedTaskIds(params.roleTemplate, params.taskResponses);
   const deterministic = computeDeterministicScores({
     roleTemplate: params.roleTemplate,
     tasks: buildStructuredTaskResponses(params.roleTemplate, params.taskResponses, params.taskResponsesStructured),
+    taskResponses: params.taskResponses,
+    definedTaskIds,
+    aiInteractions: params.aiInteractions,
     completionTimeSeconds: params.completionTimeSeconds,
     timeLimitSeconds: params.timeLimitSeconds,
     behaviorEvents,
   });
   const blended = blendScores(params.llmScore as DimensionScoreSet, deterministic);
+  const gated = applyIntegrityGates(
+    blended.scores,
+    deterministic.completenessEvidence,
+    deterministic.responseRelianceEvidence,
+  );
   const scoreEvidence: ScoreEvidence = {
     accuracyChecks: deterministic.accuracyEvidence,
     efficiencyBand: deterministic.efficiencyEvidence,
+    completeness: deterministic.completenessEvidence,
+    responseReliance: deterministic.responseRelianceEvidence,
     behavioral: {
       summary: deterministic.behavioralEvidence,
       judgment: deterministic.judgmentEvidence,
@@ -321,12 +372,13 @@ async function buildBlendedScore(params: {
       toolFluency: deterministic.toolFluencyEvidence,
     },
     blend: blended.evidence,
+    integrityGate: gated.evidence,
   };
 
   return {
     ...params.llmScore,
-    ...blended.scores,
-    overallScore: blended.scores.overallScore ?? params.llmScore.overallScore,
+    ...gated.scores,
+    overallScore: gated.scores.overallScore ?? params.llmScore.overallScore,
     scoreEvidence,
   };
 }
@@ -727,18 +779,27 @@ export const appRouter = router({
               if (!sub) return;
               const taskResponses = (sub.taskResponses as Record<string, string>) ?? {};
               const aiInteractions = (sub.aiInteractions as Array<{ role: string; content: string }>) ?? [];
+              const behaviorEvents = await getBehaviorEventsByAssessment(input.assessmentId);
+              const integrityEvidence = analyzeSubmissionIntegrity({
+                taskResponses,
+                definedTaskIds: getDefinedTaskIds(campaign.roleTemplate, taskResponses),
+                aiInteractions,
+                behaviorEvents,
+              });
               const llmScore = await generateScoreWithLLM({
                 roleTemplate: campaign.roleTemplate,
                 taskResponses,
                 aiInteractions,
                 completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
                 timeLimitSeconds: assessment.timeLimitMinutes * 60,
+                integrityEvidence,
               });
               const blendedScore = await buildBlendedScore({
                 assessmentId: input.assessmentId,
                 roleTemplate: campaign.roleTemplate,
                 taskResponses,
                 taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
+                aiInteractions,
                 llmScore,
                 completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
                 timeLimitSeconds: assessment.timeLimitMinutes * 60,
@@ -841,6 +902,13 @@ export const appRouter = router({
 
         const taskResponses = (sub.taskResponses as Record<string, string>) ?? {};
         const aiInteractions = (sub.aiInteractions as Array<{ role: string; content: string }>) ?? [];
+        const behaviorEvents = await getBehaviorEventsByAssessment(sub.assessmentId);
+        const integrityEvidence = analyzeSubmissionIntegrity({
+          taskResponses,
+          definedTaskIds: getDefinedTaskIds(campaign.roleTemplate, taskResponses),
+          aiInteractions,
+          behaviorEvents,
+        });
 
         const llmScore = await generateScoreWithLLM({
           roleTemplate: campaign.roleTemplate,
@@ -848,12 +916,14 @@ export const appRouter = router({
           aiInteractions,
           completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
           timeLimitSeconds: assessment.timeLimitMinutes * 60,
+          integrityEvidence,
         });
         const blendedScore = await buildBlendedScore({
           assessmentId: sub.assessmentId,
           roleTemplate: campaign.roleTemplate,
           taskResponses,
           taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
+          aiInteractions,
           llmScore,
           completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
           timeLimitSeconds: assessment.timeLimitMinutes * 60,

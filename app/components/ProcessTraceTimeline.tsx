@@ -195,7 +195,7 @@ export function ProcessTraceTimeline({ assessmentId }: { assessmentId: number })
 
   return (
     <Card className="rounded-xl border-[#d9e7db] bg-white shadow-none">
-      <CardHeader className="px-6">
+      <CardHeader className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-950">
@@ -210,8 +210,8 @@ export function ProcessTraceTimeline({ assessmentId }: { assessmentId: number })
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="px-6">
-        <div className="space-y-1">
+      <CardContent className="px-4 pb-4">
+        <div className="max-h-96 overflow-y-auto pr-1">
           {timelineRows.map(({ event, taskId: eventTask, startsSection, sectionLabel }) => {
             const meta = EVENT_META[event.eventType] ?? { label: event.eventType, icon: FileText, tone: "text-[#6f8274] bg-[#6f8274]/10" };
             const Icon = meta.icon;
@@ -219,32 +219,24 @@ export function ProcessTraceTimeline({ assessmentId }: { assessmentId: number })
             return (
               <div key={event.id}>
                 {startsSection && (
-                  <div className="flex items-center gap-2 pb-2 pt-4 first:pt-0">
-                    <div className="h-px flex-1 bg-[#d9e7db]" />
+                  <div className="mt-3 border-t border-[#d9e7db] pt-2 first:mt-0 first:border-t-0 first:pt-0">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">
                       {sectionLabel}
                     </span>
-                    <div className="h-px flex-1 bg-[#d9e7db]" />
                   </div>
                 )}
-                <div className="grid grid-cols-[56px_24px_1fr] gap-3 py-3">
-                  <div className="pt-1 text-right font-mono text-[11px] text-[#6f8274]">
+                <div className="grid grid-cols-[46px_18px_1fr] items-start gap-2 py-1">
+                  <div className="pt-0.5 text-right font-mono text-[11px] text-[#6f8274]">
                     {formatRelative(event.clientTimestamp - firstTimestamp)}
                   </div>
-                  <div className="relative flex justify-center">
-                    <div className="absolute bottom-[-12px] top-7 w-px bg-[#d9e7db]" />
-                    <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full ${meta.tone}`}>
-                      <Icon className="h-3.5 w-3.5" />
-                    </div>
+                  <div className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded ${meta.tone}`}>
+                    <Icon className="h-3 w-3" />
                   </div>
-                  <div className="min-w-0 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="text-xs font-bold uppercase tracking-widest text-slate-950">
-                        {meta.label}
-                      </div>
-                      <div className="text-[10px] text-[#6f8274]">{taskLabel(eventTask)}</div>
-                    </div>
-                    <p className="mt-1 text-sm leading-relaxed text-[#2e4637]">{eventDetail(event)}</p>
+                  <div className="min-w-0 text-sm leading-5 text-[#2e4637]">
+                    <span className="font-bold text-slate-950">{meta.label}</span>
+                    <span className="mx-1 text-[#9db8a4]">/</span>
+                    <span>{eventDetail(event)}</span>
+                    <span className="ml-2 whitespace-nowrap text-[10px] text-[#6f8274]">{taskLabel(eventTask)}</span>
                   </div>
                 </div>
               </div>

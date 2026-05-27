@@ -1,12 +1,12 @@
 ---
 name: open-pr-on-complete
 description: >-
-  At task completion, commit, push, and open a GitHub pull request for pine-1.
+  At task completion, commit, push, and open a GitHub pull request for projects/pine.
   Use when the user includes the trigger line `open-pr-on-complete` or `/open-pr`
   in their message, invokes this skill, or asks to open a PR when the task is done.
 ---
 
-# Open PR on complete (pine-1)
+# Open PR on complete (projects/pine)
 
 Opt-in workflow for this repo. Only run the PR steps when the user armed it for this chat.
 

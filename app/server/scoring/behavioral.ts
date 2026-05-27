@@ -22,8 +22,36 @@ export type BehavioralSummaryEvidence = {
   externalPasteCount: number;
   sourcePasteCount: number;
   aiPasteCount: number;
+  pastedChars: number;
+  externalPastedChars: number;
+  sourcePastedChars: number;
+  aiPastedChars: number;
   largePasteCount: number;
   largestPasteChars: number;
+  citationCount: number;
+  sourceCitationCount: number;
+  aiCitationCount: number;
+  aiResponseCompleteCount: number;
+  responseEditWithAiLagCount: number;
+  avgSecsSinceAIResponse: number;
+  totalResponseChars: number;
+  totalResponseWords: number;
+  pasteShare: number;
+  aiPasteShare: number;
+  typedCharsEstimate: number;
+  aiPastedTaskCount: number;
+};
+
+export type BehavioralResponseProfile = {
+  totalResponseChars: number;
+  totalResponseWords: number;
+  totalPastedChars: number;
+  totalAiPastedChars: number;
+  largestPasteChars: number;
+  pasteShare: number;
+  aiPasteShare: number;
+  typedCharsEstimate: number;
+  aiPastedTaskCount: number;
 };
 
 export type BehavioralBand = "weak" | "mixed" | "solid" | "strong";
@@ -70,8 +98,11 @@ function bandFor(score: number): BehavioralBand {
   return "weak";
 }
 
-export function summarizeBehaviorEvents(events: BehaviorScoringEvent[]): BehavioralSummaryEvidence | null {
-  if (!events.length) return null;
+export function summarizeBehaviorEvents(
+  events: BehaviorScoringEvent[],
+  responseProfile?: BehavioralResponseProfile,
+): BehavioralSummaryEvidence | null {
+  if (!events.length && !responseProfile) return null;
 
   const taskIds = new Set<string>();
   const materialKeys = new Set<string>();
@@ -88,8 +119,18 @@ export function summarizeBehaviorEvents(events: BehaviorScoringEvent[]): Behavio
   let externalPasteCount = 0;
   let sourcePasteCount = 0;
   let aiPasteCount = 0;
+  let pastedChars = 0;
+  let externalPastedChars = 0;
+  let sourcePastedChars = 0;
+  let aiPastedChars = 0;
   let largePasteCount = 0;
   let largestPasteChars = 0;
+  let citationCount = 0;
+  let sourceCitationCount = 0;
+  let aiCitationCount = 0;
+  let aiResponseCompleteCount = 0;
+  let responseEditWithAiLagCount = 0;
+  let totalSecsSinceAIResponse = 0;
 
   for (const event of events) {
     if (event.taskId) taskIds.add(event.taskId);
@@ -116,6 +157,11 @@ export function summarizeBehaviorEvents(events: BehaviorScoringEvent[]): Behavio
     if (event.eventType === "response_edit") {
       responseEditCount += 1;
       const delta = numberFrom(data.netDeltaChars);
+      const secsSinceAIResponse = numberFrom(data.secsSinceAIResponse);
+      if (secsSinceAIResponse > 0) {
+        responseEditWithAiLagCount += 1;
+        totalSecsSinceAIResponse += secsSinceAIResponse;
+      }
       if (delta > 0) {
         positiveEditEvents += 1;
         totalPositiveEditChars += delta;
@@ -126,13 +172,38 @@ export function summarizeBehaviorEvents(events: BehaviorScoringEvent[]): Behavio
       pasteCount += 1;
       const source = data.source;
       const clipboardLength = numberFrom(data.clipboardLength);
+      pastedChars += clipboardLength;
       largestPasteChars = Math.max(largestPasteChars, clipboardLength);
       if (clipboardLength >= 800) largePasteCount += 1;
-      if (source === "source_material") sourcePasteCount += 1;
-      else if (source === "ai") aiPasteCount += 1;
-      else externalPasteCount += 1;
+      if (source === "source_material") {
+        sourcePasteCount += 1;
+        sourcePastedChars += clipboardLength;
+      } else if (source === "ai") {
+        aiPasteCount += 1;
+        aiPastedChars += clipboardLength;
+      } else {
+        externalPasteCount += 1;
+        externalPastedChars += clipboardLength;
+      }
+    }
+
+    if (event.eventType === "citation_added") {
+      citationCount += 1;
+      if (data.source === "source_material") sourceCitationCount += 1;
+      else if (data.source === "ai") aiCitationCount += 1;
+    }
+
+    if (event.eventType === "ai_response_complete") {
+      aiResponseCompleteCount += 1;
     }
   }
+
+  const totalResponseChars = responseProfile?.totalResponseChars ?? 0;
+  const totalResponseWords = responseProfile?.totalResponseWords ?? 0;
+  const totalPastedChars = responseProfile?.totalPastedChars ?? pastedChars;
+  const totalAiPastedChars = responseProfile?.totalAiPastedChars ?? aiPastedChars;
+  const pasteShare = responseProfile?.pasteShare ?? (totalResponseChars > 0 ? totalPastedChars / totalResponseChars : 0);
+  const aiPasteShare = responseProfile?.aiPasteShare ?? (totalResponseChars > 0 ? totalAiPastedChars / totalResponseChars : 0);
 
   return {
     totalEvents: events.length,
@@ -151,8 +222,25 @@ export function summarizeBehaviorEvents(events: BehaviorScoringEvent[]): Behavio
     externalPasteCount,
     sourcePasteCount,
     aiPasteCount,
+    pastedChars,
+    externalPastedChars,
+    sourcePastedChars,
+    aiPastedChars,
     largePasteCount,
-    largestPasteChars,
+    largestPasteChars: Math.max(largestPasteChars, responseProfile?.largestPasteChars ?? 0),
+    citationCount,
+    sourceCitationCount,
+    aiCitationCount,
+    aiResponseCompleteCount,
+    responseEditWithAiLagCount,
+    avgSecsSinceAIResponse:
+      responseEditWithAiLagCount > 0 ? Math.round(totalSecsSinceAIResponse / responseEditWithAiLagCount) : 0,
+    totalResponseChars,
+    totalResponseWords,
+    pasteShare: Math.round(pasteShare * 1000) / 1000,
+    aiPasteShare: Math.round(aiPasteShare * 1000) / 1000,
+    typedCharsEstimate: responseProfile?.typedCharsEstimate ?? Math.max(0, totalResponseChars - totalPastedChars),
+    aiPastedTaskCount: responseProfile?.aiPastedTaskCount ?? 0,
   };
 }
 
@@ -191,9 +279,25 @@ export function computeJudgment(summary: BehavioralSummaryEvidence | null): {
     score -= 10;
     signals.push("opened with AI before inspecting source materials");
   }
-  if (summary.aiPasteCount + summary.externalPasteCount >= 2 || summary.largePasteCount > 0) {
+  if (summary.aiPasteShare >= 0.25 || summary.aiPastedTaskCount > 0) {
+    const penalty = summary.aiPasteShare >= 0.5 || summary.aiPastedTaskCount > 0 ? 38 : 24;
+    score -= penalty;
+    signals.push("AI-paste pattern raises serious ownership and judgment concerns");
+  }
+  if (summary.externalPasteCount >= 2 || summary.externalPastedChars >= 800) {
     score -= 12;
-    signals.push("paste pattern raises ownership and review concerns");
+    signals.push("external paste activity raises ownership concerns");
+  }
+  if (summary.pasteShare >= 0.7 && summary.typedCharsEstimate < 500) {
+    score -= 18;
+    signals.push("final response appears mostly pasted rather than candidate-composed");
+  } else if (summary.largePasteCount > 0) {
+    score -= 8;
+    signals.push("large paste event should have been reviewed and transformed");
+  }
+  if (summary.citationCount > 0 && summary.responseEditWithAiLagCount > 0) {
+    score += 6;
+    signals.push("used citations and post-AI edits to retain candidate judgment");
   }
 
   const finalScore = clampScore(score);
@@ -236,13 +340,30 @@ export function computeVerification(summary: BehavioralSummaryEvidence | null): 
     score += 8;
     signals.push("moved source-backed material into the response");
   }
+  if (summary.sourceCitationCount > 0) {
+    score += 12;
+    signals.push("cited source material in the final response");
+  }
+  if (summary.citationCount > 0 && summary.aiCitationCount === summary.citationCount) {
+    score -= 8;
+    signals.push("citations relied on AI rather than source material");
+  }
   if (summary.responseEditCount >= 3) {
     score += 8;
     signals.push("revised the response after source or AI interactions");
   }
+  if (summary.responseEditWithAiLagCount > 0 && summary.avgSecsSinceAIResponse >= 10) {
+    score += 8;
+    signals.push("edited after AI responses instead of immediately accepting them");
+  }
   if (summary.aiPromptCount > 0 && summary.materialViewCount === 0) {
     score -= 18;
     signals.push("AI interaction had no matching source-material review");
+  }
+  if (summary.aiPasteShare >= 0.25 || summary.aiPastedTaskCount > 0) {
+    const penalty = summary.aiPasteShare >= 0.5 || summary.aiPastedTaskCount > 0 ? 35 : 22;
+    score -= penalty;
+    signals.push("AI-pasted deliverable text was not independently verified");
   }
   if (summary.externalPasteCount > summary.sourcePasteCount && summary.externalPasteCount > 0) {
     score -= 8;
@@ -291,13 +412,25 @@ export function computeToolFluency(summary: BehavioralSummaryEvidence | null): {
     score += 10;
     signals.push("candidate edited responses alongside AI use");
   }
+  if (summary.responseEditWithAiLagCount > 0) {
+    score += 6;
+    signals.push("showed post-AI revision behavior");
+  }
+  if (summary.sourceCitationCount > 0) {
+    score += 6;
+    signals.push("used citation tooling to anchor claims");
+  }
   if (summary.taskSwitchCount > 0) {
     score += 6;
     signals.push("moved between tasks while maintaining traceable context");
   }
-  if (summary.aiPasteCount > 0 || summary.largePasteCount > 0) {
-    score -= 14;
-    signals.push("copied AI or large pasted content into the work surface");
+  if (summary.aiPasteShare >= 0.25 || summary.aiPastedTaskCount > 0) {
+    const penalty = summary.aiPasteShare >= 0.5 || summary.aiPastedTaskCount > 0 ? 28 : 16;
+    score -= penalty;
+    signals.push("copied AI output into the work surface instead of transforming it");
+  } else if (summary.largePasteCount > 0) {
+    score -= 10;
+    signals.push("large pasted content required stronger transformation");
   }
 
   const finalScore = clampScore(score);
@@ -311,12 +444,15 @@ export function computeToolFluency(summary: BehavioralSummaryEvidence | null): {
   };
 }
 
-export function computeBehavioralScores(events: BehaviorScoringEvent[]): BehavioralScores {
+export function computeBehavioralScores(
+  events: BehaviorScoringEvent[],
+  responseProfile?: BehavioralResponseProfile,
+): BehavioralScores {
   const sorted = [...events].sort((a, b) => {
     if (a.clientTimestamp !== b.clientTimestamp) return a.clientTimestamp - b.clientTimestamp;
     return (a.id ?? 0) - (b.id ?? 0);
   });
-  const summary = summarizeBehaviorEvents(sorted);
+  const summary = summarizeBehaviorEvents(sorted, responseProfile);
   const judgment = computeJudgment(summary);
   const verification = computeVerification(summary);
   const toolFluency = computeToolFluency(summary);

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ElementType } from "react";
 import { useMemo } from "react";
 import { AlertTriangle, BookOpen, Clipboard, FileText, Loader2, MessageSquare, Pencil, Quote } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
@@ -14,22 +15,22 @@ function StatCard({
   value,
   detail,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   value: string | number;
   detail: string;
 }) {
   return (
-    <Card className="rounded-xl border-[#d9e7db] bg-white py-5 shadow-none">
-      <CardContent className="px-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#168a4a]/10">
-            <Icon className="h-4 w-4 text-[#168a4a]" />
+    <Card className="rounded-xl border-[#d9e7db] bg-white py-3 shadow-none">
+      <CardContent className="px-3">
+        <div className="flex items-start gap-2.5">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#168a4a]/10">
+            <Icon className="h-3.5 w-3.5 text-[#168a4a]" />
           </div>
           <div className="min-w-0">
-            <div className="text-2xl font-black leading-none text-slate-950">{value}</div>
+            <div className="text-xl font-black leading-none text-slate-950">{value}</div>
             <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">{label}</div>
-            <p className="mt-2 text-xs leading-relaxed text-[#52665a]">{detail}</p>
+            <p className="mt-1 text-xs leading-snug text-[#52665a]">{detail}</p>
           </div>
         </div>
       </CardContent>
@@ -84,7 +85,7 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
 
   return (
     <Card className="rounded-xl border-[#168a4a]/20 bg-white shadow-none">
-      <CardHeader className="px-6">
+      <CardHeader className="px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-950">
@@ -99,7 +100,7 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4 px-6 md:grid-cols-2 lg:grid-cols-4">
+      <CardContent className="grid gap-3 px-4 pb-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Clipboard}
           label="Pastes"
@@ -125,15 +126,15 @@ export function CandidateBehaviorTab({ assessmentId }: { assessmentId: number })
           detail={`AI ${summary.citationSources.ai} / source ${summary.citationSources.source_material}`}
         />
         <div className="md:col-span-2 lg:col-span-4">
-          <div className="flex items-start gap-3 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#6b8cba]/10">
-              <Pencil className="h-4 w-4 text-[#6b8cba]" />
+          <div className="flex items-start gap-2.5 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#6b8cba]/10">
+              <Pencil className="h-3.5 w-3.5 text-[#6b8cba]" />
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">
                 Post-AI edit behavior
               </div>
-              <p className="mt-1 text-sm leading-relaxed text-[#2e4637]">{editDetail}</p>
+              <p className="mt-1 text-sm leading-snug text-[#2e4637]">{editDetail}</p>
             </div>
           </div>
         </div>
