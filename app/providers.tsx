@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import superjson from "superjson";
 import { Toaster } from "@/app/components/ui/sonner";
 import { TooltipProvider } from "@/app/components/ui/tooltip";
@@ -11,6 +11,8 @@ import { ThemeProvider } from "@/app/contexts/ThemeContext";
 import { trpc } from "@/app/lib/trpc";
 import { getLoginUrl } from "@/app/lib/const";
 import { UNAUTHED_ERR_MSG } from "@/app/shared/const";
+import posthog from "posthog-js";
+import { useAuth } from "@/app/_core/hooks/useAuth";
 
 function redirectToLoginIfUnauthorized(error: unknown) {
   if (!(error instanceof TRPCClientError)) return;
@@ -62,6 +64,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <TooltipProvider>
           <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
+              <PostHogIdentify />
               {children}
               <Toaster />
             </QueryClientProvider>
@@ -70,4 +73,34 @@ export function Providers({ children }: { children: ReactNode }) {
       </ThemeProvider>
     </ErrorBoundary>
   );
+}
+
+export function PostHogIdentify() {
+  const { user, loading } = useAuth();
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      posthog.reset();
+      return;
+    }
+
+    posthog.identify(String(user.id), {
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      organization: user.organization,
+      teamId: user.teamId,
+    });
+  }, [
+    loading,
+    user?.id,
+    user?.email,
+    user?.name,
+    user?.role,
+    user?.organization,
+    user?.teamId,
+  ]);
+
+  return null;
 }
