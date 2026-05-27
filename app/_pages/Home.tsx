@@ -654,7 +654,7 @@ function CTA({ onDemo }: { onDemo: () => void }) {
             <Button variant="outline" className="border-[#9db8a4] text-[#2e4637] hover:border-[#168a4a]/50 hover:text-slate-950 text-sm tracking-widest uppercase px-10 py-6 bg-transparent">
               Sign In
             </Button>
-          </a>
+          </a> 
         </div>
       </div>
     </section>
