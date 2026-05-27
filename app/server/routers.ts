@@ -28,7 +28,7 @@ import {
   getUserById,
 } from "@/app/lib/db";
 import { notifyOwner } from "./_core/notification";
-import { sendCandidateInviteEmail, sendScoreReadyEmail } from "./email";
+import { sendCandidateInviteEmail, sendDemoConfirmationEmail, sendDemoNotificationEmail, sendScoreReadyEmail } from "./email";
 import { computeBenchmarkPercentile } from "./benchmarkData";
 import {
   extractSourceMaterials,
@@ -569,10 +569,26 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         await createDemoRequest(input);
-        await notifyOwner({
+        const emailResults = await Promise.allSettled([
+          sendDemoConfirmationEmail({
+            toEmail: input.email,
+            name: input.name,
+            company: input.company,
+            segment: input.segment,
+          }),
+          sendDemoNotificationEmail(input),
+        ]);
+        for (const r of emailResults) {
+          if (r.status === "rejected") {
+            console.error("[demo.request] email send rejected:", r.reason);
+          } else if (!r.value.success) {
+            console.error("[demo.request] email send failed:", r.value.error);
+          }
+        }
+        notifyOwner({
           title: "New Demo Request",
           content: `${input.name} from ${input.company ?? "unknown"} (${input.email}) requested a demo. Segment: ${input.segment ?? "N/A"}`,
-        });
+        }).catch(err => console.error("[demo.request] owner notification failed:", err));
         return { success: true };
       }),
   }),
@@ -614,7 +630,12 @@ export const appRouter = router({
       }),
     delete: recruiterProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const campaign = await getCampaignById(input.id);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
         await deleteCampaign(input.id);
         return { success: true };
       }),

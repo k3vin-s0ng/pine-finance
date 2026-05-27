@@ -255,10 +255,11 @@ export async function getAssessmentWithCampaign(id: number) {
 
 export async function getAssessmentsByCandidate(candidateId: number) {
   const assessments = stripMany(await (await col<Assessment>("assessments"))?.find({ candidateId }).sort({ createdAt: -1 }).toArray() ?? []);
-  return Promise.all(assessments.map(async (assessment) => ({
-    assessment,
-    campaign: await getCampaignById(assessment.campaignId) ?? null,
-  })));
+  const rows = await Promise.all(assessments.map(async (assessment) => {
+    const campaign = await getCampaignById(assessment.campaignId);
+    return campaign ? { assessment, campaign } : null;
+  }));
+  return rows.filter((row): row is NonNullable<typeof row> => row !== null);
 }
 
 export async function updateAssessmentStatus(id: number, status: Assessment["status"], extra?: Partial<InsertAssessment>) {
@@ -278,10 +279,11 @@ export async function linkAssessmentToCandidate(assessmentId: number, candidateI
 
 export async function getAssessmentsByEmail(email: string) {
   const assessments = stripMany(await (await col<Assessment>("assessments"))?.find({ invitedEmail: email }).sort({ createdAt: -1 }).toArray() ?? []);
-  return Promise.all(assessments.map(async (assessment) => ({
-    assessment,
-    campaign: await getCampaignById(assessment.campaignId) ?? null,
-  })));
+  const rows = await Promise.all(assessments.map(async (assessment) => {
+    const campaign = await getCampaignById(assessment.campaignId);
+    return campaign ? { assessment, campaign } : null;
+  }));
+  return rows.filter((row): row is NonNullable<typeof row> => row !== null);
 }
 
 export async function createSubmission(data: InsertSubmission): Promise<number> {
