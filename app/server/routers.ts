@@ -4,10 +4,10 @@ import { COOKIE_NAME } from "@/app/shared/const";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
-import { storagePut } from "./storage";
+import { storageDelete, storagePut } from "./storage";
 import {
   upsertUser, getUserByOpenId, updateUserRole,
-  createCampaign, getCampaignsByRecruiter, getCampaignById, updateCampaign, deleteCampaign,
+  createCampaign, getCampaignsByRecruiter, getCampaignById, updateCampaign, deleteCampaignAndRelatedData, getCampaignDeletionStorageKeys,
   createAssessment, getAssessmentsByCampaign, getAssessmentById, getAssessmentWithCampaign, getAssessmentsByCandidate, updateAssessmentStatus,
   createSubmission, getSubmissionByAssessment,
   createScore, getScoreByAssessment, getScoresByCampaign,
@@ -636,7 +636,9 @@ export const appRouter = router({
         if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
           throw new TRPCError({ code: "FORBIDDEN" });
         }
-        await deleteCampaign(input.id);
+        const storageKeys = await getCampaignDeletionStorageKeys(input.id);
+        await Promise.all(storageKeys.map((key) => storageDelete(key)));
+        await deleteCampaignAndRelatedData(input.id);
         return { success: true };
       }),
     getCandidatesWithScores: recruiterProcedure

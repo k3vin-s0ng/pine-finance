@@ -5,6 +5,16 @@ import { Link } from "@/app/lib/wouter";
 import DashboardShell from "@/app/components/DashboardShell";
 import { Button } from "@/app/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
@@ -215,14 +225,17 @@ function CreateCampaignModal({ open, onClose }: { open: boolean; onClose: () => 
 
 export default function RecruiterDashboard() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<{ id: number; title: string } | null>(null);
   const { data: campaigns, isLoading } = trpc.campaigns.list.useQuery();
   const utils = trpc.useUtils();
 
   const deleteCampaign = trpc.campaigns.delete.useMutation({
     onSuccess: () => {
       toast.success("Campaign deleted");
+      setCampaignToDelete(null);
       utils.campaigns.list.invalidate();
     },
+    onError: (e) => toast.error(e.message),
   });
 
   const updateStatus = trpc.campaigns.update.useMutation({
@@ -324,7 +337,7 @@ export default function RecruiterDashboard() {
                         variant="ghost"
                         size="sm"
                         className="text-[#6f8274] hover:text-red-400 text-xs"
-                        onClick={() => deleteCampaign.mutate({ id: campaign.id })}
+                        onClick={() => setCampaignToDelete({ id: campaign.id, title: campaign.title })}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -336,6 +349,47 @@ export default function RecruiterDashboard() {
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={campaignToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteCampaign.isPending) setCampaignToDelete(null);
+        }}
+      >
+        <AlertDialogContent className="bg-[#fff] border-[#d9e7db] text-slate-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-950 font-black uppercase tracking-tight">
+              Permanently delete campaign?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#52665a] leading-relaxed">
+              This will permanently delete{" "}
+              <span className="font-semibold text-slate-950">
+                {campaignToDelete?.title ?? "this campaign"}
+              </span>
+              , its assessments, submissions, scores, generated reports, behavior events, and stored source/report files. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deleteCampaign.isPending}
+              className="border-[#d9e7db] text-[#3f5847] hover:text-slate-950"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteCampaign.isPending || campaignToDelete === null}
+              onClick={(event) => {
+                event.preventDefault();
+                if (!campaignToDelete) return;
+                deleteCampaign.mutate({ id: campaignToDelete.id });
+              }}
+              className="bg-red-600 text-white hover:bg-red-700 font-bold uppercase tracking-widest text-xs"
+            >
+              {deleteCampaign.isPending ? "Deleting..." : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <CreateCampaignModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </DashboardShell>

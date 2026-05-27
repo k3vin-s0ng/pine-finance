@@ -3,6 +3,7 @@
 // paths served by the existing 307 redirect proxy.
 
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -111,5 +112,18 @@ export async function storageGetSignedUrl(relKey: string): Promise<string> {
       Key: key,
     }),
     { expiresIn: 300 },
+  );
+}
+
+export async function storageDelete(relKey: string): Promise<void> {
+  const config = getStorageConfig();
+  const client = createS3Client(config);
+  const key = normalizeKey(relKey);
+
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+    }),
   );
 }

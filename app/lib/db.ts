@@ -15,6 +15,7 @@ import type {
   InsertUser,
   PdfReport,
   Score,
+  SourceMaterial,
   Submission,
   Team,
   User,
@@ -228,6 +229,41 @@ export async function updateCampaign(id: number, data: Partial<InsertCampaign>) 
 export async function deleteCampaign(id: number) {
   const campaigns = await col<Campaign>("campaigns");
   await campaigns?.deleteOne({ id });
+}
+
+export async function getCampaignDeletionStorageKeys(id: number): Promise<string[]> {
+  const campaign = await getCampaignById(id);
+  if (!campaign) return [];
+  const assessments = stripMany(await (await col<Assessment>("assessments"))?.find({ campaignId: id }).toArray() ?? []);
+  const assessmentIds = assessments.map((assessment) => assessment.id);
+  const pdfReports = stripMany(await (await col<PdfReport>("pdfReports"))?.find({ assessmentId: { $in: assessmentIds } }).toArray() ?? []);
+  const sourceMaterials = (campaign.sourceMaterials as SourceMaterial[] | null | undefined) ?? [];
+  return Array.from(new Set([
+    ...sourceMaterials.map((material) => material.fileKey).filter(Boolean),
+    ...pdfReports.map((report) => report.storageKey).filter((key): key is string => Boolean(key)),
+  ]));
+}
+
+export async function deleteCampaignAndRelatedData(id: number) {
+  const campaigns = await col<Campaign>("campaigns");
+  const assessments = await col<Assessment>("assessments");
+  const submissions = await col<Submission>("submissions");
+  const scores = await col<Score>("scores");
+  const pdfReports = await col<PdfReport>("pdfReports");
+  const behaviorEvents = await col<BehaviorEvent>("behaviorEvents");
+  if (!campaigns || !assessments || !submissions || !scores || !pdfReports || !behaviorEvents) {
+    throw new Error("DB unavailable");
+  }
+
+  const assessmentIds = stripMany(await assessments.find({ campaignId: id }).toArray()).map((assessment) => assessment.id);
+  await Promise.all([
+    scores.deleteMany({ assessmentId: { $in: assessmentIds } }),
+    submissions.deleteMany({ assessmentId: { $in: assessmentIds } }),
+    pdfReports.deleteMany({ assessmentId: { $in: assessmentIds } }),
+    behaviorEvents.deleteMany({ assessmentId: { $in: assessmentIds } }),
+    assessments.deleteMany({ campaignId: id }),
+    campaigns.deleteOne({ id }),
+  ]);
 }
 
 export async function createAssessment(data: InsertAssessment): Promise<number> {
