@@ -7,14 +7,16 @@ import { Button } from "@/app/components/ui/button";
 import { trpc } from "@/app/lib/trpc";
 import { FileText, ArrowRight, Download, Trophy, Clock, TrendingUp } from "lucide-react";
 
-const DIMENSION_LABELS: Record<string, string> = {
+const DIMENSION_LABELS = {
   accuracy: "Accuracy",
   efficiency: "Efficiency",
   judgment: "Judgment",
   verification: "Verification",
   communication: "Communication",
   toolFluency: "Tool Fluency",
-};
+} as const;
+
+type ScoreDimensionKey = keyof typeof DIMENSION_LABELS;
 
 function ScoreRing({ score, size = 56 }: { score: number; size?: number }) {
   const r = (size - 8) / 2;
@@ -133,8 +135,9 @@ export default function CandidateReports() {
                       {/* Dimension mini-bars */}
                       {score && (
                         <div className="flex gap-2 mt-3 flex-wrap">
-                          {Object.entries(DIMENSION_LABELS).map(([key, label]) => {
-                            const val = Math.round((score as any)[key] ?? 0);
+                          {(Object.keys(DIMENSION_LABELS) as ScoreDimensionKey[]).map((key) => {
+                            const label = DIMENSION_LABELS[key];
+                            const val = Math.round(score[key] ?? 0);
                             return (
                               <div key={key} className="flex items-center gap-1.5">
                                 <div className="w-12 h-1 bg-[#d9e7db] rounded-full overflow-hidden">
@@ -208,7 +211,7 @@ export default function CandidateReports() {
           <div className="text-center py-20 border border-dashed border-[#d9e7db] rounded-xl">
             <FileText className="w-10 h-10 text-[#9db8a4] mx-auto mb-4" />
             <div className="text-[#6f8274] font-bold">No assessments yet</div>
-            <div className="text-[#9db8a4] text-sm mt-1">You'll see your reports here once you've been invited to an assessment.</div>
+            <div className="text-[#9db8a4] text-sm mt-1">{"You'll see your reports here once you've been invited to an assessment."}</div>
           </div>
         )}
       </div>

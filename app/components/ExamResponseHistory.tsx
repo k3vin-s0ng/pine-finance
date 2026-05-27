@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { trpc } from "@/app/lib/trpc";
 import {
   ChevronDown, ChevronUp, MessageSquare, FileText, Clock,
@@ -11,7 +11,8 @@ import { Streamdown } from "streamdown";
 
 // ─── Section Parser ───────────────────────────────────────────────────────────
 
-type SectionDef = { key: string; label: string; header: string; Icon: React.ComponentType<any>; color: string };
+type SectionIconProps = { className?: string; style?: React.CSSProperties };
+type SectionDef = { key: string; label: string; header: string; Icon: React.ComponentType<SectionIconProps>; color: string };
 
 const MEMO_SECTIONS: SectionDef[] = [
   { key: "findings",   label: "Key Findings",       header: "**Key Findings**",       Icon: Search,    color: "#168a4a" },
@@ -143,7 +144,7 @@ function TaskResponseCard({
   stat?: TaskStat;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("");
+  const [activeSection, setActiveSection] = useState("");
   const label = taskKey
     .replace(/([A-Z])/g, " $1")
     .replace(/^task\s*/i, "Task ")
@@ -151,13 +152,7 @@ function TaskResponseCard({
 
   const sectionDefs = response ? detectSections(response) : null;
   const sections = sectionDefs && response ? parseSectionsFromDefs(response, sectionDefs) : null;
-
-  // Initialize activeSection to first key when sectionDefs are detected
-  useEffect(() => {
-    if (sectionDefs && sectionDefs.length > 0 && !activeSection) {
-      setActiveSection(sectionDefs[0].key);
-    }
-  }, [sectionDefs, activeSection]);
+  const resolvedSection = activeSection || (sectionDefs?.[0]?.key ?? "");
 
   // Collapsed preview text — first non-empty section's opening line
   const previewText = (() => {
@@ -221,7 +216,7 @@ function TaskResponseCard({
                 <div className="flex border-b border-[#d9e7db]">
                   {sectionDefs!.map((s: SectionDef) => {
                     const filled = (sections![s.key] ?? "").trim().length > 0;
-                    const active = activeSection === s.key;
+                    const active = resolvedSection === s.key;
                     return (
                       <button
                         key={s.key}
@@ -250,7 +245,7 @@ function TaskResponseCard({
 
                 {/* Active section content */}
                 {sectionDefs!.map((s: SectionDef) => {
-                  if (s.key !== activeSection) return null;
+                  if (s.key !== resolvedSection) return null;
                   const content = sections![s.key] ?? "";
                   return (
                     <div key={s.key} className="p-5">

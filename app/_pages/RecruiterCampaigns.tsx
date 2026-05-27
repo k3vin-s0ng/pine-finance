@@ -296,7 +296,7 @@ export default function RecruiterCampaigns() {
             <div className="space-y-4 mt-2">
               <div className="p-3 rounded-lg bg-[#eef7ef] border border-green-500/20">
                 <p className="text-xs text-green-400 font-semibold">
-                  ✓ Campaign "{createdTitle}" created. Optionally attach source materials below.
+                  {"✓ Campaign \""}{createdTitle}{"\" created. Optionally attach source materials below."}
                 </p>
               </div>
               <div>

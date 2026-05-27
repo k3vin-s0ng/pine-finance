@@ -113,19 +113,14 @@ function DashboardLayoutContent({
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
+  const isResizingActive = isResizing && !isCollapsed;
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (isCollapsed) {
-      setIsResizing(false);
-    }
-  }, [isCollapsed]);
-
-  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
+      if (!isResizingActive) return;
 
       const sidebarLeft = sidebarRef.current?.getBoundingClientRect().left ?? 0;
       const newWidth = e.clientX - sidebarLeft;
@@ -138,7 +133,7 @@ function DashboardLayoutContent({
       setIsResizing(false);
     };
 
-    if (isResizing) {
+    if (isResizingActive) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
       document.body.style.cursor = "col-resize";
@@ -151,7 +146,7 @@ function DashboardLayoutContent({
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
-  }, [isResizing, setSidebarWidth]);
+  }, [isResizingActive, setSidebarWidth]);
 
   return (
     <>
@@ -159,7 +154,7 @@ function DashboardLayoutContent({
         <Sidebar
           collapsible="icon"
           className="border-r-0"
-          disableTransition={isResizing}
+          disableTransition={isResizingActive}
         >
           <SidebarHeader className="h-16 justify-center">
             <div className="flex items-center gap-3 px-2 transition-all w-full">

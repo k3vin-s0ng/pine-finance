@@ -1,4 +1,4 @@
-import { Collection, Db, MongoClient, ObjectId, type Filter } from "mongodb";
+import { Collection, Db, MongoClient, ObjectId, type Filter, type OptionalUnlessRequiredId } from "mongodb";
 import type {
   Assessment,
   BehaviorEvent,
@@ -98,7 +98,8 @@ async function col<T>(name: CollectionName): Promise<Collection<MongoRecord<T>> 
 
 function stripId<T>(doc: MongoRecord<T> | null | undefined): T | undefined {
   if (!doc) return undefined;
-  const { _id, ...rest } = doc as MongoRecord<T>;
+  const { _id: _mongoId, ...rest } = doc as MongoRecord<T>;
+  void _mongoId;
   return rest as T;
 }
 
@@ -133,7 +134,7 @@ async function insertWithId<T extends { id: number }>(
     createdAt: (data as { createdAt?: Date }).createdAt ?? now,
     updatedAt: (data as { updatedAt?: Date }).updatedAt ?? now,
   } as unknown as T;
-  await collection.insertOne(doc as any);
+  await collection.insertOne(doc as OptionalUnlessRequiredId<MongoRecord<T>>);
   return id;
 }
 

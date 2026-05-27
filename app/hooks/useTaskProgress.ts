@@ -40,7 +40,8 @@ export function useTaskProgress(
     const newId = taskIds[currentTaskIndex] ?? null;
     if (!newId) return;
 
-    // Mark start time if first visit
+    // Mark start time if first visit (task switch — not derivable from props alone)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- records first-visit timestamp on task change
     setProgress(prev => {
       if (prev[newId]?.startedAt == null) {
         return {
@@ -73,6 +74,7 @@ export function useTaskProgress(
 
   // Update word counts whenever responses change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync word counts from response text
     setProgress(prev => {
       const next = { ...prev };
       for (const id of taskIds) {

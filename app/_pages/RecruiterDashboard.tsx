@@ -177,7 +177,7 @@ function CreateCampaignModal({ open, onClose }: { open: boolean; onClose: () => 
           <div className="space-y-4 mt-2">
             <div className="p-3 rounded-lg bg-[#eef7ef] border border-green-500/20">
               <p className="text-xs text-green-400 font-semibold">
-                ✓ Campaign "{form.title}" created. Optionally attach source materials below.
+                {"✓ Campaign \""}{form.title}{"\" created. Optionally attach source materials below."}
               </p>
             </div>
             <div>

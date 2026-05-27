@@ -15,12 +15,14 @@ import {
   ExtractionComposer, ReconciliationComposer, FlagsComposer,
   type MemoValue, type VarianceValue, type ThesisValue,
   type ExtractionValue, type ReconciliationValue, type FlagsValue,
+  type ComposerValue,
 } from "@/app/components/ResponseComposers";
+import { eventTimestamp, mountTimestamp } from "@/app/lib/eventTime";
 import {
   Clock, Send, ChevronRight, ChevronLeft, FileText, Table2,
   BarChart3, AlertTriangle, CheckCircle, Loader2, BookOpen, Zap, ShieldAlert,
-  Timer as TimerIcon, Keyboard, Clipboard, Sparkles, Quote,
-  TrendingUp, TrendingDown, Activity
+  Timer as TimerIcon, Clipboard, Sparkles, Quote,
+  Activity
 } from "lucide-react";
 import { Streamdown } from "streamdown";
 import { PdfMaterialViewer } from "@/app/components/PdfMaterialViewer";
@@ -645,18 +647,42 @@ function getSourceMaterialKeysForRole(roleTemplate: keyof typeof TASK_PROMPTS): 
 }
 
 // ─── Timer ────────────────────────────────────────────────────────────────────
-function Timer({ totalSeconds, onExpire }: { totalSeconds: number; onExpire: () => void }) {
-  const [remaining, setRemaining] = useState(totalSeconds);
+// Drives the remaining-time display from an absolute server-issued deadline so
+// the countdown survives reloads and tab closes. `deadlineMs` is null until the
+// `assessments.start` mutation has populated `startedAt` on the server; in that
+// window we fall back to displaying the full duration without ticking.
+function Timer({
+  totalSeconds,
+  deadlineMs,
+  onExpire,
+}: {
+  totalSeconds: number;
+  deadlineMs: number | null;
+  onExpire: () => void;
+}) {
+  // `tick` is a heartbeat counter — it intentionally has no value other than
+  // forcing a re-render once a second. The actual remaining-seconds value is
+  // derived from the wall clock on every render so we stay accurate even if
+  // the tab was throttled.
+  const [, setTick] = useState(0);
+  const expiredRef = useRef(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRemaining(prev => {
-        if (prev <= 1) { clearInterval(interval); onExpire(); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
+    if (deadlineMs == null) return;
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [onExpire]);
+  }, [deadlineMs]);
+
+  const remaining = deadlineMs == null
+    ? totalSeconds
+    : Math.max(0, Math.ceil((deadlineMs - eventTimestamp()) / 1000));
+
+  useEffect(() => {
+    if (deadlineMs != null && remaining <= 0 && !expiredRef.current) {
+      expiredRef.current = true;
+      onExpire();
+    }
+  }, [remaining, deadlineMs, onExpire]);
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
@@ -727,7 +753,7 @@ function BehaviorStrip({ events, typedPct, pastedPct, typingSignal }: {
     if (typingSignal === 0) return;
 
     const SPEED = 3.5;         // radians per second
-    const activityStartedAt = Date.now();
+    const activityStartedAt = eventTimestamp();
     let lastTime: number | null = null;
 
     const tick = (ts: number) => {
@@ -737,7 +763,7 @@ function BehaviorStrip({ events, typedPct, pastedPct, typingSignal }: {
       }
       lastTime = ts;
 
-      const nowMs = Date.now();
+      const nowMs = eventTimestamp();
       const msSinceTyped = nowMs - activityStartedAt;
       const isActive = msSinceTyped < IDLE_TIMEOUT;
 
@@ -867,17 +893,10 @@ function BehaviorStrip({ events, typedPct, pastedPct, typingSignal }: {
   );
 }
 
-// ─── Structured Response Composer ────────────────────────────────────────────
-interface ComposerSection {
-  key: "findings" | "analysis" | "conclusion";
-  label: string;
-  placeholder: string;
-}
-
 // ─── Composer value serializers ───────────────────────────────────────────────
 type ResponseType = "memo" | "variance" | "thesis" | "extraction" | "reconciliation" | "flags";
 
-function serializeComposerValue(type: ResponseType, value: any): string {
+function serializeComposerValue(type: ResponseType, value: ComposerValue | undefined): string {
   if (!value) return "";
   switch (type) {
     case "memo": {
@@ -957,7 +976,7 @@ function getComposerSections(type: ResponseType): string[] {
   }
 }
 
-function countFilledSections(type: ResponseType, value: any): number {
+function countFilledSections(type: ResponseType, value: ComposerValue | undefined): number {
   if (!value) return 0;
   switch (type) {
     case "memo": {
@@ -991,7 +1010,7 @@ function countFilledSections(type: ResponseType, value: any): number {
   }
 }
 
-function isComposerComplete(type: ResponseType, value: any): boolean {
+function isComposerComplete(type: ResponseType, value: ComposerValue | undefined): boolean {
   if (!value) return false;
   const total = getComposerSections(type).length;
   return countFilledSections(type, value) >= total;
@@ -1005,24 +1024,30 @@ function ComposerSwitch({
   onPaste,
 }: {
   responseType: ResponseType;
-  value: any;
-  onChange: (v: any) => void;
+  value: ComposerValue | undefined;
+  onChange: (v: ComposerValue) => void;
   onPaste?: (e: React.ClipboardEvent) => void;
 }) {
   switch (responseType) {
-    case "memo": return <MemoComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    case "variance": return <VarianceComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    case "thesis": return <ThesisComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    case "extraction": return <ExtractionComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    case "reconciliation": return <ReconciliationComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    case "flags": return <FlagsComposer value={value} onChange={onChange} onPaste={onPaste} />;
-    default: return <MemoComposer value={value} onChange={onChange} onPaste={onPaste} />;
+    case "memo":
+      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} />;
+    case "variance":
+      return <VarianceComposer value={value as VarianceValue | undefined} onChange={onChange as (v: VarianceValue) => void} onPaste={onPaste} />;
+    case "thesis":
+      return <ThesisComposer value={value as ThesisValue | undefined} onChange={onChange as (v: ThesisValue) => void} onPaste={onPaste} />;
+    case "extraction":
+      return <ExtractionComposer value={value as ExtractionValue | undefined} onChange={onChange as (v: ExtractionValue) => void} onPaste={onPaste} />;
+    case "reconciliation":
+      return <ReconciliationComposer value={value as ReconciliationValue | undefined} onChange={onChange as (v: ReconciliationValue) => void} onPaste={onPaste} />;
+    case "flags":
+      return <FlagsComposer value={value as FlagsValue | undefined} onChange={onChange as (v: FlagsValue) => void} onPaste={onPaste} />;
+    default:
+      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} />;
   }
 }
 
 // ─── Enhanced AI Chat Panel ───────────────────────────────────────────────────
-const RESPONSE_CATEGORIES = ["Explanation", "Calculation", "Citation", "Suggestion"] as const;
-type ResponseCategory = typeof RESPONSE_CATEGORIES[number];
+type ResponseCategory = "Explanation" | "Calculation" | "Citation" | "Suggestion";
 
 function categorizeMessage(content: string): ResponseCategory {
   const lower = content.toLowerCase();
@@ -1074,7 +1099,7 @@ function AIChatPanel({
     onSuccess: (data: { content: string }) => {
       const assistantMsg = { role: "assistant", content: data.content };
       setMessages(prev => [...prev, assistantMsg]);
-      onInteraction({ ...assistantMsg, taskKey: pendingTaskKeyRef.current, timestamp: Date.now() });
+      onInteraction({ ...assistantMsg, taskKey: pendingTaskKeyRef.current, timestamp: eventTimestamp() });
       setLoading(false);
     },
     onError: () => {
@@ -1093,18 +1118,18 @@ function AIChatPanel({
     pendingTaskKeyRef.current = currentTaskId;
     const userMsg = { role: "user", content: text };
     setMessages(prev => [...prev, userMsg]);
-    onInteraction({ ...userMsg, taskKey: currentTaskId, timestamp: Date.now() });
+    onInteraction({ ...userMsg, taskKey: currentTaskId, timestamp: eventTimestamp() });
     // Telemetry: ai_prompt_sent
-    const taskStart = taskStartTimeRef.current[currentTaskId] ?? Date.now();
+    const taskStart = taskStartTimeRef.current[currentTaskId] ?? eventTimestamp();
     onPushBehaviorEvent({
       eventType: "ai_prompt_sent",
       taskId: currentTaskId,
       eventData: {
         taskId: currentTaskId,
         promptLength: text.length,
-        secondsSinceTaskStart: Math.round((Date.now() - taskStart) / 1000),
+        secondsSinceTaskStart: Math.round((eventTimestamp() - taskStart) / 1000),
       },
-      clientTimestamp: Date.now(),
+      clientTimestamp: eventTimestamp(),
     });
     setInput("");
     setLoading(true);
@@ -1476,18 +1501,29 @@ export default function AssessmentInterface() {
   const assessmentId = parseInt(id ?? "0");
   const [, navigate] = useLocation();
 
-  const [activeTab, setActiveTab] = useState<string>("10K");
+  const [activeTabSelection, setActiveTab] = useState<string | null>(null);
   const [currentTask, setCurrentTask] = useState(0);
-  const { responses, setResponses, clearDraft, lastSaved, hadRestoredDraft } = useLocalStorageDraft(String(assessmentId));
+  const {
+    responses,
+    setResponses,
+    composerValues: composerValuesRaw,
+    setComposerValues: setComposerValuesRaw,
+    clearDraft,
+    lastSaved,
+    hadRestoredDraft,
+  } = useLocalStorageDraft(String(assessmentId));
+  // The persisted draft stores composer state as `Record<string, unknown>` to
+  // avoid pinning the hook to one consumer's union; cast at the boundary.
+  const composerValues = composerValuesRaw as Record<string, ComposerValue>;
+  const setComposerValues = setComposerValuesRaw as (
+    updater: (prev: Record<string, ComposerValue>) => Record<string, ComposerValue>
+  ) => void;
   const [aiInteractions, setAiInteractions] = useState<Array<{ role: string; content: string; taskKey?: string; timestamp?: number }>>([]);
   const [behaviorEvents, setBehaviorEvents] = useState<BehaviorEvent[]>([]);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(mountTimestamp);
   const [submitted, setSubmitted] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [tokenClaimed, setTokenClaimed] = useState(false);
-  // Per-task composer values (type-aware structured state)
-  const [composerValues, setComposerValues] = useState<Record<string, any>>({});
-  const aiChatRef = useRef<{ sendMessage: (text: string) => void } | null>(null);
   const [pendingAIMessage, setPendingAIMessage] = useState<string | null>(null);
 
   // ── Telemetry refs ────────────────────────────────────────────────────────
@@ -1495,7 +1531,7 @@ export default function AssessmentInterface() {
   const behaviorBufferRef = useRef<TelemetryEvent[]>([]);
   const lastCopiedFromRef = useRef<"source_material" | "ai" | "external">("external");
   const taskStartTimeRef = useRef<Record<string, number>>({});
-  const materialViewStartRef = useRef<number>(Date.now());
+  const materialViewStartRef = useRef(0);
   const prevResponseLengthRef = useRef<Record<string, number>>({});
   const editDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAIResponseAtRef = useRef<number | null>(null);
@@ -1534,7 +1570,9 @@ export default function AssessmentInterface() {
     onSuccess: () => { setTokenClaimed(true); refetchAssessment(); },
     onError: () => { setTokenClaimed(true); refetchAssessment(); },
   });
-  const startAssessment = trpc.assessments.start.useMutation();
+  const startAssessment = trpc.assessments.start.useMutation({
+    onSuccess: () => { refetchAssessment(); },
+  });
   const submitAssessment = trpc.assessments.submit.useMutation({
     onSuccess: () => {
       clearDraft();
@@ -1557,16 +1595,21 @@ export default function AssessmentInterface() {
     }
   }, [assessmentData?.assessment.status, assessmentData?.campaign]);
 
+  // React 19 dev-mode double-mounts effects, which previously caused the
+  // "Draft restored" toast to stack. The ref guard makes it idempotent across
+  // remounts; the explicit toast id is a defence-in-depth against any future
+  // re-renders that change `hadRestoredDraft`'s referential equality.
+  const draftToastShownRef = useRef(false);
   useEffect(() => {
-    if (hadRestoredDraft) {
-      toast.info("Draft restored — your previous responses have been reloaded.", {
-        duration: 6000,
-        dismissible: true,
-        action: { label: "Dismiss", onClick: () => {} },
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hadRestoredDraft]);
+    if (!hadRestoredDraft || draftToastShownRef.current) return;
+    draftToastShownRef.current = true;
+    toast.info("Draft restored — your previous responses have been reloaded.", {
+      id: `draft-restored-${assessmentId}`,
+      duration: 6000,
+      dismissible: true,
+      action: { label: "Dismiss", onClick: () => {} },
+    });
+  }, [hadRestoredDraft, assessmentId]);
 
   const roleTemplate = (assessmentData?.campaign?.roleTemplate ?? "IB Analyst") as keyof typeof TASK_PROMPTS;
   const hardcodedMaterialKeys = useMemo(() => getSourceMaterialKeysForRole(roleTemplate), [roleTemplate]);
@@ -1586,17 +1629,23 @@ export default function AssessmentInterface() {
   );
   const hasCustomMaterials = customMaterials.length > 0;
 
-  useEffect(() => {
-    if (hasCustomMaterials) {
-      setActiveTab(customMaterials[0].fileKey);
-    } else {
-      setActiveTab(defaultHardcodedMaterialKey);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasCustomMaterials, defaultHardcodedMaterialKey]);
+  const defaultMaterialTab = hasCustomMaterials
+    ? customMaterials[0].fileKey
+    : defaultHardcodedMaterialKey;
+  const activeTab = activeTabSelection ?? defaultMaterialTab;
 
   const tasks = TASK_PROMPTS[roleTemplate] ?? TASK_PROMPTS["IB Analyst"];
   const totalMinutes = assessmentData?.assessment.timeLimitMinutes ?? 60;
+  // Absolute deadline derived from the server-recorded startedAt. Null until
+  // `assessments.start` lands and the cache refreshes — the Timer falls back
+  // to a static display in that window.
+  const startedAtMs = useMemo(() => {
+    const raw = assessmentData?.assessment.startedAt;
+    if (!raw) return null;
+    const ms = new Date(raw).getTime();
+    return Number.isFinite(ms) ? ms : null;
+  }, [assessmentData?.assessment.startedAt]);
+  const deadlineMs = startedAtMs !== null ? startedAtMs + totalMinutes * 60 * 1000 : null;
   const taskIds = tasks.map(t => t.id);
   const { progress: taskProgress, formatElapsed } = useTaskProgress(currentTask, taskIds, responses);
   const { textareaProps: compositionProps, getRatio } = useCompositionTracker(tasks[currentTask]?.id ?? "", taskIds);
@@ -1622,7 +1671,7 @@ export default function AssessmentInterface() {
   useEffect(() => {
     if (!currentTaskId) return;
     if (!taskStartTimeRef.current[currentTaskId]) {
-      taskStartTimeRef.current[currentTaskId] = Date.now();
+      taskStartTimeRef.current[currentTaskId] = eventTimestamp();
     }
   }, [currentTaskId]);
 
@@ -1633,13 +1682,13 @@ export default function AssessmentInterface() {
     if (prevTaskRef.current === currentTask) return;
     const prevId = tasks[prevTaskRef.current]?.id;
     const dwellMs = prevId && taskStartTimeRef.current[prevId]
-      ? Date.now() - taskStartTimeRef.current[prevId]
+      ? eventTimestamp() - taskStartTimeRef.current[prevId]
       : 0;
     pushEvent({
       eventType: "task_switch",
       taskId: currentTaskId,
       eventData: { fromTaskId: prevId ?? null, toTaskId: currentTaskId, dwellSeconds: Math.round(dwellMs / 1000) },
-      clientTimestamp: Date.now(),
+      clientTimestamp: eventTimestamp(),
     });
     prevTaskRef.current = currentTask;
   }, [currentTask]);
@@ -1647,17 +1696,17 @@ export default function AssessmentInterface() {
   // material_view event: emit when activeTab changes
   const prevTabRef = useRef<string | null>(null);
   useEffect(() => {
-    if (prevTabRef.current === null) { prevTabRef.current = activeTab; materialViewStartRef.current = Date.now(); return; }
+    if (prevTabRef.current === null) { prevTabRef.current = activeTab; materialViewStartRef.current = eventTimestamp(); return; }
     if (prevTabRef.current === activeTab) return;
-    const durationMs = Date.now() - materialViewStartRef.current;
+    const durationMs = eventTimestamp() - materialViewStartRef.current;
     pushEvent({
       eventType: "material_view",
       taskId: currentTaskId,
       eventData: { materialKey: prevTabRef.current, durationSeconds: Math.round(durationMs / 1000) },
-      clientTimestamp: Date.now(),
+      clientTimestamp: eventTimestamp(),
     });
     prevTabRef.current = activeTab;
-    materialViewStartRef.current = Date.now();
+    materialViewStartRef.current = eventTimestamp();
   }, [activeTab]);
 
   // Paste handler — captures paste events on the composer area
@@ -1668,14 +1717,14 @@ export default function AssessmentInterface() {
       eventType: "paste",
       taskId: currentTaskId,
       eventData: { source, clipboardLength: clipLen },
-      clientTimestamp: Date.now(),
+      clientTimestamp: eventTimestamp(),
     });
     // Reset to external after use
     lastCopiedFromRef.current = "external";
     compositionProps.onPaste?.(e);
   }, [currentTaskId, pushEvent]);
 
-  const updateComposerValue = (value: any) => {
+  const updateComposerValue = (value: ComposerValue) => {
     setCompositionPulse(prev => prev + 1);
     setComposerValues(prev => ({ ...prev, [currentTaskId]: value }));
     // Sync serialized string to responses for draft persistence and submission
@@ -1695,10 +1744,10 @@ export default function AssessmentInterface() {
           netDeltaChars: delta,
           totalLength: newLen,
           secsSinceAIResponse: lastAIResponseAtRef.current !== null
-            ? Math.round((Date.now() - lastAIResponseAtRef.current) / 1000)
+            ? Math.round((eventTimestamp() - lastAIResponseAtRef.current) / 1000)
             : null,
         },
-        clientTimestamp: Date.now(),
+        clientTimestamp: eventTimestamp(),
       });
     }, 1000);
   };
@@ -1706,7 +1755,7 @@ export default function AssessmentInterface() {
   const handleSubmit = async () => {
     // Flush telemetry buffer before submitting
     await flushBehaviorBuffer();
-    const completionTimeSeconds = Math.round((Date.now() - startTime) / 1000);
+    const completionTimeSeconds = Math.round((eventTimestamp() - startTime) / 1000);
     submitAssessment.mutate({
       assessmentId,
       taskResponses: responses,
@@ -1727,12 +1776,12 @@ export default function AssessmentInterface() {
       setBehaviorEvents(prev => [...prev, { type: "ai", timestamp: msg.timestamp }]);
     }
     if (msg.role === "assistant") {
-      lastAIResponseAtRef.current = Date.now();
+      lastAIResponseAtRef.current = eventTimestamp();
       pushEvent({
         eventType: "ai_response_complete",
         taskId: msg.taskKey,
         eventData: { responseLength: msg.content.length },
-        clientTimestamp: Date.now(),
+        clientTimestamp: eventTimestamp(),
       });
     }
   };
@@ -1742,7 +1791,7 @@ export default function AssessmentInterface() {
       eventType: "citation_added",
       taskId: currentTaskId,
       eventData: { source, textLength: text.length, responseType: currentResponseType },
-      clientTimestamp: Date.now(),
+      clientTimestamp: eventTimestamp(),
     });
     const citation = `\n\n> ${text.replace(/\n/g, "\n> ")}`;
     if (currentResponseType === "memo") {
@@ -1855,7 +1904,7 @@ export default function AssessmentInterface() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Timer totalSeconds={totalMinutes * 60} onExpire={handleExpire} />
+          <Timer totalSeconds={totalMinutes * 60} deadlineMs={deadlineMs} onExpire={handleExpire} />
 
           {/* Saved indicator — green pulse dot */}
           {lastSaved && (

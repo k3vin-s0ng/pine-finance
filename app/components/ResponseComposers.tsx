@@ -2,16 +2,23 @@
 
 import React, { useState } from "react";
 import { Textarea } from "@/app/components/ui/textarea";
-import { Button } from "@/app/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { X, Plus } from "lucide-react";
 
 // ─── Shared Types ─────────────────────────────────────────────────────────────
 
-export type ComposerProps = {
-  value: any;
-  onChange: (value: any) => void;
-  onPaste?: (e: React.ClipboardEvent<any>) => void;
+export type ComposerValue =
+  | MemoValue
+  | VarianceValue
+  | ThesisValue
+  | ExtractionValue
+  | ReconciliationValue
+  | FlagsValue;
+
+export type ComposerProps<T extends ComposerValue = ComposerValue> = {
+  value: T | undefined;
+  onChange: (value: T) => void;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
 };
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
@@ -31,7 +38,7 @@ interface SectionProps {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  onPaste?: (e: React.ClipboardEvent<any>) => void;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
   active: boolean;
   onActivate: () => void;
   placeholder?: string;
@@ -86,7 +93,7 @@ function Section({
 
 export type MemoValue = { keyFindings: string; numericalAnalysis: string; conclusion: string };
 
-export function MemoComposer({ value, onChange, onPaste }: ComposerProps) {
+export function MemoComposer({ value, onChange, onPaste }: ComposerProps<MemoValue>) {
   const v: MemoValue = value ?? { keyFindings: "", numericalAnalysis: "", conclusion: "" };
   const [active, setActive] = useState<keyof MemoValue>("keyFindings");
 
@@ -111,7 +118,7 @@ export function MemoComposer({ value, onChange, onPaste }: ComposerProps) {
 
 export type VarianceValue = { driver: string; quantification: string; recommendation: string };
 
-export function VarianceComposer({ value, onChange, onPaste }: ComposerProps) {
+export function VarianceComposer({ value, onChange, onPaste }: ComposerProps<VarianceValue>) {
   const v: VarianceValue = value ?? { driver: "", quantification: "", recommendation: "" };
   const [active, setActive] = useState<keyof VarianceValue>("driver");
 
@@ -136,7 +143,7 @@ export function VarianceComposer({ value, onChange, onPaste }: ComposerProps) {
 
 export type ThesisValue = { thesis: string; evidence: string; counterargument: string; recommendation: string };
 
-export function ThesisComposer({ value, onChange, onPaste }: ComposerProps) {
+export function ThesisComposer({ value, onChange, onPaste }: ComposerProps<ThesisValue>) {
   const v: ThesisValue = value ?? { thesis: "", evidence: "", counterargument: "", recommendation: "" };
   const [active, setActive] = useState<keyof ThesisValue>("thesis");
 
@@ -171,7 +178,7 @@ const DEFAULT_EXTRACTION: ExtractionValue = {
   rows: [EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW()],
 };
 
-export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) {
+export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps<ExtractionValue>) {
   const v: ExtractionValue = value ?? DEFAULT_EXTRACTION;
   const rows = Array.isArray(v.rows) ? v.rows : DEFAULT_EXTRACTION.rows;
 
@@ -215,21 +222,21 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps) 
             placeholder="e.g. Net Revenue"
             value={row.metric}
             onChange={(e) => updateRow(i, "metric", e.target.value)}
-            onPaste={onPaste as any}
+            onPaste={onPaste}
           />
           <input
             className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5 font-mono tabular-nums"
             placeholder="$4,759M"
             value={row.value}
             onChange={(e) => updateRow(i, "value", e.target.value)}
-            onPaste={onPaste as any}
+            onPaste={onPaste}
           />
           <input
             className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
             placeholder="e.g. 10-K Item 7"
             value={row.source}
             onChange={(e) => updateRow(i, "source", e.target.value)}
-            onPaste={onPaste as any}
+            onPaste={onPaste}
           />
           <button
             onClick={() => deleteRow(i)}
@@ -265,7 +272,7 @@ const DEFAULT_ENTRIES: ReconciliationEntry[] = [
   { account: "Goodwill & intangibles", stated: "$3,120M", corrected: "", reason: "" },
 ];
 
-export function ReconciliationComposer({ value, onChange, onPaste }: ComposerProps) {
+export function ReconciliationComposer({ value, onChange, onPaste }: ComposerProps<ReconciliationValue>) {
   const v: ReconciliationValue = value ?? { entries: DEFAULT_ENTRIES, summary: "" };
   const [activeSection, setActiveSection] = useState<"table" | "summary">("table");
 
@@ -296,14 +303,14 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
               placeholder="Enter corrected…"
               value={entry.corrected}
               onChange={(e) => updateEntry(i, "corrected", e.target.value)}
-              onPaste={onPaste as any}
+              onPaste={onPaste}
             />
             <input
               className="flex-[28] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
               placeholder="Reason for adjustment…"
               value={entry.reason}
               onChange={(e) => updateEntry(i, "reason", e.target.value)}
-              onPaste={onPaste as any}
+              onPaste={onPaste}
             />
           </div>
         ))}
@@ -337,7 +344,7 @@ const SEVERITY_COLORS: Record<string, string> = {
   Low: "text-[#168a4a]/30",
 };
 
-export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
+export function FlagsComposer({ value, onChange, onPaste }: ComposerProps<FlagsValue>) {
   const v: FlagsValue = value ?? { flags: [EMPTY_FLAG()] };
   const flags = Array.isArray(v.flags) ? v.flags : [EMPTY_FLAG()];
 
@@ -390,7 +397,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps) {
                 placeholder="e.g. Item 7, Page 12"
                 value={flag.location}
                 onChange={(e) => updateFlag(i, "location", e.target.value)}
-                onPaste={onPaste as any}
+                onPaste={onPaste}
               />
             </div>
 

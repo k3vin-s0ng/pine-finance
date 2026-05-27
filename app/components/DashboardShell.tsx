@@ -3,7 +3,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "@/app/lib/wouter";
 import { useAuth } from "@/app/_core/hooks/useAuth";
-import { Button } from "@/app/components/ui/button";
 import {
   LayoutDashboard, Users, FileText, LogOut,
   ChevronLeft, Menu, Target
@@ -39,29 +38,29 @@ function getRoleLabel(role: string | undefined): string {
   return "User";
 }
 
-export default function DashboardShell({ children, title, subtitle, actions }: { children: ReactNode; title?: string; subtitle?: string; actions?: ReactNode }) {
-  const { user, logout } = useAuth();
-  const [location] = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navItems = getNavItems(user?.role);
+type SidebarContentProps = {
+  navItems: NavItem[];
+  location: string;
+  userName: string;
+  roleLabel: string;
+  onLogout: () => void;
+};
 
-  const SidebarContent = () => (
+function SidebarContent({ navItems, location, userName, roleLabel, onLogout }: SidebarContentProps) {
+  return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="px-5 py-5 border-b border-[#d9e7db]">
         <Link href="/" className="flex items-center">
           <span className="font-black text-slate-950 tracking-widest text-lg uppercase">Pine</span>
         </Link>
       </div>
 
-      {/* Role badge */}
       <div className="px-5 py-4 border-b border-[#d9e7db]">
         <div className="text-[#6f8274] text-[10px] font-bold tracking-widest uppercase mb-1">Signed in as</div>
-        <div className="text-slate-950 text-sm font-semibold truncate">{user?.name ?? "User"}</div>
-        <div className="text-[#168a4a] text-[10px] font-bold tracking-widest uppercase mt-0.5">{getRoleLabel(user?.role)}</div>
+        <div className="text-slate-950 text-sm font-semibold truncate">{userName}</div>
+        <div className="text-[#168a4a] text-[10px] font-bold tracking-widest uppercase mt-0.5">{roleLabel}</div>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href !== "/dashboard/recruiter" && item.href !== "/dashboard/candidate" && location.startsWith(item.href));
@@ -80,7 +79,6 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="px-3 py-4 border-t border-[#d9e7db] space-y-1">
         <Link href="/">
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6f8274] hover:text-[#2e4637] hover:bg-[#eef7ef] transition-all cursor-pointer">
@@ -89,7 +87,7 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
           </div>
         </Link>
         <button
-          onClick={logout}
+          onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6f8274] hover:text-red-400 hover:bg-red-400/5 transition-all"
         >
           <LogOut className="w-4 h-4" />
@@ -98,12 +96,26 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
       </div>
     </div>
   );
+}
+
+export default function DashboardShell({ children, title, subtitle, actions }: { children: ReactNode; title?: string; subtitle?: string; actions?: ReactNode }) {
+  const { user, logout } = useAuth();
+  const [location] = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navItems = getNavItems(user?.role);
+  const sidebarProps: SidebarContentProps = {
+    navItems,
+    location,
+    userName: user?.name ?? "User",
+    roleLabel: getRoleLabel(user?.role),
+    onLogout: logout,
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fbf8] flex">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-56 flex-col bg-[#f8fbf8] border-r border-[#d9e7db] fixed top-0 left-0 bottom-0 z-40">
-        <SidebarContent />
+        <SidebarContent {...sidebarProps} />
       </aside>
 
       {/* Mobile Sidebar */}
@@ -111,7 +123,7 @@ export default function DashboardShell({ children, title, subtitle, actions }: {
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-green-950/40" onClick={() => setSidebarOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-56 bg-[#f8fbf8] border-r border-[#d9e7db]">
-            <SidebarContent />
+            <SidebarContent {...sidebarProps} />
           </aside>
         </div>
       )}

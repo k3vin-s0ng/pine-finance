@@ -18,12 +18,15 @@ import {
 } from "lucide-react";
 
 function useLoginHref() {
+  // getLoginUrl() reads window.location, so it must run after hydration to
+  // keep the SSR'd href stable. Initialising via useState(() => ...) would
+  // produce different values on server ("/") and client (Google OAuth URL),
+  // triggering a hydration mismatch on every initial paint.
   const [href, setHref] = useState("/");
-
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: lift a client-only window-derived value into state after hydration
     setHref(getLoginUrl());
   }, []);
-
   return href;
 }
 
@@ -234,7 +237,7 @@ function Problem() {
             </div>
             <h2 className="text-4xl md:text-5xl font-black leading-tight uppercase mb-6">
               <span className="text-slate-950">Finance Firms</span><br />
-              <span className="text-chiaroscuro">Can't Measure</span><br />
+              <span className="text-chiaroscuro">{"Can't Measure"}</span><br />
               <span className="text-gold-gradient">AI Skill.</span>
             </h2>
             <p className="text-[#52665a] text-base leading-relaxed mb-6">

@@ -19,7 +19,7 @@ export default function NotFound() {
           Page Not Found
         </h1>
         <p className="text-[#6f8274] text-sm mb-8 max-w-xs mx-auto">
-          The page you're looking for doesn't exist or has been moved.
+          {"The page you're looking for doesn't exist or has been moved."}
         </p>
         <Link href="/">
           <Button className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs tracking-widest uppercase px-6 py-3">
