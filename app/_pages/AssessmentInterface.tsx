@@ -730,7 +730,7 @@ function BehaviorStrip({ events, typedPct, pastedPct, typingSignal }: {
   typedPct: number;
   pastedPct: number;
   typingSignal: number;
-}) {
+}) { 
   const windowMs = 120_000; // 2 min window
   const IDLE_TIMEOUT = 2000; // ms after last composition update before fading to idle
   const BAR_COUNT = 8;
