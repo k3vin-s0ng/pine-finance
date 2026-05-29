@@ -7,7 +7,7 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const FROM_ADDRESS =
-  process.env.RESEND_FROM ?? "Pine Finance <noreply@pinefinance.org>";
+  process.env.RESEND_FROM ?? "Pine <noreply@pinefinance.org>";
 
 type EmailResult = {
   success: boolean;
@@ -100,10 +100,10 @@ export async function sendCandidateInviteEmail(params: {
 
   const greeting = candidateName ? `Hi ${candidateName},` : "Hello,";
   const from = recruiterName
-    ? `the team at Pine Finance, on behalf of ${recruiterName}`
-    : "the team at Pine Finance";
+    ? `the team at Pine, on behalf of ${recruiterName}`
+    : "the team at Pine";
 
-  const subject = `Your Pine Finance Assessment: ${campaignTitle}`;
+  const subject = `Your Pine Assessment: ${campaignTitle}`;
 
   const html = `
 <!DOCTYPE html>
@@ -111,7 +111,7 @@ export async function sendCandidateInviteEmail(params: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Pine Finance Assessment Invitation</title>
+  <title>Your Pine Assessment Invitation</title>
 </head>
 <body style="margin:0;padding:0;background:#fff;font-family:'Helvetica Neue',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;padding:40px 20px;">
@@ -200,7 +200,7 @@ export async function sendCandidateInviteEmail(params: {
           <tr>
             <td style="background:#f8fbf8;padding:24px 40px;border-top:1px solid #d9e7db;">
               <p style="color:#9db8a4;font-size:12px;margin:0;text-align:center;">
-                Pine Finance · The AI Fluency Standard for Finance<br>
+                Pine · The AI Fluency Standard for Finance<br>
                 <span style="color:#cfe0d2;">This invitation was sent to ${toEmail}</span>
               </p>
             </td>
@@ -213,7 +213,7 @@ export async function sendCandidateInviteEmail(params: {
 </html>`;
 
   const text = `
-Pine Finance — Assessment Invitation
+Pine — Assessment Invitation
 
 ${greeting}
 
@@ -228,7 +228,7 @@ ${assessmentUrl}
 
 Find a quiet environment and ensure you have ${timeLimitMinutes} uninterrupted minutes before starting.
 
-— Pine Finance Team
+— Pine Team
 `;
 
   return sendEmail({
@@ -260,7 +260,7 @@ export async function sendScoreReadyEmail(params: {
 
   const greeting = candidateName ? `Hi ${candidateName},` : "Hello,";
 
-  const subject = `Your Pine Finance Score Report is Ready — ${Math.round(
+  const subject = `Your Pine Score Report is Ready — ${Math.round(
     overallScore
   )}/100`;
 
@@ -269,7 +269,7 @@ export async function sendScoreReadyEmail(params: {
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Your Pine Finance Score Report</title>
+  <title>Your Pine Score Report</title>
 </head>
 <body style="margin:0;padding:0;background:#fff;font-family:'Helvetica Neue',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;padding:40px 20px;">
@@ -324,7 +324,7 @@ export async function sendScoreReadyEmail(params: {
           <tr>
             <td style="background:#f8fbf8;padding:24px 40px;border-top:1px solid #d9e7db;">
               <p style="color:#9db8a4;font-size:12px;margin:0;text-align:center;">
-                Pine Finance · The AI Fluency Standard for Finance
+                Pine · The AI Fluency Standard for Finance
               </p>
             </td>
           </tr>
@@ -346,7 +346,7 @@ Peer Percentile: ${benchmarkPercentile}th
 View your full report:
 ${reportUrl}
 
-— Pine Finance Team
+— Pine Team
 `;
 
   return sendEmail({
@@ -375,7 +375,7 @@ export async function sendDemoConfirmationEmail(params: {
   const text = `
 Hi ${name},
 
-Thank you for requesting a demo of Pine Finance. We received your request and our team will reach out within 24 hours.
+Thank you for requesting a demo of Pine. We received your request and our team will reach out within 24 hours.
 
 Request recap:
 - Name: ${name}
@@ -383,7 +383,7 @@ Request recap:
 - Company: ${companyValue}
 - Segment: ${segmentValue}
 
-— Pine Finance Team
+— Pine Team
 `;
 
   const html = `
@@ -408,7 +408,7 @@ Request recap:
               <h1 style="color:#168a4a;font-size:22px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 16px;">Demo Request Received</h1>
               <p style="color:#2e4637;font-size:15px;line-height:1.7;margin:0 0 18px;">Hi ${htmlName},</p>
               <p style="color:#2e4637;font-size:15px;line-height:1.7;margin:0 0 24px;">
-                Thank you for requesting a demo of Pine Finance. We received your request and our team will reach out within 24 hours.
+                Thank you for requesting a demo of Pine. We received your request and our team will reach out within 24 hours.
               </p>
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef7ef;border:1px solid #d9e7db;border-radius:8px;">
                 <tr>
@@ -421,7 +421,7 @@ Request recap:
                   </td>
                 </tr>
               </table>
-              <p style="color:#2e4637;font-size:14px;line-height:1.7;margin:24px 0 0;">— Pine Finance Team</p>
+              <p style="color:#2e4637;font-size:14px;line-height:1.7;margin:24px 0 0;">— Pine Team</p>
             </td>
           </tr>
         </table>
