@@ -18,8 +18,8 @@ npm run build        # production build (required gate for server / import / nex
 npx tsx scripts/verify-scoring.ts   # scoring pipeline smoke test
 ```
 
-See `app/README.md` for the full `.env.local` template (MongoDB, Google OAuth, OpenRouter LLM, S3-compatible object storage, optional Resend email).
+See `app/README.md` for the full `.env.local` template (MongoDB, Google OAuth, OpenRouter LLM, Cloudflare R2 object storage, optional Resend email).
 
 ## Stack
 
-Next.js 16.2.6 App Router · React 19.2 · TypeScript 5 · tRPC 11 · MongoDB · Tailwind v4 · shadcn/ui · `jose` JWT auth · Google OAuth · OpenRouter LLM (`google/gemini-2.5-flash` default) · S3-compatible object storage (Cloudflare R2 in prod) · Resend email.
+Next.js 16.2.6 App Router · React 19.2 · TypeScript 5 · tRPC 11 · MongoDB · Tailwind v4 · shadcn/ui · `jose` JWT auth · Google OAuth · OpenRouter LLM (candidate chat: `google/gemini-3.5-flash`; grading: `anthropic/claude-opus-4.8`) · Cloudflare R2 object storage · Resend email.

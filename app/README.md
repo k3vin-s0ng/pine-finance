@@ -46,9 +46,13 @@ GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id   # same value; build-time
 
 # LLM (OpenRouter, OpenAI-compatible)
-OPENAI_API_KEY=sk-or-v1-...        # OpenRouter key; used for grading + in-test chat
+OPENAI_API_KEY=sk-or-v1-...        # OpenRouter key; one key is used for all model calls.
 OPENAI_API_URL=                    # optional; defaults to https://openrouter.ai/api/v1
-OPENAI_MODEL=                      # optional; defaults to google/gemini-2.5-flash
+OPENAI_MODEL=                      # optional fallback for generic invokeLLM calls.
+
+# Assessment model routing is hardcoded in app/server/routers.ts:
+# - Candidate Pine AI chat: google/gemini-3.5-flash
+# - Assessment grading: anthropic/claude-opus-4.8
 
 # Object storage (Cloudflare R2) — REQUIRED for PDF/material features
 R2_BUCKET=pine-materials

@@ -56,6 +56,7 @@ export type ToolChoice =
   | ToolChoiceExplicit;
 
 export type InvokeParams = {
+  model?: string;
   messages: Message[];
   tools?: Tool[];
   toolChoice?: ToolChoice;
@@ -280,10 +281,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: ENV.openRouterModel || "google/gemini-2.5-flash",
+    model: params.model || ENV.openRouterModel || "google/gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
     max_tokens: params.maxTokens || params.max_tokens || 4096,
   };
+  const requestedModel = String(payload.model);
 
   if (tools && tools.length > 0) {
     payload.tools = tools;
@@ -309,6 +311,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
+  if (!ENV.isProduction) {
+    console.info("[LLM] requested model:", requestedModel);
+  }
+
   const response = await fetch(resolveApiUrl(), {
     method: "POST",
     headers: {
@@ -327,5 +333,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     );
   }
 
-  return (await response.json()) as InvokeResult;
+  const result = (await response.json()) as InvokeResult;
+  if (!ENV.isProduction) {
+    console.info("[LLM] returned model:", result.model);
+  }
+  return result;
 }

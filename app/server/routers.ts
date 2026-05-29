@@ -47,6 +47,9 @@ import {
 } from "./scoring";
 import type { ScoreEvidence, SourceMaterial } from "@/app/lib/schema";
 
+const ASSESSMENT_CHAT_MODEL = "google/gemini-3.5-flash";
+const ASSESSMENT_GRADING_MODEL = "anthropic/claude-opus-4.8";
+
 // ─── Role guard helpers ───────────────────────────────────────────────────────
 const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "recruiter" && ctx.user.role !== "admin") {
@@ -199,6 +202,7 @@ SCORING INTEGRITY SIGNALS:
 ${integrityBlock}`;
 
   const response = await invokeLLM({
+    model: ASSESSMENT_GRADING_MODEL,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
@@ -1221,6 +1225,7 @@ export const appRouter = router({
         });
 
         const response = await invokeLLM({
+          model: ASSESSMENT_CHAT_MODEL,
           messages: [
             { role: "system", content: systemPrompt },
             ...input.messages.map(m => ({

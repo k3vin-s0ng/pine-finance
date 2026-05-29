@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Stack
 
-Next.js 16.2.6 App Router, React 19.2, TypeScript 5. tRPC 11, @tanstack/react-query 5, superjson, MongoDB official driver, Tailwind v4 via `@tailwindcss/postcss`, shadcn/ui, lucide-react, `jose` JWT auth, Google OAuth, and Forge-backed LLM calls through `gemini-2.5-flash`. Path alias: `@/*` points at the repo root.
+Next.js 16.2.6 App Router, React 19.2, TypeScript 5. tRPC 11, @tanstack/react-query 5, superjson, MongoDB official driver, Tailwind v4 via `@tailwindcss/postcss`, shadcn/ui, lucide-react, `jose` JWT auth, Google OAuth, OpenRouter LLM calls (candidate chat: `google/gemini-3.5-flash`; grading: `anthropic/claude-opus-4.8`), and Cloudflare R2 object storage. Path alias: `@/*` points at the repo root.
 
 ## Project Map
 
@@ -20,7 +20,7 @@ Next.js 16.2.6 App Router, React 19.2, TypeScript 5. tRPC 11, @tanstack/react-qu
 
 ## Hard Rules
 
-- Treat as vendored; do not edit unless explicitly asked: `app/server/_core/**`, `app/components/ui/**`, `app/manus-storage/**`, `app/components/ManusDialog.tsx`.
+- Treat as vendored; do not edit unless explicitly asked: `app/server/_core/**`, `app/components/ui/**`, `app/r2-storage/**`, `app/components/ManusDialog.tsx`.
 - MongoDB uses numeric `id` fields issued via the `counters` collection in `app/lib/db.ts`. Do not assume Mongo `_id` is the application ID.
 - `app/lib/schema.ts` is hand-written TypeScript types only. It is not an ORM schema.
 - All app data access belongs in `app/lib/db.ts`. Do not introduce an ORM.
