@@ -53,7 +53,7 @@ function titleize(value: string) {
 
 function EmptyEvidence({ label = "No evidence recorded." }: { label?: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-[#d9e7db] bg-[#f8fbf8] p-3 text-sm text-[#6f8274]">
+    <div className="break-words rounded-lg border border-dashed border-[#d9e7db] bg-[#f8fbf8] p-3 text-sm text-[#6f8274]">
       {label}
     </div>
   );
@@ -61,12 +61,12 @@ function EmptyEvidence({ label = "No evidence recorded." }: { label?: string }) 
 
 function Metric({ label, value, detail }: { label: string; value: string | number; detail?: string }) {
   return (
-    <div className="rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">{label}</div>
-        <div className="shrink-0 text-lg font-black leading-none text-slate-950">{value}</div>
+    <div className="min-w-0 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
+      <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <div className="min-w-0 break-words text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">{label}</div>
+        <div className="min-w-0 max-w-full break-words text-right text-base font-black leading-tight text-slate-950 [overflow-wrap:anywhere] sm:text-lg">{value}</div>
       </div>
-      {detail ? <p className="mt-1 text-xs leading-snug text-[#52665a]">{detail}</p> : null}
+      {detail ? <p className="mt-1 break-words text-xs leading-snug text-[#52665a] [overflow-wrap:anywhere]">{detail}</p> : null}
     </div>
   );
 }
@@ -104,7 +104,7 @@ function KeyValueGrid({ record, omit = [] }: { record: EvidenceRecord | null; om
   if (entries.length === 0) return <EmptyEvidence />;
 
   return (
-    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid min-w-0 gap-2 md:grid-cols-2 xl:grid-cols-3">
       {entries.map(([key, value]) => (
         <Metric key={key} label={titleize(key)} value={formatValue(value)} />
       ))}
@@ -121,7 +121,7 @@ function SignalList({ value }: { value: unknown }) {
       {signals.map(signal => (
         <li key={signal} className="flex gap-2 text-sm leading-snug text-[#2e4637]">
           <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#168a4a]" />
-          <span>{signal}</span>
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">{signal}</span>
         </li>
       ))}
     </ul>
@@ -170,12 +170,12 @@ function AccuracyChecks({ value }: { value: unknown }) {
           </div>
           <div className="divide-y divide-[#d9e7db]">
             {checks.slice(0, 8).map((check, index) => (
-              <div key={`${formatValue(check.taskId)}-${formatValue(check.field)}-${index}`} className="grid grid-cols-[1fr_1fr_72px] gap-3 px-4 py-2 text-sm">
+              <div key={`${formatValue(check.taskId)}-${formatValue(check.field)}-${index}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_72px] gap-3 px-4 py-2 text-sm">
                 <div className="min-w-0">
-                  <div className="font-semibold text-slate-950">{formatValue(check.field)}</div>
-                  <div className="text-xs text-[#6f8274]">Expected {formatValue(check.expectedValue)} {formatValue(check.unit)}</div>
+                  <div className="break-words font-semibold text-slate-950 [overflow-wrap:anywhere]">{formatValue(check.field)}</div>
+                  <div className="break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">Expected {formatValue(check.expectedValue)} {formatValue(check.unit)}</div>
                 </div>
-                <div className="text-[#2e4637]">{formatValue(check.candidateValue)}</div>
+                <div className="min-w-0 break-words text-[#2e4637] [overflow-wrap:anywhere]">{formatValue(check.candidateValue)}</div>
                 <div className={check.matches === true ? "font-bold text-[#168a4a]" : "font-bold text-[#9a4d4d]"}>
                   {check.matches === true ? "Match" : "Review"}
                 </div>
@@ -220,7 +220,7 @@ function IntegrityAdjustments({ value }: { value: unknown }) {
 
   return (
     <div className="space-y-3 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
-      <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid min-w-0 gap-2 md:grid-cols-2 xl:grid-cols-4">
         <Metric
           label="Completeness"
           value={formatPercent(completenessRatio)}
@@ -259,8 +259,8 @@ function IntegrityAdjustments({ value }: { value: unknown }) {
         </div>
         <div className="divide-y divide-[#d9e7db]">
           {SCORE_DIMENSIONS.map(dimension => (
-            <div key={dimension} className="grid grid-cols-[1fr_80px_80px] gap-3 px-4 py-2 text-sm">
-              <div className="font-semibold text-slate-950">{titleize(dimension)}</div>
+            <div key={dimension} className="grid min-w-0 grid-cols-[minmax(0,1fr)_80px_80px] gap-3 px-4 py-2 text-sm">
+              <div className="min-w-0 break-words font-semibold text-slate-950">{titleize(dimension)}</div>
               <div className="tabular-nums text-[#52665a]">{formatScore(before[dimension])}</div>
               <div className="tabular-nums font-bold text-slate-950">{formatScore(after[dimension])}</div>
             </div>
@@ -284,7 +284,7 @@ function LlmJudgment({ score }: { score: Score }) {
       {score.recruiterSummary ? (
         <div className="rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
           <div className="text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">Recruiter Summary</div>
-          <p className="mt-1 text-sm leading-snug text-[#2e4637]">{score.recruiterSummary}</p>
+          <p className="mt-1 break-words text-sm leading-snug text-[#2e4637] [overflow-wrap:anywhere]">{score.recruiterSummary}</p>
         </div>
       ) : null}
       <div className="flex gap-2 rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3 text-xs leading-snug text-[#52665a]">
@@ -375,7 +375,7 @@ export function EvidencePanel({ score, assessmentId }: { score: Score; assessmen
           ) : behaviorSummary.eventCount === 0 ? (
             <EmptyEvidence label="No behavior events were recorded for AI-interaction analysis." />
           ) : (
-            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid min-w-0 gap-2 md:grid-cols-2 xl:grid-cols-4">
               <Metric label="AI prompts" value={behaviorSummary.promptsSent} detail="Prompt submissions sent during the session." />
               <Metric label="AI paste ratio" value={`${aiPasteRatio}%`} detail={`${behaviorSummary.pasteSources.ai} of ${behaviorSummary.pasteCount} paste events came from AI.`} />
               <Metric
