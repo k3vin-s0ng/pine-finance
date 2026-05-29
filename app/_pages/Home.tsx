@@ -46,7 +46,7 @@ function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       <DialogContent className="bg-[#fff] border border-[#168a4a]/30 max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-950">Request a Demo</DialogTitle>
-          <p className="text-sm text-[#3f5847] mt-1">See Pine Finance in action with a personalized walkthrough.</p>
+          <p className="text-sm text-[#3f5847] mt-1">See Pine in action with a personalized walkthrough.</p>
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div className="grid grid-cols-2 gap-3">
@@ -298,7 +298,7 @@ function Product() {
             <span className="text-slate-950">Hiring Assessments.</span><br />
             <span className="text-gold-gradient">Sharper Signal.</span>
           </h2>
-          <p className="text-[#52665a] max-w-xl mx-auto">Pine Finance helps hiring teams evaluate AI fluency with role-specific finance tasks, embedded AI assistance, structured scoring, and recruiter-ready reports.</p>
+          <p className="text-[#52665a] max-w-xl mx-auto">Pine helps hiring teams evaluate AI fluency with role-specific finance tasks, embedded AI assistance, structured scoring, and recruiter-ready reports.</p>
         </div>
 
         <div className="max-w-4xl mx-auto">
@@ -498,7 +498,7 @@ function HowItWorks() {
     {
       num: "03",
       title: "AI Scores Automatically",
-      desc: "Pine Finance's LLM scoring engine evaluates submissions across 6 dimensions with written rationale, benchmark comparisons, and a recruiter-facing summary — all stored as a PDF report.",
+      desc: "Pine's LLM scoring engine evaluates submissions across 6 dimensions with written rationale, benchmark comparisons, and a recruiter-facing summary — all stored as a PDF report.",
     },
     {
       num: "04",
@@ -572,13 +572,13 @@ function Pricing({ onDemo }: { onDemo: () => void }) {
           </div>
 
           <h2 className="mb-4 text-4xl font-black uppercase leading-tight md:text-5xl">
-            <span className="text-slate-950">See Pine Finance</span>
+            <span className="text-slate-950">See Pine</span>
             <br />
             <span className="text-gold-gradient">In Action</span>
           </h2>
 
           <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#52665a] md:text-base">
-            Get a tailored walkthrough of how Pine Finance helps teams assess AI fluency in finance candidates.
+            Get a tailored walkthrough of how Pine helps teams assess AI fluency in finance candidates.
           </p>
         </div>
 
@@ -673,7 +673,7 @@ function Footer() {
           <div className="flex items-center gap-2">
             <span className="font-black text-slate-950 tracking-widest text-xl uppercase">Pine</span>
           </div>
-          <p className="text-[#8fa095] text-xs">© 2025 Pine Finance. The AI Fluency Standard for Finance.</p>
+          <p className="text-[#8fa095] text-xs">© 2025 Pine. The AI Fluency Standard for Finance.</p>
           <div className="flex gap-6 text-xs text-[#8fa095]">
             <a href="#" className="hover:text-[#168a4a] transition-colors">Privacy</a>
             <a href="#" className="hover:text-[#168a4a] transition-colors">Terms</a>
