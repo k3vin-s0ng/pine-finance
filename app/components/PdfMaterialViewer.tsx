@@ -4,7 +4,7 @@ import { Download, ExternalLink, FileText } from "lucide-react";
 import type { SourceMaterial } from "@/app/lib/schema";
 
 function storageUrl(fileKey: string) {
-  return `/manus-storage/${fileKey.split("/").map(encodeURIComponent).join("/")}`;
+  return `/r2-storage/${fileKey.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 function formatSize(sizeBytes: number) {

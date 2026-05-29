@@ -7,6 +7,7 @@ import {
   DeleteCandidateAssessmentDialog,
   type DeleteCandidateAssessmentTarget,
 } from "@/app/components/DeleteCandidateAssessmentDialog";
+import SourceMaterialUploader, { type SourceMaterial } from "@/app/components/SourceMaterialUploader";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
@@ -17,7 +18,7 @@ import { toast } from "sonner";
 import type { Score } from "@/app/lib/schema";
 import {
   Users, ChevronRight, Clock, Eye, UserPlus, Zap, CheckCircle,
-  Loader2, AlertCircle, Timer, BarChart3, Copy, Trash2
+  Loader2, AlertCircle, Timer, BarChart3, Copy, Trash2, FileText
 } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -129,9 +130,8 @@ function CandidateCompareModal({
 }
 
 // ─── Invite Modal ─────────────────────────────────────────────────────────────
-function InviteCandidateModal({ campaignId, open, onClose, lastInviteResult }: {
+function InviteCandidateModal({ campaignId, open, onClose }: {
   campaignId: number; open: boolean; onClose: () => void;
-  lastInviteResult: { assessmentUrl?: string; token?: string } | null;
 }) {
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<{ assessmentUrl: string; token: string } | null>(null);
@@ -271,6 +271,7 @@ export default function CampaignDetail() {
 
   const submittedCount = (candidates ?? []).filter(c => c.assessment.status === "submitted").length;
   const scoredCount = (candidates ?? []).filter(c => c.assessment.status === "scored").length;
+  const materials = (campaign?.sourceMaterials as SourceMaterial[] | null | undefined) ?? [];
 
   return (
     <DashboardShell title={campaign?.title ?? "Campaign"}>
@@ -350,6 +351,29 @@ export default function CampaignDetail() {
             <div className="text-[#6f8274] text-xs uppercase tracking-wider mt-1">{stat.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Source Materials */}
+      <div className="bg-[#fff] border border-[#d9e7db] rounded-xl p-5 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-slate-950 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#168a4a]" />
+              Source Materials
+            </h2>
+            <p className="text-[#6f8274] text-xs mt-1">Files attached to this campaign for candidate research.</p>
+          </div>
+          {materials.length > 0 && (
+            <Badge className="bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20 text-[10px] font-bold tracking-widest uppercase">
+              {materials.length} file{materials.length === 1 ? "" : "s"}
+            </Badge>
+          )}
+        </div>
+        <SourceMaterialUploader
+          campaignId={campaign?.id ?? campaignId}
+          materials={materials}
+          readOnly
+        />
       </div>
 
       {/* Candidates Table */}
@@ -497,7 +521,6 @@ export default function CampaignDetail() {
         campaignId={campaignId}
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
-        lastInviteResult={null}
       />
       <DeleteCandidateAssessmentDialog
         target={candidateToDelete}

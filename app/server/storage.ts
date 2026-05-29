@@ -1,6 +1,6 @@
-// S3-compatible storage helpers for source materials and generated artifacts.
-// Uploads go directly through the S3 API; downloads return /manus-storage/{key}
-// paths served by the existing 307 redirect proxy.
+// Cloudflare R2 storage helpers for source materials and generated artifacts.
+// R2 uses the S3 API. Downloads go through the /r2-storage/{key} app route,
+// which 307-redirects to short-lived signed R2 object URLs.
 
 import {
   DeleteObjectCommand,
@@ -25,17 +25,17 @@ function cleanEnvValue(value: string | undefined) {
 
 function getStorageConfig(): StorageConfig {
   const config = {
-    bucket: cleanEnvValue(process.env.S3_BUCKET),
-    region: cleanEnvValue(process.env.S3_REGION),
-    accessKeyId: cleanEnvValue(process.env.S3_ACCESS_KEY_ID),
-    secretAccessKey: cleanEnvValue(process.env.S3_SECRET_ACCESS_KEY),
-    endpoint: cleanEnvValue(process.env.S3_ENDPOINT) || undefined,
+    bucket: cleanEnvValue(process.env.R2_BUCKET),
+    region: cleanEnvValue(process.env.R2_REGION) || "auto",
+    accessKeyId: cleanEnvValue(process.env.R2_ACCESS_KEY_ID),
+    secretAccessKey: cleanEnvValue(process.env.R2_SECRET_ACCESS_KEY),
+    endpoint: cleanEnvValue(process.env.R2_ENDPOINT) || undefined,
   };
   const missing = [
-    ["S3_BUCKET", config.bucket],
-    ["S3_REGION", config.region],
-    ["S3_ACCESS_KEY_ID", config.accessKeyId],
-    ["S3_SECRET_ACCESS_KEY", config.secretAccessKey],
+    ["R2_BUCKET", config.bucket],
+    ["R2_ACCESS_KEY_ID", config.accessKeyId],
+    ["R2_SECRET_ACCESS_KEY", config.secretAccessKey],
+    ["R2_ENDPOINT", config.endpoint],
   ]
     .filter(([, value]) => !value)
     .map(([name]) => name);
@@ -92,12 +92,12 @@ export async function storagePut(
     }),
   );
 
-  return { key, url: `/manus-storage/${key}` };
+  return { key, url: `/r2-storage/${key}` };
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
   const key = normalizeKey(relKey);
-  return { key, url: `/manus-storage/${key}` };
+  return { key, url: `/r2-storage/${key}` };
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {

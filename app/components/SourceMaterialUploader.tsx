@@ -14,10 +14,9 @@
  *   />
  */
 import { useRef, useState } from "react";
-import { Upload, FileText, X, Loader2, File } from "lucide-react";
+import { Upload, FileText, X, Loader2, File, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/app/lib/trpc";
-import { Button } from "@/app/components/ui/button";
 
 export interface SourceMaterial {
   label: string;
@@ -138,6 +137,16 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
                 </a>
                 <span className="text-[10px] text-[#6f8274]">{formatBytes(m.sizeBytes)}</span>
               </div>
+              <a
+                href={m.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#168a4a] hover:text-[#11743d] transition-colors shrink-0"
+                aria-label={`Open ${m.label}`}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open
+              </a>
               {!readOnly && (
                 <button
                   type="button"
@@ -193,7 +202,7 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
       )}
 
       {materials.length === 0 && readOnly && (
-        <p className="text-xs text-[#6f8274] italic">No custom source materials — default Acme Financial case study will be used.</p>
+        <p className="text-xs text-[#6f8274] italic">No uploaded source materials for this campaign.</p>
       )}
     </div>
   );

@@ -50,12 +50,12 @@ OPENAI_API_KEY=sk-or-v1-...        # OpenRouter key; used for grading + in-test 
 OPENAI_API_URL=                    # optional; defaults to https://openrouter.ai/api/v1
 OPENAI_MODEL=                      # optional; defaults to google/gemini-2.5-flash
 
-# Object storage (S3-compatible; Cloudflare R2 in prod) — REQUIRED for PDF/material features
-S3_BUCKET=pine-materials
-S3_REGION=auto                     # "auto" for R2; a real region (e.g. us-east-1) for AWS
-S3_ACCESS_KEY_ID=
-S3_SECRET_ACCESS_KEY=
-S3_ENDPOINT=                       # set for R2 (https://<acct>.r2.cloudflarestorage.com); omit for AWS
+# Object storage (Cloudflare R2) — REQUIRED for PDF/material features
+R2_BUCKET=pine-materials
+R2_REGION=auto
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_ENDPOINT=                       # https://<account-id>.r2.cloudflarestorage.com
 
 # Email (Resend)
 RESEND_API_KEY=
@@ -67,7 +67,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Optional
 OWNER_OPEN_ID=
-# Legacy (no longer used by the assessment flow; storage is S3 now):
+# Legacy (no longer used by the assessment flow; storage is Cloudflare R2 now):
 # BUILT_IN_FORGE_API_URL / BUILT_IN_FORGE_API_KEY / NEXT_PUBLIC_FRONTEND_FORGE_*
 ```
 
