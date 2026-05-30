@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "@/app/lib/wouter";
 import { Button } from "@/app/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { trpc } from "@/app/lib/trpc";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import {
   Download, ArrowLeft, Target, Zap, Shield, CheckCircle,
-  BookOpen, BarChart3, Award, Loader2, FileText
+  BookOpen, BarChart3, Award, Loader2, FileText, AlertTriangle
 } from "lucide-react";
 import { ExamResponseHistory } from "@/app/components/ExamResponseHistory";
-import { CandidateBehaviorTab } from "@/app/components/CandidateBehaviorTab";
-import { ProcessTraceTimeline } from "@/app/components/ProcessTraceTimeline";
+import { ProcessBehaviorSection } from "@/app/components/ProcessBehaviorSection";
 import { EvidencePanel } from "@/app/components/EvidencePanel";
 import type { Score } from "@/app/lib/schema";
 import {
@@ -115,10 +115,68 @@ const CUSTOM_TOOLTIP = {
   labelStyle: { color: "#168a4a" },
 };
 
+type EvidenceRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): EvidenceRecord | null {
+  return value != null && typeof value === "object" && !Array.isArray(value) ? value as EvidenceRecord : null;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function numberValue(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function formatMultiplier(value: number | null) {
+  return value == null ? null : `x${value.toFixed(2)}`;
+}
+
+function getIntegrityFlag(score: Score) {
+  const gate = asRecord(score.scoreEvidence?.integrityGate);
+  if (!gate) return null;
+
+  const completenessRatio = numberValue(gate.completenessRatio);
+  const aiPasteShare = numberValue(gate.aiPasteShare);
+  const attempted = numberValue(gate.attemptedTaskCount);
+  const defined = numberValue(gate.definedTaskCount);
+  const multipliers = asRecord(gate.multipliers);
+  const overallMultiplier = numberValue(multipliers?.overall);
+
+  const labels: string[] = [];
+  if (completenessRatio != null && completenessRatio < 0.34) {
+    labels.push("Abandoned");
+  } else if (completenessRatio != null && completenessRatio < 0.67) {
+    labels.push("Low completeness");
+  }
+  if (aiPasteShare != null && aiPasteShare >= 0.25) {
+    labels.push("AI-paste penalty");
+  }
+  if (overallMultiplier != null && overallMultiplier < 1) {
+    labels.push(`score capped ${formatMultiplier(overallMultiplier)}`);
+  }
+
+  if (labels.length === 0) return null;
+
+  const taskDetail = attempted != null && defined != null ? `${attempted} of ${defined} tasks` : null;
+  const detail = [taskDetail].filter(Boolean).join(" · ");
+
+  return {
+    title: labels.join(" · "),
+    detail,
+  };
+}
+
 export default function ScoreReport() {
   const { id } = useParams<{ id: string }>();
   const assessmentId = parseInt(id ?? "0");
   const { user } = useAuth();
+  const [expandEvidenceForExport, setExpandEvidenceForExport] = useState(false);
 
   const { data: report, isLoading } = trpc.scoring.getReport.useQuery({ assessmentId });
   // Fetch benchmark data unconditionally (before any early returns) to comply with React hooks rules
@@ -137,6 +195,17 @@ export default function ScoreReport() {
       window.location.reload();
     },
   });
+
+  useEffect(() => {
+    const expand = () => setExpandEvidenceForExport(true);
+    const collapse = () => setExpandEvidenceForExport(false);
+    window.addEventListener("beforeprint", expand);
+    window.addEventListener("afterprint", collapse);
+    return () => {
+      window.removeEventListener("beforeprint", expand);
+      window.removeEventListener("afterprint", collapse);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -192,6 +261,9 @@ export default function ScoreReport() {
 
   const isRecruiter = user?.role === "recruiter" || user?.role === "admin";
   const backHref = isRecruiter ? `/dashboard/recruiter/campaigns/${report.assessment?.campaignId}` : "/dashboard/candidate";
+  const integrityFlag = getIntegrityFlag(score);
+  const strengths = asArray(score.strengths).map(stringValue).filter((item): item is string => item != null);
+  const improvements = asArray(score.improvements).map(stringValue).filter((item): item is string => item != null);
 
   return (
     <div className="min-h-screen bg-[#f8fbf8]">
@@ -211,7 +283,10 @@ export default function ScoreReport() {
             </div>
           </div>
           <Button
-            onClick={() => generatePdf.mutate({ assessmentId })}
+            onClick={() => {
+              setExpandEvidenceForExport(true);
+              window.setTimeout(() => generatePdf.mutate({ assessmentId }), 0);
+            }}
             disabled={generatePdf.isPending}
             className="bg-[#168a4a] hover:bg-[#11743d] text-white font-bold text-xs tracking-widest uppercase"
           >
@@ -265,6 +340,49 @@ export default function ScoreReport() {
                   </div>
                 )}
               </div>
+              {isRecruiter && integrityFlag ? (
+                <Alert className="mt-5 border-[#c4a35a]/40 bg-[#fff8e6] text-[#5b4620]">
+                  <AlertTriangle className="h-4 w-4 text-[#a16c00]" />
+                  <AlertTitle className="text-xs font-black uppercase tracking-widest text-[#5b4620]">
+                    {integrityFlag.title}
+                  </AlertTitle>
+                  {integrityFlag.detail ? (
+                    <AlertDescription className="text-xs text-[#6c5428]">
+                      {integrityFlag.detail}
+                    </AlertDescription>
+                  ) : null}
+                </Alert>
+              ) : null}
+              {isRecruiter && (strengths.length > 0 || improvements.length > 0) ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {strengths.length > 0 ? (
+                    <div className="rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
+                      <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">
+                        <Award className="h-3.5 w-3.5 text-[#168a4a]" />
+                        Strengths
+                      </div>
+                      <ul className="space-y-1">
+                        {strengths.map(strength => (
+                          <li key={strength} className="text-xs leading-snug text-[#2e4637]">{strength}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {improvements.length > 0 ? (
+                    <div className="rounded-lg border border-[#d9e7db] bg-[#f8fbf8] p-3">
+                      <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">
+                        <Target className="h-3.5 w-3.5 text-[#c4a35a]" />
+                        Improvements
+                      </div>
+                      <ul className="space-y-1">
+                        {improvements.map(improvement => (
+                          <li key={improvement} className="text-xs leading-snug text-[#2e4637]">{improvement}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -327,30 +445,30 @@ export default function ScoreReport() {
           </div>
         </div>
 
-        {/* Recruiter summary */}
-        {isRecruiter && score.recruiterSummary && (
-          <div className="p-6 bg-[#fff] border border-[#168a4a]/20 rounded-xl">
-            <div className="flex items-center gap-2 mb-4">
-              <Award className="w-4 h-4 text-[#168a4a]" />
-              <h3 className="text-slate-950 font-bold text-sm uppercase tracking-widest">Recruiter Summary</h3>
-            </div>
-            <p className="text-[#2e4637] text-sm leading-relaxed">{score.recruiterSummary}</p>
-          </div>
-        )}
-
         {isRecruiter && (
-          <div className="mt-8 space-y-6">
-            <EvidencePanel score={score} assessmentId={assessmentId} />
-            <CandidateBehaviorTab assessmentId={assessmentId} />
-            <ProcessTraceTimeline assessmentId={assessmentId} />
+          <div className="mt-8">
+            <ProcessBehaviorSection
+              assessmentId={assessmentId}
+              score={score}
+              expandAll={expandEvidenceForExport}
+              deterministicChecks={<EvidencePanel score={score} />}
+              responses={(
+                <ExamResponseHistory
+                  assessmentId={assessmentId}
+                  candidateId={report.assessment?.candidateId ?? undefined}
+                />
+              )}
+            />
           </div>
         )}
 
         {/* Exam Responses & History — visible to candidate (own) and recruiter/admin (any) */}
-        <ExamResponseHistory
-          assessmentId={assessmentId}
-          candidateId={report.assessment?.candidateId ?? undefined}
-        />
+        {!isRecruiter && (
+          <ExamResponseHistory
+            assessmentId={assessmentId}
+            candidateId={report.assessment?.candidateId ?? undefined}
+          />
+        )}
       </div>
     </div>
   );
