@@ -1016,33 +1016,149 @@ function isComposerComplete(type: ResponseType, value: ComposerValue | undefined
   return countFilledSections(type, value) >= total;
 }
 
+type CitationSource = "ai" | "source_material";
+
+const DEFAULT_RECONCILIATION_ENTRIES: ReconciliationValue["entries"] = [
+  { account: "Cash & equivalents", stated: "$8,200M", corrected: "", reason: "" },
+  { account: "Trading securities", stated: "$14,350M", corrected: "", reason: "" },
+  { account: "Net loans & leases", stated: "$198,400M", corrected: "", reason: "" },
+  { account: "Goodwill & intangibles", stated: "$3,120M", corrected: "", reason: "" },
+];
+
+const emptyExtractionRow = (): ExtractionValue["rows"][number] => ({ metric: "", value: "", source: "" });
+const emptyReconciliationEntry = (): ReconciliationValue["entries"][number] => ({ account: "", stated: "", corrected: "", reason: "" });
+const emptyFlag = (): FlagsValue["flags"][number] => ({ location: "", issue: "", severity: "", recommendation: "" });
+
+function appendInlineReference(current: string | undefined, reference: string) {
+  const existing = current ?? "";
+  const spacer = existing.length > 0 && !/\s$/.test(existing) ? " " : "";
+  return `${existing}${spacer}${reference}`;
+}
+
+function citationReference(source: CitationSource, activeMaterialLabel: string | undefined) {
+  if (source === "ai") return "[AI-assisted]";
+  const label = activeMaterialLabel?.trim();
+  return label ? `[Source: ${label}]` : "[Source]";
+}
+
+function pathIndex(path: string | null | undefined, prefix: "rows" | "entries" | "flags", field: string) {
+  const match = path?.match(new RegExp(`^${prefix}\\.(\\d+)\\.${field}$`));
+  if (!match) return null;
+  const index = Number(match[1]);
+  return Number.isInteger(index) && index >= 0 ? index : null;
+}
+
+function withCitationReference(
+  type: ResponseType,
+  value: ComposerValue | undefined,
+  requestedPath: string | null | undefined,
+  reference: string,
+): { value: ComposerValue; fieldPath: string } {
+  switch (type) {
+    case "memo": {
+      const v = { keyFindings: "", numericalAnalysis: "", conclusion: "", ...(value as Partial<MemoValue> | undefined) };
+      const field = requestedPath === "numericalAnalysis" || requestedPath === "conclusion" ? requestedPath : "keyFindings";
+      return { value: { ...v, [field]: appendInlineReference(v[field], reference) }, fieldPath: field };
+    }
+    case "variance": {
+      const v = { driver: "", quantification: "", recommendation: "", ...(value as Partial<VarianceValue> | undefined) };
+      const field = requestedPath === "quantification" || requestedPath === "recommendation" ? requestedPath : "driver";
+      return { value: { ...v, [field]: appendInlineReference(v[field], reference) }, fieldPath: field };
+    }
+    case "thesis": {
+      const v = { thesis: "", evidence: "", counterargument: "", recommendation: "", ...(value as Partial<ThesisValue> | undefined) };
+      const field =
+        requestedPath === "evidence" || requestedPath === "counterargument" || requestedPath === "recommendation"
+          ? requestedPath
+          : "thesis";
+      return { value: { ...v, [field]: appendInlineReference(v[field], reference) }, fieldPath: field };
+    }
+    case "extraction": {
+      const current = value as ExtractionValue | undefined;
+      const rows = Array.isArray(current?.rows) && current.rows.length > 0
+        ? current.rows.map(row => ({ ...emptyExtractionRow(), ...row }))
+        : [emptyExtractionRow()];
+      const rowIndex = pathIndex(requestedPath, "rows", "source") ?? 0;
+      const nextRows = [...rows];
+      while (nextRows.length <= rowIndex) nextRows.push(emptyExtractionRow());
+      nextRows[rowIndex] = {
+        ...nextRows[rowIndex],
+        source: appendInlineReference(nextRows[rowIndex].source, reference),
+      };
+      return { value: { ...current, rows: nextRows }, fieldPath: `rows.${rowIndex}.source` };
+    }
+    case "reconciliation": {
+      const current = value as ReconciliationValue | undefined;
+      const fallbackEntries = Array.isArray(current?.entries) && current.entries.length > 0
+        ? current.entries
+        : DEFAULT_RECONCILIATION_ENTRIES;
+      const entries = fallbackEntries.map(entry => ({ ...entry }));
+      const entryIndex = pathIndex(requestedPath, "entries", "reason");
+      if (entryIndex == null) {
+        return {
+          value: { ...current, entries, summary: appendInlineReference(current?.summary, reference) },
+          fieldPath: "summary",
+        };
+      }
+      const nextEntries = [...entries];
+      while (nextEntries.length <= entryIndex) nextEntries.push(emptyReconciliationEntry());
+      nextEntries[entryIndex] = {
+        ...nextEntries[entryIndex],
+        reason: appendInlineReference(nextEntries[entryIndex].reason, reference),
+      };
+      return {
+        value: { ...current, entries: nextEntries, summary: current?.summary ?? "" },
+        fieldPath: `entries.${entryIndex}.reason`,
+      };
+    }
+    case "flags": {
+      const current = value as FlagsValue | undefined;
+      const flags = Array.isArray(current?.flags) && current.flags.length > 0
+        ? current.flags.map(flag => ({ ...emptyFlag(), ...flag }))
+        : [emptyFlag()];
+      const flagIndex = pathIndex(requestedPath, "flags", "issue") ?? 0;
+      const nextFlags = [...flags];
+      while (nextFlags.length <= flagIndex) nextFlags.push(emptyFlag());
+      nextFlags[flagIndex] = {
+        ...nextFlags[flagIndex],
+        issue: appendInlineReference(nextFlags[flagIndex].issue, reference),
+      };
+      return { value: { ...current, flags: nextFlags }, fieldPath: `flags.${flagIndex}.issue` };
+    }
+    default:
+      return { value: { keyFindings: reference, numericalAnalysis: "", conclusion: "" }, fieldPath: "keyFindings" };
+  }
+}
+
 // ─── Composer Switch ──────────────────────────────────────────────────────────
 function ComposerSwitch({
   responseType,
   value,
   onChange,
   onPaste,
+  onCitationTargetChange,
 }: {
   responseType: ResponseType;
   value: ComposerValue | undefined;
   onChange: (v: ComposerValue) => void;
   onPaste?: (e: React.ClipboardEvent) => void;
+  onCitationTargetChange?: (path: string | null) => void;
 }) {
   switch (responseType) {
     case "memo":
-      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} />;
+      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     case "variance":
-      return <VarianceComposer value={value as VarianceValue | undefined} onChange={onChange as (v: VarianceValue) => void} onPaste={onPaste} />;
+      return <VarianceComposer value={value as VarianceValue | undefined} onChange={onChange as (v: VarianceValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     case "thesis":
-      return <ThesisComposer value={value as ThesisValue | undefined} onChange={onChange as (v: ThesisValue) => void} onPaste={onPaste} />;
+      return <ThesisComposer value={value as ThesisValue | undefined} onChange={onChange as (v: ThesisValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     case "extraction":
-      return <ExtractionComposer value={value as ExtractionValue | undefined} onChange={onChange as (v: ExtractionValue) => void} onPaste={onPaste} />;
+      return <ExtractionComposer value={value as ExtractionValue | undefined} onChange={onChange as (v: ExtractionValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     case "reconciliation":
-      return <ReconciliationComposer value={value as ReconciliationValue | undefined} onChange={onChange as (v: ReconciliationValue) => void} onPaste={onPaste} />;
+      return <ReconciliationComposer value={value as ReconciliationValue | undefined} onChange={onChange as (v: ReconciliationValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     case "flags":
-      return <FlagsComposer value={value as FlagsValue | undefined} onChange={onChange as (v: FlagsValue) => void} onPaste={onPaste} />;
+      return <FlagsComposer value={value as FlagsValue | undefined} onChange={onChange as (v: FlagsValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
     default:
-      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} />;
+      return <MemoComposer value={value as MemoValue | undefined} onChange={onChange as (v: MemoValue) => void} onPaste={onPaste} onCitationTargetChange={onCitationTargetChange} />;
   }
 }
 
@@ -1287,7 +1403,7 @@ function AIChatPanel({
                         className="px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                       >
                         <button
-                          onClick={() => onCiteInResponse(msg.content, "ai")}
+                          onMouseDown={e => { e.preventDefault(); onCiteInResponse(msg.content, "ai"); }}
                           className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors duration-150"
                           style={{ color: "var(--text-quaternary)" }}
                           onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-gold)"}
@@ -1535,6 +1651,7 @@ export default function AssessmentInterface() {
   const prevResponseLengthRef = useRef<Record<string, number>>({});
   const editDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAIResponseAtRef = useRef<number | null>(null);
+  const citationTargetRef = useRef<Record<string, string | null>>({});
 
   const logBehavior = trpc.assessments.logBehavior.useMutation();
 
@@ -1582,18 +1699,21 @@ export default function AssessmentInterface() {
     },
     onError: (e) => toast.error(e.message),
   });
+  const claimByTokenMutate = claimByToken.mutate;
+  const isClaimByTokenPending = claimByToken.isPending;
+  const startAssessmentMutate = startAssessment.mutate;
 
   useEffect(() => {
-    if (urlToken && assessmentId && !tokenClaimed && !claimByToken.isPending) {
-      claimByToken.mutate({ token: urlToken, assessmentId });
+    if (urlToken && assessmentId && !tokenClaimed && !isClaimByTokenPending) {
+      claimByTokenMutate({ token: urlToken, assessmentId });
     }
-  }, [urlToken, assessmentId]);
+  }, [urlToken, assessmentId, tokenClaimed, isClaimByTokenPending, claimByTokenMutate]);
 
   useEffect(() => {
     if (assessmentData?.assessment.status === "invited" && assessmentData?.campaign) {
-      startAssessment.mutate({ id: assessmentId });
+      startAssessmentMutate({ id: assessmentId });
     }
-  }, [assessmentData?.assessment.status, assessmentData?.campaign]);
+  }, [assessmentData?.assessment.status, assessmentData?.campaign, assessmentId, startAssessmentMutate]);
 
   // React 19 dev-mode double-mounts effects, which previously caused the
   // "Draft restored" toast to stack. The ref guard makes it idempotent across
@@ -1666,6 +1786,10 @@ export default function AssessmentInterface() {
   const currentTaskId = tasks[currentTask]?.id ?? "";
   const currentResponseType = (tasks[currentTask]?.responseType ?? "memo") as ResponseType;
   const currentComposerValue = composerValues[currentTaskId] ?? {};
+  const handleCitationTargetChange = useCallback((path: string | null) => {
+    if (!currentTaskId) return;
+    citationTargetRef.current[currentTaskId] = path;
+  }, [currentTaskId]);
 
   // Track task start time on first visit
   useEffect(() => {
@@ -1691,7 +1815,7 @@ export default function AssessmentInterface() {
       clientTimestamp: eventTimestamp(),
     });
     prevTaskRef.current = currentTask;
-  }, [currentTask]);
+  }, [currentTask, currentTaskId, pushEvent, tasks]);
 
   // material_view event: emit when activeTab changes
   const prevTabRef = useRef<string | null>(null);
@@ -1707,7 +1831,7 @@ export default function AssessmentInterface() {
     });
     prevTabRef.current = activeTab;
     materialViewStartRef.current = eventTimestamp();
-  }, [activeTab]);
+  }, [activeTab, currentTaskId, pushEvent]);
 
   // Paste handler — captures paste events on the composer area
   const handleComposerPaste = useCallback((e: React.ClipboardEvent) => {
@@ -1722,7 +1846,7 @@ export default function AssessmentInterface() {
     // Reset to external after use
     lastCopiedFromRef.current = "external";
     compositionProps.onPaste?.(e);
-  }, [currentTaskId, pushEvent]);
+  }, [compositionProps, currentTaskId, pushEvent]);
 
   const updateComposerValue = (value: ComposerValue) => {
     setCompositionPulse(prev => prev + 1);
@@ -1752,7 +1876,7 @@ export default function AssessmentInterface() {
     }, 1000);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     // Flush telemetry buffer before submitting
     await flushBehaviorBuffer();
     const completionTimeSeconds = Math.round((eventTimestamp() - startTime) / 1000);
@@ -1763,12 +1887,12 @@ export default function AssessmentInterface() {
       aiInteractions,
       completionTimeSeconds,
     });
-  };
+  }, [aiInteractions, assessmentId, composerValues, flushBehaviorBuffer, responses, startTime, submitAssessment]);
 
   const handleExpire = useCallback(() => {
     toast.warning("Time's up! Submitting your responses automatically.");
     handleSubmit();
-  }, [responses, aiInteractions]);
+  }, [handleSubmit]);
 
   const handleAIInteraction = (msg: { role: string; content: string; taskKey: string; timestamp: number }) => {
     setAiInteractions(prev => [...prev, msg]);
@@ -1786,32 +1910,30 @@ export default function AssessmentInterface() {
     }
   };
 
-  const handleCiteInResponse = (text: string, source: "ai" | "source_material") => {
+  const handleCiteInResponse = (text: string, source: CitationSource) => {
+    const reference = citationReference(source, activeMaterialLabel);
+    const requestedPath = citationTargetRef.current[currentTaskId] ?? null;
+    const citationResult = withCitationReference(
+      currentResponseType,
+      composerValues[currentTaskId],
+      requestedPath,
+      reference,
+    );
     pushEvent({
       eventType: "citation_added",
       taskId: currentTaskId,
-      eventData: { source, textLength: text.length, responseType: currentResponseType },
+      eventData: {
+        source,
+        textLength: text.length,
+        responseType: currentResponseType,
+        fieldPath: citationResult.fieldPath,
+        citedText: text,
+      },
       clientTimestamp: eventTimestamp(),
     });
-    const citation = `\n\n> ${text.replace(/\n/g, "\n> ")}`;
-    if (currentResponseType === "memo") {
-      const v = (currentComposerValue as MemoValue) ?? {};
-      const next = { ...v, conclusion: (v.conclusion ?? "") + citation };
-      updateComposerValue(next);
-    } else if (currentResponseType === "thesis") {
-      const v = (currentComposerValue as ThesisValue) ?? {};
-      const next = { ...v, recommendation: (v.recommendation ?? "") + citation };
-      updateComposerValue(next);
-    } else {
-      // For other types, append to serialized response as a fallback
-      const raw = responses[currentTaskId] ?? "";
-      setResponses(prev => ({ ...prev, [currentTaskId]: raw + citation }));
-    }
+    citationTargetRef.current[currentTaskId] = citationResult.fieldPath;
+    updateComposerValue(citationResult.value);
     toast.success("Citation added to response.");
-  };
-
-  const handleSendToAI = (text: string) => {
-    setPendingAIMessage(text);
   };
 
   // A task is complete when all required sections are filled
@@ -1834,13 +1956,6 @@ export default function AssessmentInterface() {
     // Fallback for restored drafts
     const raw = responses[taskId] ?? "";
     return raw.trim().length > 0 ? 1 : 0;
-  };
-
-  // Total sections for a given task
-  const totalSections = (taskId: string): number => {
-    const task = tasks.find(t => t.id === taskId);
-    const type = (task?.responseType ?? "memo") as ResponseType;
-    return getComposerSections(type).length;
   };
 
   // All tasks have non-empty responses
@@ -2299,6 +2414,7 @@ export default function AssessmentInterface() {
                 value={currentComposerValue}
                 onChange={updateComposerValue}
                 onPaste={handleComposerPaste}
+                onCitationTargetChange={handleCitationTargetChange}
               />
             </div>
 
@@ -2394,6 +2510,6 @@ function PendingMessageInjector({ message, onConsumed }: { message: string; onCo
     toast.info(`Selection copied to clipboard. Paste into Pine AI to ask about it.`);
     navigator.clipboard.writeText(message).catch(() => {});
     onConsumed();
-  }, []);
+  }, [message, onConsumed]);
   return null;
 }

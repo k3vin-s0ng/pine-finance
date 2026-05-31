@@ -19,6 +19,7 @@ export type ComposerProps<T extends ComposerValue = ComposerValue> = {
   value: T | undefined;
   onChange: (value: T) => void;
   onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
+  onCitationTargetChange?: (path: string | null) => void;
 };
 
 // ─── Shared Helpers ───────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ interface SectionProps {
   value: string;
   onChange: (v: string) => void;
   onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
+  onFocus?: () => void;
   active: boolean;
   onActivate: () => void;
   placeholder?: string;
@@ -51,6 +53,7 @@ function Section({
   value,
   onChange,
   onPaste,
+  onFocus,
   active,
   onActivate,
   placeholder,
@@ -74,6 +77,7 @@ function Section({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onPaste={onPaste}
+          onFocus={onFocus}
           placeholder={placeholder ?? `Write your ${label.toLowerCase()} here…`}
           className="border-0 bg-transparent text-[13px] text-slate-900 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 pb-3"
           style={{ minHeight: `${minRows * 22}px` }}
@@ -93,22 +97,26 @@ function Section({
 
 export type MemoValue = { keyFindings: string; numericalAnalysis: string; conclusion: string };
 
-export function MemoComposer({ value, onChange, onPaste }: ComposerProps<MemoValue>) {
+export function MemoComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<MemoValue>) {
   const v: MemoValue = value ?? { keyFindings: "", numericalAnalysis: "", conclusion: "" };
   const [active, setActive] = useState<keyof MemoValue>("keyFindings");
 
   const set = (k: keyof MemoValue) => (text: string) => onChange({ ...v, [k]: text });
+  const activate = (k: keyof MemoValue) => {
+    setActive(k);
+    onCitationTargetChange?.(k);
+  };
 
   return (
     <div className="flex flex-col gap-2">
       <Section label="Key Findings" value={v.keyFindings} onChange={set("keyFindings")} onPaste={onPaste}
-        active={active === "keyFindings"} onActivate={() => setActive("keyFindings")}
+        active={active === "keyFindings"} onActivate={() => activate("keyFindings")} onFocus={() => onCitationTargetChange?.("keyFindings")}
         placeholder="State your 2–3 most important findings from the source materials. Lead with the most significant insight." />
       <Section label="Numerical Analysis" value={v.numericalAnalysis} onChange={set("numericalAnalysis")} onPaste={onPaste}
-        active={active === "numericalAnalysis"} onActivate={() => setActive("numericalAnalysis")}
+        active={active === "numericalAnalysis"} onActivate={() => activate("numericalAnalysis")} onFocus={() => onCitationTargetChange?.("numericalAnalysis")}
         placeholder="Show your calculations and data-driven reasoning. Reference specific figures." />
       <Section label="Conclusion" value={v.conclusion} onChange={set("conclusion")} onPaste={onPaste}
-        active={active === "conclusion"} onActivate={() => setActive("conclusion")}
+        active={active === "conclusion"} onActivate={() => activate("conclusion")} onFocus={() => onCitationTargetChange?.("conclusion")}
         placeholder="Synthesize your findings into a clear, actionable conclusion. What is your recommendation?" />
     </div>
   );
@@ -118,22 +126,26 @@ export function MemoComposer({ value, onChange, onPaste }: ComposerProps<MemoVal
 
 export type VarianceValue = { driver: string; quantification: string; recommendation: string };
 
-export function VarianceComposer({ value, onChange, onPaste }: ComposerProps<VarianceValue>) {
+export function VarianceComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<VarianceValue>) {
   const v: VarianceValue = value ?? { driver: "", quantification: "", recommendation: "" };
   const [active, setActive] = useState<keyof VarianceValue>("driver");
 
   const set = (k: keyof VarianceValue) => (text: string) => onChange({ ...v, [k]: text });
+  const activate = (k: keyof VarianceValue) => {
+    setActive(k);
+    onCitationTargetChange?.(k);
+  };
 
   return (
     <div className="flex flex-col gap-2">
       <Section label="Driver Identification" value={v.driver} onChange={set("driver")} onPaste={onPaste}
-        active={active === "driver"} onActivate={() => setActive("driver")}
+        active={active === "driver"} onActivate={() => activate("driver")} onFocus={() => onCitationTargetChange?.("driver")}
         placeholder="Identify the primary drivers of the variance. What caused the deviation from plan?" />
       <Section label="Quantification" value={v.quantification} onChange={set("quantification")} onPaste={onPaste}
-        active={active === "quantification"} onActivate={() => setActive("quantification")}
+        active={active === "quantification"} onActivate={() => activate("quantification")} onFocus={() => onCitationTargetChange?.("quantification")}
         placeholder="Quantify each driver in dollar and percentage terms. Show the math." />
       <Section label="Recommendation" value={v.recommendation} onChange={set("recommendation")} onPaste={onPaste}
-        active={active === "recommendation"} onActivate={() => setActive("recommendation")}
+        active={active === "recommendation"} onActivate={() => activate("recommendation")} onFocus={() => onCitationTargetChange?.("recommendation")}
         placeholder="What action should management take? Is this variance structural or one-time?" />
     </div>
   );
@@ -143,26 +155,30 @@ export function VarianceComposer({ value, onChange, onPaste }: ComposerProps<Var
 
 export type ThesisValue = { thesis: string; evidence: string; counterargument: string; recommendation: string };
 
-export function ThesisComposer({ value, onChange, onPaste }: ComposerProps<ThesisValue>) {
+export function ThesisComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<ThesisValue>) {
   const v: ThesisValue = value ?? { thesis: "", evidence: "", counterargument: "", recommendation: "" };
   const [active, setActive] = useState<keyof ThesisValue>("thesis");
 
   const set = (k: keyof ThesisValue) => (text: string) => onChange({ ...v, [k]: text });
+  const activate = (k: keyof ThesisValue) => {
+    setActive(k);
+    onCitationTargetChange?.(k);
+  };
 
   return (
     <div className="flex flex-col gap-2">
       <Section label="Thesis Statement" value={v.thesis} onChange={set("thesis")} onPaste={onPaste}
-        active={active === "thesis"} onActivate={() => setActive("thesis")}
+        active={active === "thesis"} onActivate={() => activate("thesis")} onFocus={() => onCitationTargetChange?.("thesis")}
         placeholder="State your investment thesis in one clear sentence. Long or short — take a position."
         minRows={2} />
       <Section label="Supporting Evidence" value={v.evidence} onChange={set("evidence")} onPaste={onPaste}
-        active={active === "evidence"} onActivate={() => setActive("evidence")}
+        active={active === "evidence"} onActivate={() => activate("evidence")} onFocus={() => onCitationTargetChange?.("evidence")}
         placeholder="Provide 3 specific catalysts with expected timing and magnitude. Reference figures." />
       <Section label="Counterargument" value={v.counterargument} onChange={set("counterargument")} onPaste={onPaste}
-        active={active === "counterargument"} onActivate={() => setActive("counterargument")}
+        active={active === "counterargument"} onActivate={() => activate("counterargument")} onFocus={() => onCitationTargetChange?.("counterargument")}
         placeholder="Challenge your own thesis. What would make you wrong? The strongest investors steelman the bear case." />
       <Section label="Recommendation" value={v.recommendation} onChange={set("recommendation")} onPaste={onPaste}
-        active={active === "recommendation"} onActivate={() => setActive("recommendation")}
+        active={active === "recommendation"} onActivate={() => activate("recommendation")} onFocus={() => onCitationTargetChange?.("recommendation")}
         placeholder="State your 12-month price target, implied return, and position sizing rationale." />
     </div>
   );
@@ -178,7 +194,7 @@ const DEFAULT_EXTRACTION: ExtractionValue = {
   rows: [EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW(), EMPTY_ROW()],
 };
 
-export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps<ExtractionValue>) {
+export function ExtractionComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<ExtractionValue>) {
   const v: ExtractionValue = value ?? DEFAULT_EXTRACTION;
   const rows = Array.isArray(v.rows) ? v.rows : DEFAULT_EXTRACTION.rows;
 
@@ -223,6 +239,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps<E
             value={row.metric}
             onChange={(e) => updateRow(i, "metric", e.target.value)}
             onPaste={onPaste}
+            onFocus={() => onCitationTargetChange?.(`rows.${i}.source`)}
           />
           <input
             className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5 font-mono tabular-nums"
@@ -230,6 +247,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps<E
             value={row.value}
             onChange={(e) => updateRow(i, "value", e.target.value)}
             onPaste={onPaste}
+            onFocus={() => onCitationTargetChange?.(`rows.${i}.source`)}
           />
           <input
             className="flex-[30] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
@@ -237,6 +255,7 @@ export function ExtractionComposer({ value, onChange, onPaste }: ComposerProps<E
             value={row.source}
             onChange={(e) => updateRow(i, "source", e.target.value)}
             onPaste={onPaste}
+            onFocus={() => onCitationTargetChange?.(`rows.${i}.source`)}
           />
           <button
             onClick={() => deleteRow(i)}
@@ -272,7 +291,7 @@ const DEFAULT_ENTRIES: ReconciliationEntry[] = [
   { account: "Goodwill & intangibles", stated: "$3,120M", corrected: "", reason: "" },
 ];
 
-export function ReconciliationComposer({ value, onChange, onPaste }: ComposerProps<ReconciliationValue>) {
+export function ReconciliationComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<ReconciliationValue>) {
   const v: ReconciliationValue = value ?? { entries: DEFAULT_ENTRIES, summary: "" };
   const [activeSection, setActiveSection] = useState<"table" | "summary">("table");
 
@@ -304,6 +323,7 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
               value={entry.corrected}
               onChange={(e) => updateEntry(i, "corrected", e.target.value)}
               onPaste={onPaste}
+              onFocus={() => onCitationTargetChange?.(`entries.${i}.reason`)}
             />
             <input
               className="flex-[28] bg-transparent text-[12px] text-slate-800 placeholder:text-[#9db8a4] outline-none border-b border-transparent focus:border-[#168a4a]/40 transition-colors py-0.5"
@@ -311,6 +331,7 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
               value={entry.reason}
               onChange={(e) => updateEntry(i, "reason", e.target.value)}
               onPaste={onPaste}
+              onFocus={() => onCitationTargetChange?.(`entries.${i}.reason`)}
             />
           </div>
         ))}
@@ -323,7 +344,8 @@ export function ReconciliationComposer({ value, onChange, onPaste }: ComposerPro
         onChange={(text) => onChange({ ...v, summary: text })}
         onPaste={onPaste}
         active={activeSection === "summary"}
-        onActivate={() => setActiveSection("summary")}
+        onActivate={() => { setActiveSection("summary"); onCitationTargetChange?.("summary"); }}
+        onFocus={() => onCitationTargetChange?.("summary")}
         placeholder="Explain the overall reconciliation: what discrepancies did you find, what caused them, and what is the corrected net position?"
       />
     </div>
@@ -344,7 +366,7 @@ const SEVERITY_COLORS: Record<string, string> = {
   Low: "text-[#168a4a]/30",
 };
 
-export function FlagsComposer({ value, onChange, onPaste }: ComposerProps<FlagsValue>) {
+export function FlagsComposer({ value, onChange, onPaste, onCitationTargetChange }: ComposerProps<FlagsValue>) {
   const v: FlagsValue = value ?? { flags: [EMPTY_FLAG()] };
   const flags = Array.isArray(v.flags) ? v.flags : [EMPTY_FLAG()];
 
@@ -398,6 +420,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps<FlagsV
                 value={flag.location}
                 onChange={(e) => updateFlag(i, "location", e.target.value)}
                 onPaste={onPaste}
+                onFocus={() => onCitationTargetChange?.(`flags.${i}.issue`)}
               />
             </div>
 
@@ -437,6 +460,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps<FlagsV
               value={flag.issue}
               onChange={(e) => updateFlag(i, "issue", e.target.value)}
               onPaste={onPaste}
+              onFocus={() => onCitationTargetChange?.(`flags.${i}.issue`)}
               placeholder="Describe the specific issue, discrepancy, or risk you identified. Be precise."
               className="border border-[#d9e7db] bg-[#f8fbf8] text-[12px] text-slate-800 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={3}
@@ -449,6 +473,7 @@ export function FlagsComposer({ value, onChange, onPaste }: ComposerProps<FlagsV
               value={flag.recommendation}
               onChange={(e) => updateFlag(i, "recommendation", e.target.value)}
               onPaste={onPaste}
+              onFocus={() => onCitationTargetChange?.(`flags.${i}.issue`)}
               placeholder="How should this flag be addressed or mitigated?"
               className="border border-[#d9e7db] bg-[#f8fbf8] text-[12px] text-slate-800 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={2}
