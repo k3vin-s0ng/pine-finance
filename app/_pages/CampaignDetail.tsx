@@ -7,6 +7,7 @@ import {
   DeleteCandidateAssessmentDialog,
   type DeleteCandidateAssessmentTarget,
 } from "@/app/components/DeleteCandidateAssessmentDialog";
+import GeneratedAssessmentReviewPanel from "@/app/components/GeneratedAssessmentReviewPanel";
 import SourceMaterialUploader, { type SourceMaterial } from "@/app/components/SourceMaterialUploader";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
@@ -375,6 +376,11 @@ export default function CampaignDetail() {
           readOnly
         />
       </div>
+
+      <GeneratedAssessmentReviewPanel
+        campaignId={campaign?.id ?? campaignId}
+        hasSourceMaterials={materials.length > 0}
+      />
 
       {/* Candidates Table */}
       <div className="bg-[#fff] border border-[#d9e7db] rounded-xl overflow-hidden">

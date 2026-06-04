@@ -31,6 +31,8 @@ import {
 import { notifyOwner } from "./_core/notification";
 import { sendCandidateInviteEmail, sendDemoConfirmationEmail, sendDemoNotificationEmail, sendScoreReadyEmail } from "./email";
 import { computeBenchmarkPercentile } from "./benchmarkData";
+import { ASSESSMENT_CHAT_MODEL, ASSESSMENT_GRADING_MODEL } from "./models";
+import { generateAssessmentForCampaign } from "./generation/generateAssessment";
 import {
   extractSourceMaterials,
   formatSourceMaterialsForPrompt,
@@ -45,10 +47,14 @@ import {
   type ResponseRelianceEvidence,
   type StructuredTaskResponse,
 } from "./scoring";
-import type { ScoreEvidence, SourceMaterial } from "@/app/lib/schema";
-
-const ASSESSMENT_CHAT_MODEL = "google/gemini-3.5-flash";
-const ASSESSMENT_GRADING_MODEL = "anthropic/claude-opus-4.8";
+import type {
+  Campaign,
+  ExpectedTaskAnswers,
+  GeneratedAssessment,
+  GeneratedTask,
+  ScoreEvidence,
+  SourceMaterial,
+} from "@/app/lib/schema";
 
 // ─── Role guard helpers ───────────────────────────────────────────────────────
 const recruiterProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -83,6 +89,7 @@ export function buildPineChatSystemPrompt(params: {
   taskContext?: PineChatTaskContext;
   activeMaterialLabel?: string;
   sourceMaterialsBlock?: string;
+  aiBoundary?: string;
 }) {
   const taskContext = params.taskContext;
   const taskBlock =
@@ -101,7 +108,7 @@ export function buildPineChatSystemPrompt(params: {
 
 Your job is to help the candidate reason, verify, and structure their own work. You are not the candidate and you must not complete the assessment for them.
 
-${getPineChatRoleBoundary(params.roleTemplate)}
+${params.aiBoundary ?? getPineChatRoleBoundary(params.roleTemplate)}
 
 Non-negotiable rules:
 - Never produce a final or submittable deliverable. If asked for a finished memo, thesis, executive summary, model answer, final table, or final response, briefly refuse and offer an outline, checklist, critique rubric, or targeted questions instead.
@@ -118,6 +125,51 @@ ${activeMaterialNote}
 ${taskBlock}
 
 ${params.sourceMaterialsBlock ?? ""}`.trim();
+}
+
+function stripGeneratedTaskAnswerKey(task: GeneratedTask): GeneratedTask {
+  const publicTask = { ...task };
+  delete publicTask.answerKey;
+  return publicTask;
+}
+
+function stripGeneratedAssessmentAnswerKeys(campaign: Campaign | null | undefined): Campaign | null | undefined {
+  if (!campaign) return campaign;
+  if (!campaign.generatedAssessment) return campaign;
+  return {
+    ...campaign,
+    generatedAssessment: {
+      ...campaign.generatedAssessment,
+      tasks: campaign.generatedAssessment.tasks.map(stripGeneratedTaskAnswerKey),
+    },
+  };
+}
+
+function sanitizeCampaignRows<T extends { campaign: Campaign | null }>(rows: T[]): T[] {
+  return rows.map((row) => ({
+    ...row,
+    campaign: stripGeneratedAssessmentAnswerKeys(row.campaign) ?? null,
+  }) as T);
+}
+
+function getGeneratedAssessment(campaign: Campaign | null | undefined): GeneratedAssessment | undefined {
+  const generatedAssessment = campaign?.generatedAssessment ?? undefined;
+  return generatedAssessment?.tasks.length ? generatedAssessment : undefined;
+}
+
+function getGeneratedExpectedAnswers(campaign: Campaign | null | undefined): Record<string, ExpectedTaskAnswers> | undefined {
+  const generatedAssessment = getGeneratedAssessment(campaign);
+  if (!generatedAssessment) return undefined;
+  const entries = generatedAssessment.tasks.flatMap((task) =>
+    task.answerKey ? [[task.id, task.answerKey] as const] : [],
+  );
+  return Object.fromEntries(entries);
+}
+
+function getGeneratedResponseTypes(campaign: Campaign | null | undefined): Record<string, StructuredTaskResponse["responseType"]> | undefined {
+  const generatedAssessment = getGeneratedAssessment(campaign);
+  if (!generatedAssessment) return undefined;
+  return Object.fromEntries(generatedAssessment.tasks.map((task) => [task.id, task.responseType]));
 }
 
 // ─── Scoring helper ───────────────────────────────────────────────────────────
@@ -259,15 +311,76 @@ ${integrityBlock}`;
 
 type LLMScoreResult = Awaited<ReturnType<typeof generateScoreWithLLM>>;
 
-const TASK_RESPONSE_TYPES: Record<string, Record<string, StructuredTaskResponse["responseType"]>> = {
+type TaskResponseTypesByTask = Record<string, StructuredTaskResponse["responseType"]>;
+
+const expectedAnswerUnitSchema = z.enum(["$", "$M", "$B", "%", "x", "0/1"]);
+const expectedNumericalAnswerInputSchema = z.object({
+  value: z.number(),
+  unit: expectedAnswerUnitSchema,
+  tolerancePct: z.number().positive().optional(),
+  sourceQuote: z.string().optional(),
+}).strict();
+const expectedExtractionRowInputSchema = z.object({
+  metricLabel: z.string().min(1),
+  expectedValue: z.number(),
+  unit: expectedAnswerUnitSchema,
+  tolerancePct: z.number().positive().optional(),
+  sourceQuote: z.string().optional(),
+}).strict();
+const expectedReconciliationEntryInputSchema = z.object({
+  accountLabel: z.string().min(1),
+  expectedCorrected: z.number(),
+  unit: expectedAnswerUnitSchema,
+  tolerancePct: z.number().positive().optional(),
+  sourceQuote: z.string().optional(),
+}).strict();
+const expectedTaskAnswersInputSchema = z.object({
+  numerical: z.record(z.string(), expectedNumericalAnswerInputSchema).optional(),
+  extractionRows: z.array(expectedExtractionRowInputSchema).optional(),
+  reconciliationEntries: z.array(expectedReconciliationEntryInputSchema).optional(),
+}).strict();
+const assessmentTaskInputSchema = z.object({
+  id: z.string().min(1),
+  responseType: z.enum(["memo", "variance", "thesis", "extraction", "reconciliation", "flags"]),
+  title: z.string().min(1),
+  imperative: z.string().min(1),
+  context: z.string().min(1),
+  deliverable: z.string().min(1),
+  prompt: z.string().min(1),
+  aiSuggestions: z.array(z.string().min(1)).min(1),
+  dataPoints: z.array(z.object({
+    label: z.string().min(1),
+    value: z.string().min(1),
+    delta: z.number().optional(),
+  }).strict()).optional(),
+  answerKey: expectedTaskAnswersInputSchema.optional(),
+  answerKeyStatus: z.enum(["unverified", "verified"]),
+}).strict();
+const generatedAssessmentInputSchema = z.object({
+  version: z.number().int().positive(),
+  status: z.enum(["draft", "generated", "reviewed"]),
+  generatedModel: z.string().optional(),
+  roleTemplateHint: z.enum(["IB Analyst", "PE Associate", "Hedge Fund Research Analyst", "Management Consultant"]),
+  aiBoundary: z.string().optional(),
+  generationDiagnostics: z.object({
+    droppedUngroundedAnswerKeys: z.number().int().nonnegative(),
+  }).strict().optional(),
+  tasks: z.array(assessmentTaskInputSchema).min(1),
+}).strict();
+
+const TASK_RESPONSE_TYPES: Record<string, TaskResponseTypesByTask> = {
   "IB Analyst": { t1: "extraction", t2: "memo", t3: "flags" },
   "PE Associate": { t1: "thesis", t2: "flags", t3: "memo" },
   "Hedge Fund Research Analyst": { t1: "thesis", t2: "extraction", t3: "flags" },
   "Management Consultant": { t1: "flags", t2: "memo", t3: "memo" },
 };
 
-function getDefinedTaskIds(roleTemplate: string, taskResponses: Record<string, string>) {
-  const taskIds = Object.keys(TASK_RESPONSE_TYPES[roleTemplate] ?? {});
+function getDefinedTaskIds(
+  roleTemplate: string,
+  taskResponses: Record<string, string>,
+  responseTypesByTask?: TaskResponseTypesByTask,
+) {
+  const taskIds = Object.keys(responseTypesByTask ?? TASK_RESPONSE_TYPES[roleTemplate] ?? {});
   return taskIds.length > 0 ? taskIds : Object.keys(taskResponses);
 }
 
@@ -299,8 +412,9 @@ function buildStructuredTaskResponses(
   roleTemplate: string,
   taskResponses: Record<string, string>,
   structuredValues?: Record<string, unknown>,
+  responseTypesByTask?: TaskResponseTypesByTask,
 ): StructuredTaskResponse[] {
-  const typeByTask = TASK_RESPONSE_TYPES[roleTemplate] ?? {};
+  const typeByTask = responseTypesByTask ?? TASK_RESPONSE_TYPES[roleTemplate] ?? {};
 
   // Prefer persisted structured values when present (avoids lossy markdown re-parse)
   if (structuredValues && Object.keys(structuredValues).length > 0) {
@@ -342,18 +456,30 @@ async function buildBlendedScore(params: {
   roleTemplate: string;
   taskResponses: Record<string, string>;
   taskResponsesStructured?: Record<string, unknown>;
+  expectedAnswers?: Record<string, ExpectedTaskAnswers>;
+  responseTypesByTask?: TaskResponseTypesByTask;
+  definedTaskIds?: string[];
   aiInteractions: Array<{ role: string; content: string }>;
   llmScore: LLMScoreResult;
   completionTimeSeconds: number;
   timeLimitSeconds: number;
 }) {
   const behaviorEvents = await getBehaviorEventsByAssessment(params.assessmentId);
-  const definedTaskIds = getDefinedTaskIds(params.roleTemplate, params.taskResponses);
+  const definedTaskIds =
+    params.definedTaskIds ??
+    getDefinedTaskIds(params.roleTemplate, params.taskResponses, params.responseTypesByTask);
   const deterministic = computeDeterministicScores({
     roleTemplate: params.roleTemplate,
-    tasks: buildStructuredTaskResponses(params.roleTemplate, params.taskResponses, params.taskResponsesStructured),
+    tasks: buildStructuredTaskResponses(
+      params.roleTemplate,
+      params.taskResponses,
+      params.taskResponsesStructured,
+      params.responseTypesByTask,
+    ),
     taskResponses: params.taskResponses,
     definedTaskIds,
+    expectedAnswers: params.expectedAnswers,
+    responseTypesByTask: params.responseTypesByTask,
     aiInteractions: params.aiInteractions,
     completionTimeSeconds: params.completionTimeSeconds,
     timeLimitSeconds: params.timeLimitSeconds,
@@ -598,15 +724,62 @@ export const appRouter = router({
       }),
   }),
 
+  campaign: router({
+    getGeneratedAssessment: recruiterProcedure
+      .input(z.object({ campaignId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const campaign = await getCampaignById(input.campaignId);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return campaign.generatedAssessment ?? null;
+      }),
+    generateAssessment: recruiterProcedure
+      .input(z.object({ campaignId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const campaign = await getCampaignById(input.campaignId);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return generateAssessmentForCampaign(input.campaignId);
+      }),
+    updateGeneratedAssessment: recruiterProcedure
+      .input(z.object({
+        campaignId: z.number(),
+        generatedAssessment: generatedAssessmentInputSchema,
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const campaign = await getCampaignById(input.campaignId);
+        if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+        if (ctx.user.role !== "admin" && campaign.recruiterId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        const allTasksVerified = input.generatedAssessment.tasks.every(
+          (task) => task.answerKeyStatus === "verified",
+        );
+        const generatedAssessment: GeneratedAssessment = {
+          ...input.generatedAssessment,
+          status: allTasksVerified ? "reviewed" : "generated",
+        };
+
+        await updateCampaign(input.campaignId, { generatedAssessment });
+        return generatedAssessment;
+      }),
+  }),
+
   // ─── Campaigns ──────────────────────────────────────────────────────────────
   campaigns: router({
     list: recruiterProcedure.query(async ({ ctx }) => {
-      return getCampaignsByRecruiter(ctx.user.id);
+      const campaigns = await getCampaignsByRecruiter(ctx.user.id);
+      return campaigns.map((campaign) => stripGeneratedAssessmentAnswerKeys(campaign) ?? campaign);
     }),
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
-        return getCampaignById(input.id);
+        return stripGeneratedAssessmentAnswerKeys(await getCampaignById(input.id));
       }),
     create: recruiterProcedure
       .input(z.object({
@@ -724,7 +897,7 @@ export const appRouter = router({
       }
       // Return merged list (re-fetch after linking)
       const refreshed = await getAssessmentsByCandidate(ctx.user.id);
-      return refreshed;
+      return sanitizeCampaignRows(refreshed);
     }),
     claimByToken: protectedProcedure
       .input(z.object({ token: z.string(), assessmentId: z.number() }))
@@ -739,7 +912,12 @@ export const appRouter = router({
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
-        return getAssessmentWithCampaign(input.id);
+        const assessmentWithCampaign = await getAssessmentWithCampaign(input.id);
+        if (!assessmentWithCampaign) return assessmentWithCampaign;
+        return {
+          ...assessmentWithCampaign,
+          campaign: stripGeneratedAssessmentAnswerKeys(assessmentWithCampaign.campaign) ?? null,
+        };
       }),
     create: recruiterProcedure
       .input(z.object({
@@ -823,9 +1001,12 @@ export const appRouter = router({
               const taskResponses = (sub.taskResponses as Record<string, string>) ?? {};
               const aiInteractions = (sub.aiInteractions as Array<{ role: string; content: string }>) ?? [];
               const behaviorEvents = await getBehaviorEventsByAssessment(input.assessmentId);
+              const expectedAnswers = getGeneratedExpectedAnswers(campaign);
+              const responseTypesByTask = getGeneratedResponseTypes(campaign);
+              const definedTaskIds = getDefinedTaskIds(campaign.roleTemplate, taskResponses, responseTypesByTask);
               const integrityEvidence = analyzeSubmissionIntegrity({
                 taskResponses,
-                definedTaskIds: getDefinedTaskIds(campaign.roleTemplate, taskResponses),
+                definedTaskIds,
                 aiInteractions,
                 behaviorEvents,
               });
@@ -842,6 +1023,9 @@ export const appRouter = router({
                 roleTemplate: campaign.roleTemplate,
                 taskResponses,
                 taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
+                expectedAnswers,
+                responseTypesByTask,
+                definedTaskIds,
                 aiInteractions,
                 llmScore,
                 completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
@@ -946,9 +1130,12 @@ export const appRouter = router({
         const taskResponses = (sub.taskResponses as Record<string, string>) ?? {};
         const aiInteractions = (sub.aiInteractions as Array<{ role: string; content: string }>) ?? [];
         const behaviorEvents = await getBehaviorEventsByAssessment(sub.assessmentId);
+        const expectedAnswers = getGeneratedExpectedAnswers(campaign);
+        const responseTypesByTask = getGeneratedResponseTypes(campaign);
+        const definedTaskIds = getDefinedTaskIds(campaign.roleTemplate, taskResponses, responseTypesByTask);
         const integrityEvidence = analyzeSubmissionIntegrity({
           taskResponses,
-          definedTaskIds: getDefinedTaskIds(campaign.roleTemplate, taskResponses),
+          definedTaskIds,
           aiInteractions,
           behaviorEvents,
         });
@@ -966,6 +1153,9 @@ export const appRouter = router({
           roleTemplate: campaign.roleTemplate,
           taskResponses,
           taskResponsesStructured: (sub.taskResponsesStructured as Record<string, unknown>) ?? undefined,
+          expectedAnswers,
+          responseTypesByTask,
+          definedTaskIds,
           aiInteractions,
           llmScore,
           completionTimeSeconds: sub.completionTimeSeconds ?? 3600,
@@ -1085,7 +1275,8 @@ export const appRouter = router({
         if (!isRecruiterOrAdmin && input.candidateId && input.candidateId !== ctx.user.id) {
           throw new TRPCError({ code: "FORBIDDEN", message: "You can only view your own exam history" });
         }
-        return getAssessmentHistoryForCandidate(targetId);
+        const rows = await getAssessmentHistoryForCandidate(targetId);
+        return sanitizeCampaignRows(rows);
       }),
 
     // Full submission detail: task responses + AI chat log + score rationale + per-task stats
@@ -1153,7 +1344,11 @@ export const appRouter = router({
           }
         }
 
-        return { ...detail, taskStats };
+        return {
+          ...detail,
+          campaign: stripGeneratedAssessmentAnswerKeys(detail.campaign) ?? null,
+          taskStats,
+        };
       }),
 
     getReport: protectedProcedure
@@ -1163,7 +1358,7 @@ export const appRouter = router({
         const pdf = await getPdfReportByAssessment(input.assessmentId);
         const assessmentWithCampaign = await getAssessmentWithCampaign(input.assessmentId);
         const assessment = assessmentWithCampaign?.assessment;
-        const campaign = assessmentWithCampaign?.campaign;
+        const campaign = stripGeneratedAssessmentAnswerKeys(assessmentWithCampaign?.campaign) ?? null;
         const submission = await getSubmissionByAssessment(input.assessmentId);
         // Get candidate info
         const candidate = assessment?.candidateId ? await getUserById(assessment.candidateId) ?? null : null;
@@ -1174,13 +1369,16 @@ export const appRouter = router({
   // ─── Recruiter-wide views ───────────────────────────────────────────────────────────────────
   recruiter: router({
     allCandidates: recruiterProcedure.query(async ({ ctx }) => {
-      return getAllCandidatesForRecruiter(ctx.user.id);
+      const rows = await getAllCandidatesForRecruiter(ctx.user.id);
+      return sanitizeCampaignRows(rows);
     }),
     allReports: recruiterProcedure.query(async ({ ctx }) => {
-      return getAllReportsForRecruiter(ctx.user.id);
+      const rows = await getAllReportsForRecruiter(ctx.user.id);
+      return sanitizeCampaignRows(rows);
     }),
     myCandidateScores: protectedProcedure.query(async ({ ctx }) => {
-      return getCandidateScoreSummary(ctx.user.id);
+      const rows = await getCandidateScoreSummary(ctx.user.id);
+      return sanitizeCampaignRows(rows);
     }),
   }),
 
@@ -1222,6 +1420,7 @@ export const appRouter = router({
           taskContext: input.taskContext,
           activeMaterialLabel: input.activeMaterialLabel,
           sourceMaterialsBlock,
+          aiBoundary: campaign.generatedAssessment?.aiBoundary,
         });
 
         const response = await invokeLLM({

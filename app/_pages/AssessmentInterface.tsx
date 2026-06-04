@@ -37,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog";
+import type { AssessmentTask, RoleTemplate } from "@/app/lib/schema";
 
 // ─── Source Materials ─────────────────────────────────────────────────────────
 const SOURCE_MATERIALS = {
@@ -633,16 +634,16 @@ const TASK_PROMPTS = {
       ],
     },
   ],
-};
+} satisfies Record<RoleTemplate, AssessmentTask[]>;
 
 type SourceMaterialKey = keyof typeof SOURCE_MATERIALS;
 
 const DEFAULT_SOURCE_MATERIAL_KEYS: SourceMaterialKey[] = ["10K", "Earnings", "Model"];
-const ROLE_SOURCE_MATERIAL_KEYS: Partial<Record<keyof typeof TASK_PROMPTS, SourceMaterialKey[]>> = {
+const ROLE_SOURCE_MATERIAL_KEYS: Partial<Record<RoleTemplate, SourceMaterialKey[]>> = {
   "Management Consultant": ["OCC_EXAM", "FINANCIALS", "COMPLIANCE", "LOAN_TAPE"],
 };
 
-function getSourceMaterialKeysForRole(roleTemplate: keyof typeof TASK_PROMPTS): SourceMaterialKey[] {
+function getSourceMaterialKeysForRole(roleTemplate: RoleTemplate): SourceMaterialKey[] {
   return ROLE_SOURCE_MATERIAL_KEYS[roleTemplate] ?? DEFAULT_SOURCE_MATERIAL_KEYS;
 }
 
@@ -1731,7 +1732,7 @@ export default function AssessmentInterface() {
     });
   }, [hadRestoredDraft, assessmentId]);
 
-  const roleTemplate = (assessmentData?.campaign?.roleTemplate ?? "IB Analyst") as keyof typeof TASK_PROMPTS;
+  const roleTemplate = (assessmentData?.campaign?.roleTemplate ?? "IB Analyst") as RoleTemplate;
   const hardcodedMaterialKeys = useMemo(() => getSourceMaterialKeysForRole(roleTemplate), [roleTemplate]);
   const defaultHardcodedMaterialKey = hardcodedMaterialKeys[0] ?? "10K";
 
@@ -1754,7 +1755,10 @@ export default function AssessmentInterface() {
     : defaultHardcodedMaterialKey;
   const activeTab = activeTabSelection ?? defaultMaterialTab;
 
-  const tasks = TASK_PROMPTS[roleTemplate] ?? TASK_PROMPTS["IB Analyst"];
+  const tasks =
+    (assessmentData?.campaign?.generatedAssessment?.tasks as AssessmentTask[] | undefined) ??
+    TASK_PROMPTS[roleTemplate] ??
+    TASK_PROMPTS["IB Analyst"];
   const totalMinutes = assessmentData?.assessment.timeLimitMinutes ?? 60;
   // Absolute deadline derived from the server-recorded startedAt. Null until
   // `assessments.start` lands and the cache refreshes — the Timer falls back

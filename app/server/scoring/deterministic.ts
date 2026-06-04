@@ -391,8 +391,9 @@ export function checkTaskAccuracy(
 export function computeAccuracyScore(
   roleTemplate: string,
   tasks: StructuredTaskResponse[],
+  expectedAnswers?: Record<string, ExpectedTaskAnswers>,
 ): { score: number | null; evidence: AccuracyEvidence | null } {
-  const roleExpected = EXPECTED_TASK_ANSWERS[roleTemplate] ?? {};
+  const roleExpected = expectedAnswers ?? EXPECTED_TASK_ANSWERS[roleTemplate] ?? {};
   const allChecks: AccuracyCheck[] = [];
 
   for (const task of tasks) {
@@ -481,6 +482,8 @@ export function computeDeterministicScores(params: {
   tasks: StructuredTaskResponse[];
   taskResponses?: Record<string, string>;
   definedTaskIds?: string[];
+  expectedAnswers?: Record<string, ExpectedTaskAnswers>;
+  responseTypesByTask?: Record<string, string>;
   aiInteractions?: AiInteractionForScoring[];
   completionTimeSeconds: number;
   timeLimitSeconds: number;
@@ -497,7 +500,7 @@ export function computeDeterministicScores(params: {
     behaviorEvents = [],
   } = params;
 
-  const accuracy = computeAccuracyScore(roleTemplate, tasks);
+  const accuracy = computeAccuracyScore(roleTemplate, tasks, params.expectedAnswers);
   const integrity = analyzeSubmissionIntegrity({
     taskResponses,
     definedTaskIds,

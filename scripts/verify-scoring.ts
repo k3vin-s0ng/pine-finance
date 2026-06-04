@@ -5,6 +5,7 @@
 
 import {
   applyIntegrityGates,
+  EXPECTED_TASK_ANSWERS,
   parseNumericalInput,
   withinTolerance,
   blendScores,
@@ -65,12 +66,60 @@ const det = computeDeterministicScores({
   completionTimeSeconds: 2700,
   timeLimitSeconds: 3600,
 });
+const detWithExplicitAnswers = computeDeterministicScores({
+  roleTemplate: "IB Analyst",
+  tasks: [
+    {
+      taskId: "t1",
+      responseType: "extraction",
+      value: {
+        rows: [
+          { metric: "Total Revenue", value: "$4,759M" },
+          { metric: "Capital Markets", value: "2107" },
+          { metric: "ROE", value: "18.4%" },
+        ],
+      },
+    },
+  ],
+  expectedAnswers: EXPECTED_TASK_ANSWERS["IB Analyst"],
+  completionTimeSeconds: 2700,
+  timeLimitSeconds: 3600,
+});
+const detWithEmptyGeneratedAnswers = computeDeterministicScores({
+  roleTemplate: "IB Analyst",
+  tasks: [
+    {
+      taskId: "t1",
+      responseType: "extraction",
+      value: {
+        rows: [
+          { metric: "Total Revenue", value: "$4,759M" },
+          { metric: "Capital Markets", value: "2107" },
+          { metric: "ROE", value: "18.4%" },
+        ],
+      },
+    },
+  ],
+  expectedAnswers: {},
+  completionTimeSeconds: 2700,
+  timeLimitSeconds: 3600,
+});
 
 assert(
   "IB t1 extraction accuracy > 0 with checks",
   det.accuracy !== null &&
     det.accuracy > 0 &&
     (det.accuracyEvidence?.totalChecks ?? 0) >= 3,
+);
+assert(
+  "hardcoded fallback matches explicit answer-key override",
+  det.accuracy === detWithExplicitAnswers.accuracy &&
+    det.accuracyEvidence?.totalChecks === detWithExplicitAnswers.accuracyEvidence?.totalChecks,
+);
+assert(
+  "empty generated answer-key override suppresses hardcoded fallback",
+  detWithEmptyGeneratedAnswers.accuracy === null &&
+    detWithEmptyGeneratedAnswers.accuracyEvidence === null,
 );
 
 assert("Management Consultant has no accuracy keys → null accuracy only", (() => {

@@ -23,6 +23,62 @@ export type InsertUser = Partial<Omit<User, "id" | "createdAt" | "updatedAt">> &
 
 export type RoleTemplate = "IB Analyst" | "PE Associate" | "Hedge Fund Research Analyst" | "Management Consultant";
 export type SourceMaterial = { label: string; fileKey: string; url: string; mimeType: string; sizeBytes: number };
+export type AssessmentResponseType = "memo" | "variance" | "thesis" | "extraction" | "reconciliation" | "flags";
+export type AssessmentDataPoint = { label: string; value: string; delta?: number };
+export type AssessmentTask = {
+  id: string;
+  responseType: AssessmentResponseType;
+  title: string;
+  imperative: string;
+  context: string;
+  deliverable: string;
+  prompt: string;
+  aiSuggestions: string[];
+  dataPoints?: AssessmentDataPoint[];
+};
+
+export type ExpectedAnswerUnit = "$" | "$M" | "$B" | "%" | "x" | "0/1";
+export type ExpectedNumericalAnswer = {
+  value: number;
+  unit: ExpectedAnswerUnit;
+  tolerancePct?: number;
+  sourceQuote?: string;
+};
+export type ExpectedExtractionRow = {
+  metricLabel: string;
+  expectedValue: number;
+  unit: ExpectedAnswerUnit;
+  tolerancePct?: number;
+  sourceQuote?: string;
+};
+export type ExpectedReconciliationEntry = {
+  accountLabel: string;
+  expectedCorrected: number;
+  unit: ExpectedAnswerUnit;
+  tolerancePct?: number;
+  sourceQuote?: string;
+};
+export type ExpectedTaskAnswers = {
+  /** For memo/variance/thesis/flags once NumericalAnswersBlock is added to composers */
+  numerical?: Record<string, ExpectedNumericalAnswer>;
+  extractionRows?: ExpectedExtractionRow[];
+  reconciliationEntries?: ExpectedReconciliationEntry[];
+};
+export type GeneratedTask = AssessmentTask & {
+  answerKey?: ExpectedTaskAnswers;
+  answerKeyStatus: "unverified" | "verified";
+};
+export type GeneratedAssessment = {
+  version: number;
+  status: "draft" | "generated" | "reviewed";
+  generatedModel?: string;
+  roleTemplateHint: RoleTemplate;
+  aiBoundary?: string;
+  generationDiagnostics?: {
+    droppedUngroundedAnswerKeys: number;
+  };
+  tasks: GeneratedTask[];
+};
 
 export type Campaign = BaseRecord & {
   recruiterId: number;
@@ -34,9 +90,10 @@ export type Campaign = BaseRecord & {
   settings?: unknown;
   autoScore: boolean;
   sourceMaterials?: SourceMaterial[] | null;
+  generatedAssessment?: GeneratedAssessment | null;
 };
-export type InsertCampaign = Omit<Campaign, "id" | "createdAt" | "updatedAt" | "status" | "timeLimitMinutes" | "autoScore"> &
-  Partial<Pick<Campaign, "status" | "timeLimitMinutes" | "autoScore">>;
+export type InsertCampaign = Omit<Campaign, "id" | "createdAt" | "updatedAt" | "status" | "timeLimitMinutes" | "autoScore" | "generatedAssessment"> &
+  Partial<Pick<Campaign, "status" | "timeLimitMinutes" | "autoScore" | "generatedAssessment">>;
 
 export type Assessment = BaseRecord & {
   campaignId: number;

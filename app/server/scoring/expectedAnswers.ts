@@ -1,31 +1,13 @@
 // Server-side answer key store. Never import from the client.
 
-export type ExpectedNumericalAnswer = {
-  value: number;
-  unit: "$" | "$M" | "$B" | "%" | "x" | "0/1";
-  tolerancePct?: number;
-};
+import type { ExpectedTaskAnswers } from "@/app/lib/schema";
 
-export type ExpectedExtractionRow = {
-  metricLabel: string;
-  expectedValue: number;
-  unit: ExpectedNumericalAnswer["unit"];
-  tolerancePct?: number;
-};
-
-export type ExpectedReconciliationEntry = {
-  accountLabel: string;
-  expectedCorrected: number;
-  unit: ExpectedNumericalAnswer["unit"];
-  tolerancePct?: number;
-};
-
-export type ExpectedTaskAnswers = {
-  /** For memo/variance/thesis/flags once NumericalAnswersBlock is added to composers */
-  numerical?: Record<string, ExpectedNumericalAnswer>;
-  extractionRows?: ExpectedExtractionRow[];
-  reconciliationEntries?: ExpectedReconciliationEntry[];
-};
+export type {
+  ExpectedExtractionRow,
+  ExpectedNumericalAnswer,
+  ExpectedReconciliationEntry,
+  ExpectedTaskAnswers,
+} from "@/app/lib/schema";
 
 /**
  * Expected answers keyed by [roleTemplate][taskId] (t1–t3 per AssessmentInterface.tsx).
