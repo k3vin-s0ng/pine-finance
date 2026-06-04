@@ -205,12 +205,12 @@ export default function RecruiterCampaigns() {
 
       {/* Create Campaign Dialog — 2-step flow */}
       <Dialog open={showCreate} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <DialogContent className="bg-[#fff] border-[#d9e7db] text-slate-950 max-w-md">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md overflow-x-hidden border-[#d9e7db] bg-[#fff] text-slate-950">
+          <DialogHeader className="min-w-0 max-w-full">
             <DialogTitle className="text-slate-950 font-black uppercase tracking-tight">
               {step === 1 ? "New Campaign" : "Attach Source Materials"}
             </DialogTitle>
-            <DialogDescription className="text-[#6f8274]">
+            <DialogDescription className="max-w-full break-words text-[#6f8274] [overflow-wrap:anywhere]">
               {step === 1
                 ? "Set up a new assessment campaign for candidates."
                 : "Optionally upload custom documents (10-K, earnings release, model) for this campaign."}
@@ -218,17 +218,17 @@ export default function RecruiterCampaigns() {
           </DialogHeader>
 
           {/* Step progress bar */}
-          <div className="flex items-center gap-2 mb-1">
+          <div className="mb-1 flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden">
             {[1, 2].map(s => (
               <div
                 key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#168a4a]" : "bg-[#cfe0d2]"}`}
+                className={`h-1 min-w-0 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#168a4a]" : "bg-[#cfe0d2]"}`}
               />
             ))}
           </div>
 
           {step === 1 && (
-            <div className="space-y-4 pt-2">
+            <div className="min-w-0 max-w-full space-y-4 overflow-hidden pt-2">
               <div className="space-y-1.5">
                 <Label className="text-[#3f5847] text-xs uppercase tracking-widest">Campaign Title</Label>
                 <Input
@@ -265,10 +265,10 @@ export default function RecruiterCampaigns() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[#eef7ef] border border-[#cfe0d2]">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-[#cfe0d2] bg-[#eef7ef] p-3">
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-slate-950">Auto-Score on Submission</p>
-                  <p className="text-xs text-[#6f8274] mt-0.5">AI scoring fires automatically when candidate submits</p>
+                  <p className="mt-0.5 break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">AI scoring fires automatically when candidate submits</p>
                 </div>
                 <button
                   type="button"
@@ -293,34 +293,34 @@ export default function RecruiterCampaigns() {
           )}
 
           {step === 2 && createdCampaignId !== null && (
-            <div className="space-y-4 mt-2">
-              <div className="p-3 rounded-lg bg-[#eef7ef] border border-green-500/20">
-                <p className="text-xs text-green-400 font-semibold">
+            <div className="mt-2 min-w-0 max-w-full space-y-4 overflow-hidden">
+              <div className="min-w-0 rounded-lg border border-green-500/20 bg-[#eef7ef] p-3">
+                <p className="break-words text-xs font-semibold text-green-400 [overflow-wrap:anywhere]">
                   {"✓ Campaign \""}{createdTitle}{"\" created. Optionally attach source materials below."}
                 </p>
               </div>
-              <div>
+              <div className="min-w-0 max-w-full overflow-hidden">
                 <Label className="text-[#2e4637] text-xs mb-2 block tracking-wider uppercase">Source Materials</Label>
                 <SourceMaterialUploader
                   campaignId={createdCampaignId}
                   materials={liveMaterials}
                   onChanged={handleMaterialsChanged}
                 />
-                <p className="text-[10px] text-[#8fa095] mt-2">
+                <p className="mt-2 break-words text-[10px] text-[#8fa095] [overflow-wrap:anywhere]">
                   If no files are uploaded, candidates will see the default Acme Financial case study.
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                 <Button
                   variant="outline"
                   onClick={handleFinish}
-                  className="flex-1 border-[#9db8a4] text-[#3f5847] hover:text-slate-950 bg-transparent"
+                  className="min-w-0 border-[#9db8a4] bg-transparent text-[#3f5847] hover:text-slate-950"
                 >
                   {liveMaterials.length === 0 ? "Skip & Finish" : "Done"}
                 </Button>
                 <Button
                   onClick={handleFinish}
-                  className="flex-1 bg-[#168a4a] hover:bg-[#11743d] text-white font-black uppercase tracking-wider"
+                  className="min-w-0 bg-[#168a4a] font-black uppercase tracking-wider text-white hover:bg-[#11743d]"
                 >
                   Finish
                 </Button>

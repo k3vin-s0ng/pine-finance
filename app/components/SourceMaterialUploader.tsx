@@ -110,28 +110,32 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
   }
 
   const isBusy = uploading || addMaterial.isPending || removeMaterial.isPending;
+  const materialRowClassName = readOnly
+    ? "grid w-full max-w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 overflow-hidden rounded-lg border border-[#b7d2bd] bg-[#eef7ef] p-2.5 group"
+    : "grid w-full max-w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 overflow-hidden rounded-lg border border-[#b7d2bd] bg-[#eef7ef] p-2.5 group";
 
   return (
-    <div className="space-y-3">
+    <div className="w-full max-w-full min-w-0 space-y-3 overflow-hidden">
       {/* Existing materials list */}
       {materials.length > 0 && (
-        <ul className="space-y-2">
+        <ul className="w-full max-w-full min-w-0 space-y-2 overflow-hidden">
           {materials.map((m) => (
             <li
               key={m.fileKey}
-              className="flex items-center gap-3 p-2.5 rounded-lg bg-[#eef7ef] border border-[#b7d2bd] group"
+              className={materialRowClassName}
             >
               {m.mimeType === "application/pdf" ? (
                 <FileText className="h-4 w-4 text-[#168a4a] shrink-0" />
               ) : (
                 <File className="h-4 w-4 text-[#3f5847] shrink-0" />
               )}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 overflow-hidden">
                 <a
                   href={m.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-slate-950 hover:text-[#168a4a] truncate block transition-colors"
+                  title={m.label}
+                  className="block max-w-full truncate text-sm text-slate-950 transition-colors hover:text-[#168a4a]"
                 >
                   {m.label}
                 </a>
@@ -141,7 +145,7 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
                 href={m.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#168a4a] hover:text-[#11743d] transition-colors shrink-0"
+                className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-bold uppercase tracking-wider text-[#168a4a] transition-colors hover:text-[#11743d]"
                 aria-label={`Open ${m.label}`}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -152,7 +156,7 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
                   type="button"
                   onClick={() => removeMaterial.mutate({ campaignId, fileKey: m.fileKey })}
                   disabled={isBusy}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[#6f8274] hover:text-red-400 disabled:opacity-30"
+                  className="shrink-0 text-[#6f8274] opacity-0 transition-opacity hover:text-red-400 disabled:opacity-30 group-hover:opacity-100"
                   title="Remove"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -180,7 +184,7 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-            className={`w-full flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-dashed transition-colors text-center cursor-pointer
+            className={`flex w-full max-w-full min-w-0 flex-col items-center gap-2 overflow-hidden rounded-lg border-2 border-dashed p-4 text-center transition-colors cursor-pointer
               ${dragOver
                 ? "border-[#168a4a] bg-[#168a4a]/5"
                 : "border-[#9db8a4] hover:border-[#6f8274] bg-transparent"
@@ -193,10 +197,10 @@ export default function SourceMaterialUploader({ campaignId, materials, onChange
             ) : (
               <Upload className="h-5 w-5 text-[#6f8274]" />
             )}
-            <span className="text-xs text-[#52665a]">
+            <span className="max-w-full break-words text-xs text-[#52665a] [overflow-wrap:anywhere]">
               {uploading ? "Uploading…" : "Drop a file or click to upload"}
             </span>
-            <span className="text-[10px] text-[#8fa095]">PDF, TXT, MD, CSV · max 16 MB</span>
+            <span className="max-w-full break-words text-[10px] text-[#8fa095] [overflow-wrap:anywhere]">PDF, TXT, MD, CSV · max 16 MB</span>
           </button>
         </>
       )}

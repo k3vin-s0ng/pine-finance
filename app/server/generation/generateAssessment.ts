@@ -15,22 +15,20 @@ import {
   formatSourceMaterialsForPrompt,
   type ExtractedSourceMaterial,
 } from "@/app/server/materials";
+import {
+  GROUNDED_EXTRACTION_EXEMPLAR,
+  ROLE_EXEMPLAR_TASKS,
+  ROLE_PROFILES,
+} from "./generationProfiles";
 
 const ASSESSMENT_VERSION = 1;
 
-const RESPONSE_TYPES = ["memo", "variance", "thesis", "extraction", "reconciliation", "flags"] as const;
+const RESPONSE_TYPES = ["memo", "variance", "thesis", "extraction", "flags"] as const;
 const FREE_RESPONSE_TYPES = new Set<AssessmentResponseType>(["memo", "variance", "thesis"]);
-const DETERMINISTIC_TYPES = new Set<AssessmentResponseType>(["extraction", "reconciliation"]);
+const DETERMINISTIC_TYPES = new Set<AssessmentResponseType>(["extraction"]);
 const ROLE_TEMPLATES = ["IB Analyst", "PE Associate", "Hedge Fund Research Analyst", "Management Consultant"] as const;
 
 const expectedAnswerUnitSchema = z.enum(["$", "$M", "$B", "%", "x", "0/1"]);
-const expectedNumericalAnswerSchema = z.object({
-  value: z.number(),
-  unit: expectedAnswerUnitSchema,
-  tolerancePct: z.number().positive().optional(),
-  sourceQuote: z.string().min(1).optional(),
-}).strict();
-
 const expectedExtractionRowSchema = z.object({
   metricLabel: z.string().min(1),
   expectedValue: z.number(),
@@ -39,18 +37,8 @@ const expectedExtractionRowSchema = z.object({
   sourceQuote: z.string().min(1).optional(),
 }).strict();
 
-const expectedReconciliationEntrySchema = z.object({
-  accountLabel: z.string().min(1),
-  expectedCorrected: z.number(),
-  unit: expectedAnswerUnitSchema,
-  tolerancePct: z.number().positive().optional(),
-  sourceQuote: z.string().min(1).optional(),
-}).strict();
-
 const expectedTaskAnswersSchema = z.object({
-  numerical: z.record(z.string(), expectedNumericalAnswerSchema).optional(),
   extractionRows: z.array(expectedExtractionRowSchema).optional(),
-  reconciliationEntries: z.array(expectedReconciliationEntrySchema).optional(),
 }).strict();
 
 const dataPointSchema = z.object({
@@ -102,18 +90,6 @@ const generatedAssessmentSchema: z.ZodType<GeneratedAssessment> = z.object({
   tasks: z.array(generatedTaskSchema).min(3).max(3),
 }).strict();
 
-const numericAnswerJsonSchema: Record<string, unknown> = {
-  type: "object",
-  properties: {
-    value: { type: "number" },
-    unit: { type: "string", enum: ["$", "$M", "$B", "%", "x", "0/1"] },
-    tolerancePct: { type: "number" },
-    sourceQuote: { type: "string" },
-  },
-  required: ["value", "unit", "sourceQuote"],
-  additionalProperties: false,
-};
-
 const extractionRowJsonSchema: Record<string, unknown> = {
   type: "object",
   properties: {
@@ -124,19 +100,6 @@ const extractionRowJsonSchema: Record<string, unknown> = {
     sourceQuote: { type: "string" },
   },
   required: ["metricLabel", "expectedValue", "unit", "sourceQuote"],
-  additionalProperties: false,
-};
-
-const reconciliationEntryJsonSchema: Record<string, unknown> = {
-  type: "object",
-  properties: {
-    accountLabel: { type: "string" },
-    expectedCorrected: { type: "number" },
-    unit: { type: "string", enum: ["$", "$M", "$B", "%", "x", "0/1"] },
-    tolerancePct: { type: "number" },
-    sourceQuote: { type: "string" },
-  },
-  required: ["accountLabel", "expectedCorrected", "unit", "sourceQuote"],
   additionalProperties: false,
 };
 
@@ -152,7 +115,6 @@ const assessmentGenerationOutputSchema = {
       aiBoundary: { type: "string" },
       tasks: {
         type: "array",
-        minItems: 3,
         maxItems: 3,
         items: {
           type: "object",
@@ -166,7 +128,6 @@ const assessmentGenerationOutputSchema = {
             prompt: { type: "string" },
             aiSuggestions: {
               type: "array",
-              minItems: 3,
               maxItems: 6,
               items: { type: "string" },
             },
@@ -190,17 +151,9 @@ const assessmentGenerationOutputSchema = {
                 {
                   type: "object",
                   properties: {
-                    numerical: {
-                      type: "object",
-                      additionalProperties: numericAnswerJsonSchema,
-                    },
                     extractionRows: {
                       type: "array",
                       items: extractionRowJsonSchema,
-                    },
-                    reconciliationEntries: {
-                      type: "array",
-                      items: reconciliationEntryJsonSchema,
                     },
                   },
                   additionalProperties: false,
@@ -268,45 +221,50 @@ export function isSourceQuoteGrounded(sourceQuote: string | undefined, sourceTex
   return matchedCount / quoteTokens.length >= 0.85;
 }
 
+function canonicalDigits(value: number) {
+  const valueText = Number.isInteger(value)
+    ? String(value)
+    : value.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+  return valueText.replace(/\D/g, "");
+}
+
+export function isValueInQuote(expectedValue: number, sourceQuote: string) {
+  const valueDigits = canonicalDigits(expectedValue);
+  if (!valueDigits) return false;
+  const quoteDigits = sourceQuote.replace(/\D/g, "");
+  return quoteDigits.includes(valueDigits);
+}
+
 function answerKeyHasChecks(answerKey: ExpectedTaskAnswers) {
-  return (
-    Object.keys(answerKey.numerical ?? {}).length > 0 ||
-    (answerKey.extractionRows?.length ?? 0) > 0 ||
-    (answerKey.reconciliationEntries?.length ?? 0) > 0
-  );
+  return (answerKey.extractionRows?.length ?? 0) > 0;
+}
+
+function countExtractionRows(answerKey: ExpectedTaskAnswers | null | undefined) {
+  return answerKey?.extractionRows?.length ?? 0;
 }
 
 function filterGroundedAnswerKey(
   answerKey: ExpectedTaskAnswers | null | undefined,
   sourceText: string,
+  responseType: AssessmentResponseType,
 ): { answerKey?: ExpectedTaskAnswers; droppedCount: number } {
   if (!answerKey) return { droppedCount: 0 };
+  if (responseType !== "extraction") {
+    return { droppedCount: countExtractionRows(answerKey) };
+  }
+
   let droppedCount = 0;
 
-  const numericalEntries = Object.entries(answerKey.numerical ?? {}).flatMap(([key, value]) => {
-    if (isSourceQuoteGrounded(value.sourceQuote, sourceText)) {
-      return [[key, value] as const];
-    }
-    droppedCount += 1;
-    return [];
-  });
-
   const extractionRows = (answerKey.extractionRows ?? []).filter((row) => {
-    const grounded = isSourceQuoteGrounded(row.sourceQuote, sourceText);
-    if (!grounded) droppedCount += 1;
-    return grounded;
-  });
-
-  const reconciliationEntries = (answerKey.reconciliationEntries ?? []).filter((entry) => {
-    const grounded = isSourceQuoteGrounded(entry.sourceQuote, sourceText);
+    const grounded =
+      isSourceQuoteGrounded(row.sourceQuote, sourceText) &&
+      isValueInQuote(row.expectedValue, row.sourceQuote ?? "");
     if (!grounded) droppedCount += 1;
     return grounded;
   });
 
   const groundedAnswerKey: ExpectedTaskAnswers = {
-    ...(numericalEntries.length > 0 ? { numerical: Object.fromEntries(numericalEntries) } : {}),
     ...(extractionRows.length > 0 ? { extractionRows } : {}),
-    ...(reconciliationEntries.length > 0 ? { reconciliationEntries } : {}),
   };
 
   return answerKeyHasChecks(groundedAnswerKey)
@@ -315,10 +273,14 @@ function filterGroundedAnswerKey(
 }
 
 function assertTypeMix(tasks: GeneratedTask[]) {
-  const hasDeterministic = tasks.some((task) => DETERMINISTIC_TYPES.has(task.responseType));
+  const hasDeterministic = tasks.some(
+    (task) =>
+      DETERMINISTIC_TYPES.has(task.responseType) &&
+      (task.answerKey?.extractionRows?.length ?? 0) > 0,
+  );
   const hasFreeResponse = tasks.some((task) => FREE_RESPONSE_TYPES.has(task.responseType));
   if (!hasDeterministic || !hasFreeResponse) {
-    throw new Error("Generated assessment must include at least one deterministic task and one free-response task.");
+    throw new Error("Generated assessment must include one keyed extraction task and one free-response task.");
   }
 }
 
@@ -333,6 +295,23 @@ function messageContentToString(content: Awaited<ReturnType<typeof invokeLLM>>["
   return content.map((part) => (part.type === "text" ? part.text : "")).join("\n");
 }
 
+function formatBulletList(items: string[]) {
+  return items.map((item) => `- ${item}`).join("\n");
+}
+
+function formatGroundedExtractionExemplar() {
+  return [
+    "=== GROUNDED EXTRACTION EXEMPLAR ===",
+    "Source snippet:",
+    GROUNDED_EXTRACTION_EXEMPLAR.sourceSnippet,
+    "",
+    "Correct answerKey.extractionRows:",
+    JSON.stringify(GROUNDED_EXTRACTION_EXEMPLAR.extractionRows, null, 2),
+    "",
+    "Why this is correct: each sourceQuote is copied from the snippet and contains the exact digits used by expectedValue.",
+  ].join("\n");
+}
+
 export function normalizeGeneratedAssessmentOutput(params: {
   rawOutput: unknown;
   sourceText: string;
@@ -342,7 +321,7 @@ export function normalizeGeneratedAssessmentOutput(params: {
   let droppedUngroundedAnswerKeys = 0;
 
   const tasks = parsed.tasks.map((task, index) => {
-    const grounded = filterGroundedAnswerKey(task.answerKey, params.sourceText);
+    const grounded = filterGroundedAnswerKey(task.answerKey, params.sourceText, task.responseType);
     droppedUngroundedAnswerKeys += grounded.droppedCount;
     const generatedTask = {
       id: `t${index + 1}`,
@@ -382,17 +361,28 @@ Read messy, inconsistent source documents and produce a standardized 60-minute f
 
 Rules:
 - Produce exactly 3 tasks grounded uniquely in the provided materials.
-- Collectively include at least one deterministic response type: extraction or reconciliation.
+- Allowed response types: memo, variance, thesis, flags, extraction.
+- Include at least one extraction task carrying the deterministic answer key.
 - Collectively include at least one free-response response type: memo, variance, or thesis.
 - You may use flags where useful, but flags alone do not satisfy the free-response requirement.
 - Every task must fill the full AssessmentTask shape: id, responseType, title, imperative, context, deliverable, prompt, aiSuggestions, dataPoints.
-- Deterministic tasks need answer keys. Any numeric answer in any task must include a sourceQuote copied verbatim from the provided source text.
+- Deterministic checks must only be expressed as answerKey.extractionRows on extraction tasks. Do not emit numerical or reconciliationEntries keys.
+- Every extraction row sourceQuote must be copied verbatim from the provided source text and must contain the exact figure used for expectedValue.
 - Use units only from: $, $M, $B, %, x, 0/1.
-- Set answerKey to null for tasks with no grounded numeric checks.
+- Set answerKey to null for non-extraction tasks or extraction tasks with no grounded extraction rows.
 - Set answerKeyStatus to "unverified" for every task.
 - Emit an aiBoundary explaining what Pine AI may explain and what it must not complete for this material.
 - Pick roleTemplateHint as the closest of the four supported roles.
-- Return valid JSON only.`;
+- Return valid JSON only.
+
+Response-type selection guide:
+- extraction: use when the source has tabular or numeric facts candidates can pull into a table; this is the only generated type that may carry answerKey.extractionRows.
+- memo: use when the candidate should synthesize analysis into a client-, board-, or committee-ready written recommendation.
+- thesis: use when the candidate should take and defend a clear investment position with supporting evidence and risks.
+- variance: use when the source supports driver decomposition, bridge logic, or explaining movement between periods.
+- flags: use when the candidate should identify and prioritize risks, anomalies, diligence issues, or red flags.
+
+${formatGroundedExtractionExemplar()}`;
 }
 
 function buildUserPrompt(params: {
@@ -400,8 +390,25 @@ function buildUserPrompt(params: {
   roleTemplate: RoleTemplate;
   sourceText: string;
 }) {
+  const roleProfile = ROLE_PROFILES[params.roleTemplate];
+  const exemplarTask = ROLE_EXEMPLAR_TASKS[params.roleTemplate];
+
   return `Campaign: ${params.campaignTitle}
 Role template currently selected by recruiter: ${params.roleTemplate}
+
+=== ROLE PROFILE ===
+Emphasized response types: ${roleProfile.emphasizedTypes.join(", ")}
+
+Characteristic task archetypes:
+${formatBulletList(roleProfile.archetypes)}
+
+What good looks like:
+${roleProfile.whatGoodLooksLike}
+
+Gold-standard exemplar task for format, voice, and depth:
+${JSON.stringify(exemplarTask, null, 2)}
+
+Use the role profile and exemplar to match rigor and framing, but create new tasks grounded only in the uploaded material below.
 
 Use the source materials below. If a material says it was truncated, only ground answer keys in text that is visible here.
 
@@ -451,7 +458,7 @@ export async function generateAssessmentFromSourceText(params: {
             ...baseMessages,
             {
               role: "user" as const,
-              content: `The previous generation failed validation: ${lastError instanceof Error ? lastError.message : String(lastError)}. Return valid JSON only, matching the schema exactly. Ensure the type mix rule holds and every numeric answer key has a sourceQuote copied from the source text.`,
+              content: `The previous generation failed validation: ${lastError instanceof Error ? lastError.message : String(lastError)}. Return valid JSON only, matching the schema exactly. Use only memo, variance, thesis, flags, or extraction. Ensure there is one keyed extraction task plus one memo/variance/thesis task. Every extraction row sourceQuote must be copied from the source text and contain the exact figure used for expectedValue.`,
             },
           ];
     try {

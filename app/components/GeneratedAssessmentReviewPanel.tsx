@@ -71,7 +71,7 @@ function isAnswerKeyEmpty(answerKey: ExpectedTaskAnswers | undefined) {
 }
 
 function textInputClassName() {
-  return "bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]";
+  return "w-full max-w-full min-w-0 bg-[#eef7ef] border-[#9db8a4] text-slate-950 placeholder:text-[#6f8274]";
 }
 
 function fieldLabelClassName() {
@@ -86,13 +86,13 @@ function SourceQuoteTextarea({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <Label className={fieldLabelClassName()}>Source Quote</Label>
       <Textarea
         rows={2}
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value)}
-        className={`${textInputClassName()} min-h-16 resize-y text-xs leading-relaxed`}
+        className={`${textInputClassName()} min-h-16 resize-y break-words text-xs leading-relaxed [overflow-wrap:anywhere]`}
       />
     </div>
   );
@@ -109,7 +109,7 @@ function UnitSelect({
     <select
       value={value}
       onChange={(event) => onChange(event.target.value as ExpectedAnswerUnit)}
-      className="h-9 rounded-md border border-[#9db8a4] bg-[#eef7ef] px-2 text-xs font-semibold text-slate-950 outline-none focus-visible:border-[#168a4a] focus-visible:ring-2 focus-visible:ring-[#168a4a]/20"
+      className="h-9 w-full min-w-0 rounded-md border border-[#9db8a4] bg-[#eef7ef] px-2 text-xs font-semibold text-slate-950 outline-none focus-visible:border-[#168a4a] focus-visible:ring-2 focus-visible:ring-[#168a4a]/20"
     >
       {ANSWER_UNITS.map((unit) => (
         <option key={unit} value={unit}>{unit}</option>
@@ -128,7 +128,7 @@ function NumberField({
   onChange: (value: number | undefined) => void;
 }) {
   return (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <Label className={fieldLabelClassName()}>{label}</Label>
       <Input
         type="number"
@@ -236,14 +236,14 @@ function AnswerKeySection({ task, taskIndex, updateTask }: AnswerKeySectionProps
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4 overflow-hidden">
       {numericalEntries.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-xs font-black uppercase tracking-widest text-[#2e4637]">Numeric Checks</h4>
           {numericalEntries.map(([key, entry], entryIndex) => (
-            <div key={`numerical-${entryIndex}`} className="rounded-lg border border-[#d9e7db] bg-white p-3">
-              <div className="grid gap-3 md:grid-cols-[1.4fr_0.9fr_0.7fr_0.9fr_auto]">
-                <div className="space-y-1">
+            <div key={`numerical-${entryIndex}`} className="min-w-0 overflow-hidden rounded-lg border border-[#d9e7db] bg-white p-3">
+              <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.7fr)_minmax(0,0.9fr)_auto]">
+                <div className="min-w-0 space-y-1">
                   <Label className={fieldLabelClassName()}>Metric Label</Label>
                   <Input
                     value={key}
@@ -287,9 +287,9 @@ function AnswerKeySection({ task, taskIndex, updateTask }: AnswerKeySectionProps
         <div className="space-y-3">
           <h4 className="text-xs font-black uppercase tracking-widest text-[#2e4637]">Extraction Rows</h4>
           {extractionRows.map((row, rowIndex) => (
-            <div key={`${row.metricLabel}-${rowIndex}`} className="rounded-lg border border-[#d9e7db] bg-white p-3">
-              <div className="grid gap-3 md:grid-cols-[1.4fr_0.9fr_0.7fr_0.9fr_auto]">
-                <div className="space-y-1">
+            <div key={`${row.metricLabel}-${rowIndex}`} className="min-w-0 overflow-hidden rounded-lg border border-[#d9e7db] bg-white p-3">
+              <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.7fr)_minmax(0,0.9fr)_auto]">
+                <div className="min-w-0 space-y-1">
                   <Label className={fieldLabelClassName()}>Metric Label</Label>
                   <Input
                     value={row.metricLabel}
@@ -333,9 +333,9 @@ function AnswerKeySection({ task, taskIndex, updateTask }: AnswerKeySectionProps
         <div className="space-y-3">
           <h4 className="text-xs font-black uppercase tracking-widest text-[#2e4637]">Reconciliation Entries</h4>
           {reconciliationEntries.map((entry, entryIndex) => (
-            <div key={`${entry.accountLabel}-${entryIndex}`} className="rounded-lg border border-[#d9e7db] bg-white p-3">
-              <div className="grid gap-3 md:grid-cols-[1.4fr_0.9fr_0.7fr_0.9fr_auto]">
-                <div className="space-y-1">
+            <div key={`${entry.accountLabel}-${entryIndex}`} className="min-w-0 overflow-hidden rounded-lg border border-[#d9e7db] bg-white p-3">
+              <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.7fr)_minmax(0,0.9fr)_auto]">
+                <div className="min-w-0 space-y-1">
                   <Label className={fieldLabelClassName()}>Account / Metric</Label>
                   <Input
                     value={entry.accountLabel}
@@ -396,9 +396,9 @@ function TaskReviewCard({
   };
 
   return (
-    <div className="rounded-xl border border-[#d9e7db] bg-[#fff] p-5">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-[#fff] p-5">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge className="bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20 text-[10px] font-bold tracking-widest uppercase">
             {formatResponseType(task.responseType)}
           </Badge>
@@ -418,8 +418,8 @@ function TaskReviewCard({
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-1">
+      <div className="grid min-w-0 gap-4 md:grid-cols-2">
+        <div className="min-w-0 space-y-1">
           <Label className={fieldLabelClassName()}>Title</Label>
           <Input
             value={task.title}
@@ -427,7 +427,7 @@ function TaskReviewCard({
             className={textInputClassName()}
           />
         </div>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label className={fieldLabelClassName()}>Imperative</Label>
           <Input
             value={task.imperative}
@@ -437,23 +437,23 @@ function TaskReviewCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4">
+      <div className="mt-4 grid min-w-0 gap-4">
         {(["context", "deliverable", "prompt"] as const).map((field) => (
-          <div key={field} className="space-y-1">
+          <div key={field} className="min-w-0 space-y-1">
             <Label className={fieldLabelClassName()}>{field}</Label>
             <Textarea
               rows={field === "prompt" ? 4 : 3}
               value={task[field]}
               onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, [field]: event.target.value }))}
-              className={`${textInputClassName()} resize-y text-sm leading-relaxed`}
+              className={`${textInputClassName()} resize-y break-words text-sm leading-relaxed [overflow-wrap:anywhere]`}
             />
           </div>
         ))}
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
-        <div>
-          <div className="mb-2 flex items-center justify-between">
+      <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-2">
+        <div className="min-w-0">
+          <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
             <Label className={fieldLabelClassName()}>AI Suggestions</Label>
             <Button
               type="button"
@@ -483,8 +483,8 @@ function TaskReviewCard({
           </div>
         </div>
 
-        <div>
-          <div className="mb-2 flex items-center justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
             <Label className={fieldLabelClassName()}>Data Points</Label>
             <Button
               type="button"
@@ -502,7 +502,7 @@ function TaskReviewCard({
           </div>
           <div className="space-y-2">
             {(task.dataPoints ?? []).map((point, pointIndex) => (
-              <div key={`point-${pointIndex}`} className="grid grid-cols-[1fr_1fr_76px] gap-2">
+              <div key={`point-${pointIndex}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px] gap-2">
                 <Input
                   value={point.label}
                   placeholder="Label"
@@ -600,18 +600,18 @@ export default function GeneratedAssessmentReviewPanel({
   if (!hasSourceMaterials) return null;
 
   return (
-    <div className="mb-8 rounded-xl border border-[#d9e7db] bg-white p-5">
+    <div className="mb-8 min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-white p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-950">
+        <div className="min-w-0">
+          <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold uppercase tracking-widest text-slate-950 [overflow-wrap:anywhere]">
             <Sparkles className="h-4 w-4 text-[#168a4a]" />
             Generated Assessment Review
           </h2>
-          <p className="mt-1 text-xs text-[#6f8274]">
+          <p className="mt-1 break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">
             Generate tasks from uploaded materials, edit prompts and grounded keys, then verify before candidates use them.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {draft && (
             <Badge className={`${isReviewed ? "bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"} text-[10px] font-bold uppercase tracking-widest`}>
               {isReviewed ? "Reviewed" : `${verifiedCount}/${draft.tasks.length} verified`}
@@ -689,7 +689,7 @@ export default function GeneratedAssessmentReviewPanel({
       )}
 
       {draft && (
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5 overflow-hidden">
           {draft.generationDiagnostics && draft.generationDiagnostics.droppedUngroundedAnswerKeys > 0 && (
             <Alert className="border-orange-500/30 bg-orange-500/5 text-orange-700">
               <AlertCircle className="h-4 w-4" />
@@ -700,15 +700,15 @@ export default function GeneratedAssessmentReviewPanel({
             </Alert>
           )}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-lg border border-[#d9e7db] bg-[#eef7ef] p-4">
+          <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <div className="min-w-0 overflow-hidden rounded-lg border border-[#d9e7db] bg-[#eef7ef] p-4">
               <div className="text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">Role Hint</div>
-              <div className="mt-1 text-sm font-bold text-slate-950">{draft.roleTemplateHint}</div>
+              <div className="mt-1 break-words text-sm font-bold text-slate-950 [overflow-wrap:anywhere]">{draft.roleTemplateHint}</div>
               <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">Model</div>
               <div className="mt-1 break-all text-xs text-[#3f5847]">{draft.generatedModel ?? "Unknown"}</div>
             </div>
-            <div className="rounded-lg border border-[#d9e7db] bg-[#eef7ef] p-4">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#6f8274]">
+            <div className="min-w-0 overflow-hidden rounded-lg border border-[#d9e7db] bg-[#eef7ef] p-4">
+              <div className="flex min-w-0 items-center gap-2 break-words text-[10px] font-bold uppercase tracking-widest text-[#6f8274] [overflow-wrap:anywhere]">
                 <CheckCircle className="h-3.5 w-3.5 text-[#168a4a]" />
                 Pine AI Boundary
               </div>

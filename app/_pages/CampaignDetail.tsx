@@ -97,31 +97,33 @@ function CandidateCompareModal({
             </ResponsiveContainer>
           </div>
           {/* Score Table */}
-          <div>
+          <div className="min-w-0">
             <p className="text-[#6f8274] text-xs uppercase tracking-widest mb-4">Score Breakdown</p>
-            <div className="grid gap-2" style={{ gridTemplateColumns: `140px repeat(${candidates.length}, 1fr)` }}>
-              <div />
-              {candidates.map(c => (
-                <div key={c.id} className="text-center">
-                  <div className="w-8 h-8 rounded-full bg-[#168a4a]/20 flex items-center justify-center mx-auto mb-1">
-                    <span className="text-[#168a4a] font-bold text-xs">{c.name[0]}</span>
-                  </div>
-                  <div className="text-slate-950 font-semibold text-xs truncate">{c.name}</div>
-                  <div className="text-2xl font-black text-[#168a4a] mt-1">{Math.round(c.score?.overallScore ?? 0)}</div>
-                </div>
-              ))}
-              {dims.map(dim => (
-                <Fragment key={dim}>
-                  <div key={`label-${dim}`} className="flex items-center text-[#6f8274] text-[10px] font-bold uppercase tracking-wider py-2 border-t border-[#eef7ef]">
-                    {dimLabels[dim]}
-                  </div>
-                  {candidates.map(c => (
-                    <div key={`${c.id}-${dim}`} className="py-2 border-t border-[#eef7ef]">
-                      <ScoreBar score={c.score?.[dim] ?? 0} />
+            <div className="overflow-x-auto">
+              <div className="grid min-w-[420px] gap-2" style={{ gridTemplateColumns: `140px repeat(${candidates.length}, minmax(96px, 1fr))` }}>
+                <div />
+                {candidates.map(c => (
+                  <div key={c.id} className="min-w-0 text-center">
+                    <div className="w-8 h-8 rounded-full bg-[#168a4a]/20 flex items-center justify-center mx-auto mb-1">
+                      <span className="text-[#168a4a] font-bold text-xs">{c.name[0]}</span>
                     </div>
-                  ))}
-                </Fragment>
-              ))}
+                    <div className="truncate text-xs font-semibold text-slate-950">{c.name}</div>
+                    <div className="text-2xl font-black text-[#168a4a] mt-1">{Math.round(c.score?.overallScore ?? 0)}</div>
+                  </div>
+                ))}
+                {dims.map(dim => (
+                  <Fragment key={dim}>
+                    <div key={`label-${dim}`} className="flex items-center text-[#6f8274] text-[10px] font-bold uppercase tracking-wider py-2 border-t border-[#eef7ef]">
+                      {dimLabels[dim]}
+                    </div>
+                    {candidates.map(c => (
+                      <div key={`${c.id}-${dim}`} className="py-2 border-t border-[#eef7ef]">
+                        <ScoreBar score={c.score?.[dim] ?? 0} />
+                      </div>
+                    ))}
+                  </Fragment>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -355,17 +357,17 @@ export default function CampaignDetail() {
       </div>
 
       {/* Source Materials */}
-      <div className="bg-[#fff] border border-[#d9e7db] rounded-xl p-5 mb-8">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-slate-950 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#168a4a]" />
+      <div className="mb-8 min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-[#fff] p-5">
+        <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold uppercase tracking-widest text-slate-950 [overflow-wrap:anywhere]">
+              <FileText className="h-4 w-4 shrink-0 text-[#168a4a]" />
               Source Materials
             </h2>
-            <p className="text-[#6f8274] text-xs mt-1">Files attached to this campaign for candidate research.</p>
+            <p className="mt-1 break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">Files attached to this campaign for candidate research.</p>
           </div>
           {materials.length > 0 && (
-            <Badge className="bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20 text-[10px] font-bold tracking-widest uppercase">
+            <Badge className="shrink-0 bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20 text-[10px] font-bold tracking-widest uppercase">
               {materials.length} file{materials.length === 1 ? "" : "s"}
             </Badge>
           )}
@@ -383,13 +385,13 @@ export default function CampaignDetail() {
       />
 
       {/* Candidates Table */}
-      <div className="bg-[#fff] border border-[#d9e7db] rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#d9e7db]">
-          <h2 className="text-slate-950 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+      <div className="min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-[#fff]">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-[#d9e7db] px-6 py-4">
+          <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold uppercase tracking-widest text-slate-950 [overflow-wrap:anywhere]">
             <Users className="w-4 h-4 text-[#168a4a]" />
             Candidates ({candidates?.length ?? 0})
           </h2>
-          <span className="text-[#6f8274] text-xs">Select scored candidates to compare</span>
+          <span className="break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">Select scored candidates to compare</span>
         </div>
 
         {isLoading ? (
@@ -410,9 +412,9 @@ export default function CampaignDetail() {
             </Button>
           </div>
         ) : (
-          <>
+          <div className="overflow-x-auto">
             {/* Header */}
-            <div className="hidden lg:grid px-6 py-2 text-[#6f8274] text-[10px] font-bold tracking-widest uppercase border-b border-[#eef7ef]"
+            <div className="hidden min-w-[920px] px-6 py-2 text-[#6f8274] text-[10px] font-bold tracking-widest uppercase border-b border-[#eef7ef] lg:grid"
               style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 144px" }}>
               <div />
               <div>Candidate</div>
@@ -432,7 +434,7 @@ export default function CampaignDetail() {
               return (
                 <div
                   key={row.assessment.id}
-                  className={`grid px-6 py-4 items-center border-b border-[#fff] hover:bg-[#fff] transition-colors ${isSelected ? "bg-[#168a4a]/5" : ""}`}
+                  className={`grid min-w-[920px] items-center border-b border-[#fff] px-6 py-4 transition-colors hover:bg-[#fff] ${isSelected ? "bg-[#168a4a]/5" : ""}`}
                   style={{ gridTemplateColumns: "32px 1fr 120px 80px 80px 80px 80px 80px 80px 144px" }}
                 >
                   {/* Checkbox */}
@@ -446,9 +448,9 @@ export default function CampaignDetail() {
                   </div>
 
                   {/* Candidate Info */}
-                  <div>
-                    <div className="text-slate-950 text-sm font-semibold">{displayName}</div>
-                    <div className="text-[#6f8274] text-xs">{displayEmail}</div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-slate-950">{displayName}</div>
+                    <div className="truncate text-xs text-[#6f8274]">{displayEmail}</div>
                   </div>
 
                   {/* Status */}
@@ -513,7 +515,7 @@ export default function CampaignDetail() {
                 </div>
               );
             })}
-          </>
+          </div>
         )}
       </div>
 
