@@ -90,98 +90,7 @@ const generatedAssessmentSchema: z.ZodType<GeneratedAssessment> = z.object({
   tasks: z.array(generatedTaskSchema).min(3).max(3),
 }).strict();
 
-const extractionRowJsonSchema: Record<string, unknown> = {
-  type: "object",
-  properties: {
-    metricLabel: { type: "string" },
-    expectedValue: { type: "number" },
-    unit: { type: "string", enum: ["$", "$M", "$B", "%", "x", "0/1"] },
-    tolerancePct: { type: "number" },
-    sourceQuote: { type: "string" },
-  },
-  required: ["metricLabel", "expectedValue", "unit", "sourceQuote"],
-  additionalProperties: false,
-};
 
-const assessmentGenerationOutputSchema = {
-  name: "generated_assessment",
-  strict: true,
-  schema: {
-    type: "object",
-    properties: {
-      version: { type: "integer" },
-      status: { type: "string", enum: ["generated"] },
-      roleTemplateHint: { type: "string", enum: ROLE_TEMPLATES },
-      aiBoundary: { type: "string" },
-      tasks: {
-        type: "array",
-        maxItems: 3,
-        items: {
-          type: "object",
-          properties: {
-            id: { type: "string" },
-            responseType: { type: "string", enum: RESPONSE_TYPES },
-            title: { type: "string" },
-            imperative: { type: "string" },
-            context: { type: "string" },
-            deliverable: { type: "string" },
-            prompt: { type: "string" },
-            aiSuggestions: {
-              type: "array",
-              maxItems: 6,
-              items: { type: "string" },
-            },
-            dataPoints: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  label: { type: "string" },
-                  value: { type: "string" },
-                  delta: { type: "number" },
-                },
-                required: ["label", "value"],
-                additionalProperties: false,
-              },
-            },
-            answerKeyStatus: { type: "string", enum: ["unverified"] },
-            answerKey: {
-              anyOf: [
-                { type: "null" },
-                {
-                  type: "object",
-                  properties: {
-                    extractionRows: {
-                      type: "array",
-                      items: extractionRowJsonSchema,
-                    },
-                  },
-                  additionalProperties: false,
-                },
-              ],
-            },
-          },
-          required: [
-            "id",
-            "responseType",
-            "title",
-            "imperative",
-            "context",
-            "deliverable",
-            "prompt",
-            "aiSuggestions",
-            "dataPoints",
-            "answerKeyStatus",
-            "answerKey",
-          ],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ["version", "status", "roleTemplateHint", "aiBoundary", "tasks"],
-    additionalProperties: false,
-  },
-};
 
 type GenerationMessage = {
   role: "system" | "user";
@@ -420,7 +329,7 @@ async function invokeGeneratedAssessment(messages: GenerationMessage[], model: s
     model,
     messages,
     max_tokens: 8192,
-    output_schema: assessmentGenerationOutputSchema,
+    response_format: { type: "json_object" },
   });
 
   const content = response.choices[0]?.message?.content;

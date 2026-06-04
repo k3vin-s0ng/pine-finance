@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, CheckCircle, Loader2, RefreshCcw, Save, Sparkles, Trash2 } from "lucide-react";
+import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, Loader2, RefreshCcw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Badge } from "@/app/components/ui/badge";
@@ -387,6 +387,8 @@ function TaskReviewCard({
   taskIndex: number;
   updateTask: (taskIndex: number, updater: (task: GeneratedTask) => GeneratedTask) => void;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   const updateDataPoint = (pointIndex: number, patch: Partial<AssessmentDataPoint>) => {
     updateTask(taskIndex, (currentTask) => {
       const dataPoints = [...(currentTask.dataPoints ?? [])];
@@ -397,13 +399,25 @@ function TaskReviewCard({
 
   return (
     <div className="min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-[#fff] p-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
+      <div className={`flex flex-wrap items-center justify-between gap-3 ${isCollapsed ? "" : "mb-5"}`}>
+        <button
+          type="button"
+          onClick={() => setIsCollapsed((c) => !c)}
+          className="flex min-w-0 items-center gap-2"
+        >
           <Badge className="bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20 text-[10px] font-bold tracking-widest uppercase">
             {formatResponseType(task.responseType)}
           </Badge>
           <span className="text-xs font-bold uppercase tracking-widest text-[#6f8274]">{task.id}</span>
-        </div>
+          {task.title ? (
+            <span className="text-xs text-[#3f5847] truncate max-w-xs">{task.title}</span>
+          ) : null}
+          {isCollapsed ? (
+            <ChevronDown className="h-4 w-4 shrink-0 text-[#6f8274]" />
+          ) : (
+            <ChevronUp className="h-4 w-4 shrink-0 text-[#6f8274]" />
+          )}
+        </button>
         <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#cfe0d2] bg-[#eef7ef] px-3 py-2 text-xs font-bold uppercase tracking-widest text-[#2e4637]">
           <Checkbox
             checked={task.answerKeyStatus === "verified"}
@@ -418,119 +432,123 @@ function TaskReviewCard({
         </label>
       </div>
 
-      <div className="grid min-w-0 gap-4 md:grid-cols-2">
-        <div className="min-w-0 space-y-1">
-          <Label className={fieldLabelClassName()}>Title</Label>
-          <Input
-            value={task.title}
-            onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, title: event.target.value }))}
-            className={textInputClassName()}
-          />
-        </div>
-        <div className="min-w-0 space-y-1">
-          <Label className={fieldLabelClassName()}>Imperative</Label>
-          <Input
-            value={task.imperative}
-            onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, imperative: event.target.value }))}
-            className={textInputClassName()}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 grid min-w-0 gap-4">
-        {(["context", "deliverable", "prompt"] as const).map((field) => (
-          <div key={field} className="min-w-0 space-y-1">
-            <Label className={fieldLabelClassName()}>{field}</Label>
-            <Textarea
-              rows={field === "prompt" ? 4 : 3}
-              value={task[field]}
-              onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, [field]: event.target.value }))}
-              className={`${textInputClassName()} resize-y break-words text-sm leading-relaxed [overflow-wrap:anywhere]`}
-            />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-2">
-        <div className="min-w-0">
-          <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
-            <Label className={fieldLabelClassName()}>AI Suggestions</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest text-[#168a4a]"
-              onClick={() => updateTask(taskIndex, (currentTask) => ({ ...currentTask, aiSuggestions: [...currentTask.aiSuggestions, ""] }))}
-            >
-              Add
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {task.aiSuggestions.map((suggestion, suggestionIndex) => (
+      {!isCollapsed && (
+        <>
+          <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <div className="min-w-0 space-y-1">
+              <Label className={fieldLabelClassName()}>Title</Label>
               <Input
-                key={`suggestion-${suggestionIndex}`}
-                value={suggestion}
-                onChange={(event) =>
-                  updateTask(taskIndex, (currentTask) => ({
-                    ...currentTask,
-                    aiSuggestions: currentTask.aiSuggestions.map((item, index) =>
-                      index === suggestionIndex ? event.target.value : item,
-                    ),
-                  }))
-                }
+                value={task.title}
+                onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, title: event.target.value }))}
                 className={textInputClassName()}
               />
-            ))}
+            </div>
+            <div className="min-w-0 space-y-1">
+              <Label className={fieldLabelClassName()}>Imperative</Label>
+              <Input
+                value={task.imperative}
+                onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, imperative: event.target.value }))}
+                className={textInputClassName()}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="min-w-0">
-          <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
-            <Label className={fieldLabelClassName()}>Data Points</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest text-[#168a4a]"
-              onClick={() =>
-                updateTask(taskIndex, (currentTask) => ({
-                  ...currentTask,
-                  dataPoints: [...(currentTask.dataPoints ?? []), { label: "", value: "" }],
-                }))
-              }
-            >
-              Add
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {(task.dataPoints ?? []).map((point, pointIndex) => (
-              <div key={`point-${pointIndex}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px] gap-2">
-                <Input
-                  value={point.label}
-                  placeholder="Label"
-                  onChange={(event) => updateDataPoint(pointIndex, { label: event.target.value })}
-                  className={textInputClassName()}
-                />
-                <Input
-                  value={point.value}
-                  placeholder="Value"
-                  onChange={(event) => updateDataPoint(pointIndex, { value: event.target.value })}
-                  className={textInputClassName()}
-                />
-                <Input
-                  type="number"
-                  value={point.delta ?? ""}
-                  placeholder="Δ"
-                  onChange={(event) => updateDataPoint(pointIndex, { delta: parseNumberInput(event.target.value) })}
-                  className={textInputClassName()}
+          <div className="mt-4 grid min-w-0 gap-4">
+            {(["context", "deliverable", "prompt"] as const).map((field) => (
+              <div key={field} className="min-w-0 space-y-1">
+                <Label className={fieldLabelClassName()}>{field}</Label>
+                <Textarea
+                  rows={field === "prompt" ? 4 : 3}
+                  value={task[field]}
+                  onChange={(event) => updateTask(taskIndex, (currentTask) => ({ ...currentTask, [field]: event.target.value }))}
+                  className={`${textInputClassName()} resize-y break-words text-sm leading-relaxed [overflow-wrap:anywhere]`}
                 />
               </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      <div className="mt-5 border-t border-[#eef7ef] pt-5">
-        <AnswerKeySection task={task} taskIndex={taskIndex} updateTask={updateTask} />
-      </div>
+          <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-2">
+            <div className="min-w-0">
+              <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <Label className={fieldLabelClassName()}>AI Suggestions</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest text-[#168a4a]"
+                  onClick={() => updateTask(taskIndex, (currentTask) => ({ ...currentTask, aiSuggestions: [...currentTask.aiSuggestions, ""] }))}
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {task.aiSuggestions.map((suggestion, suggestionIndex) => (
+                  <Input
+                    key={`suggestion-${suggestionIndex}`}
+                    value={suggestion}
+                    onChange={(event) =>
+                      updateTask(taskIndex, (currentTask) => ({
+                        ...currentTask,
+                        aiSuggestions: currentTask.aiSuggestions.map((item, index) =>
+                          index === suggestionIndex ? event.target.value : item,
+                        ),
+                      }))
+                    }
+                    className={textInputClassName()}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="min-w-0">
+              <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <Label className={fieldLabelClassName()}>Data Points</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest text-[#168a4a]"
+                  onClick={() =>
+                    updateTask(taskIndex, (currentTask) => ({
+                      ...currentTask,
+                      dataPoints: [...(currentTask.dataPoints ?? []), { label: "", value: "" }],
+                    }))
+                  }
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {(task.dataPoints ?? []).map((point, pointIndex) => (
+                  <div key={`point-${pointIndex}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_76px] gap-2">
+                    <Input
+                      value={point.label}
+                      placeholder="Label"
+                      onChange={(event) => updateDataPoint(pointIndex, { label: event.target.value })}
+                      className={textInputClassName()}
+                    />
+                    <Input
+                      value={point.value}
+                      placeholder="Value"
+                      onChange={(event) => updateDataPoint(pointIndex, { value: event.target.value })}
+                      className={textInputClassName()}
+                    />
+                    <Input
+                      type="number"
+                      value={point.delta ?? ""}
+                      placeholder="Δ"
+                      onChange={(event) => updateDataPoint(pointIndex, { delta: parseNumberInput(event.target.value) })}
+                      className={textInputClassName()}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 border-t border-[#eef7ef] pt-5">
+            <AnswerKeySection task={task} taskIndex={taskIndex} updateTask={updateTask} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -552,6 +570,7 @@ export default function GeneratedAssessmentReviewPanel({
   const draft = localDraft ?? queriedDraft;
 
   const isReviewed = draft?.status === "reviewed";
+  const [isCollapsed, setIsCollapsed] = useState(() => isReviewed);
   const verifiedCount = useMemo(
     () => draft?.tasks.filter((task) => task.answerKeyStatus === "verified").length ?? 0,
     [draft],
@@ -602,15 +621,28 @@ export default function GeneratedAssessmentReviewPanel({
   return (
     <div className="mb-8 min-w-0 overflow-hidden rounded-xl border border-[#d9e7db] bg-white p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold uppercase tracking-widest text-slate-950 [overflow-wrap:anywhere]">
-            <Sparkles className="h-4 w-4 text-[#168a4a]" />
-            Generated Assessment Review
-          </h2>
-          <p className="mt-1 break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">
-            Generate tasks from uploaded materials, edit prompts and grounded keys, then verify before candidates use them.
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsCollapsed((c) => !c)}
+          className="flex min-w-0 items-start gap-2 text-left"
+        >
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[#168a4a]" />
+          <div className="min-w-0">
+            <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold uppercase tracking-widest text-slate-950 [overflow-wrap:anywhere]">
+              Generated Assessment Review
+              {isCollapsed ? (
+                <ChevronDown className="h-4 w-4 shrink-0 text-[#6f8274]" />
+              ) : (
+                <ChevronUp className="h-4 w-4 shrink-0 text-[#6f8274]" />
+              )}
+            </h2>
+            {!isCollapsed && (
+              <p className="mt-1 break-words text-xs text-[#6f8274] [overflow-wrap:anywhere]">
+                Generate tasks from uploaded materials, edit prompts and grounded keys, then verify before candidates use them.
+              </p>
+            )}
+          </div>
+        </button>
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           {draft && (
             <Badge className={`${isReviewed ? "bg-[#168a4a]/10 text-[#168a4a] border-[#168a4a]/20" : "bg-orange-500/10 text-orange-600 border-orange-500/20"} text-[10px] font-bold uppercase tracking-widest`}>
@@ -664,14 +696,14 @@ export default function GeneratedAssessmentReviewPanel({
         </div>
       </div>
 
-      {isLoading && (
+      {!isCollapsed && isLoading && (
         <div className="rounded-lg border border-[#d9e7db] bg-[#eef7ef] p-6 text-center">
           <Loader2 className="mx-auto mb-3 h-5 w-5 animate-spin text-[#168a4a]" />
           <p className="text-sm text-[#3f5847]">Loading generated assessment...</p>
         </div>
       )}
 
-      {error && (
+      {!isCollapsed && error && (
         <Alert className="mb-4 border-red-500/30 bg-red-500/5 text-red-700">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Unable to load generated assessment</AlertTitle>
@@ -679,7 +711,7 @@ export default function GeneratedAssessmentReviewPanel({
         </Alert>
       )}
 
-      {!isLoading && !draft && (
+      {!isCollapsed && !isLoading && !draft && (
         <div className="rounded-lg border border-dashed border-[#b7d2bd] bg-[#f8fbf8] p-6">
           <p className="text-sm font-semibold text-[#2e4637]">No generated assessment yet.</p>
           <p className="mt-1 text-xs text-[#6f8274]">
@@ -688,7 +720,7 @@ export default function GeneratedAssessmentReviewPanel({
         </div>
       )}
 
-      {draft && (
+      {!isCollapsed && draft && (
         <div className="min-w-0 space-y-5 overflow-hidden">
           {draft.generationDiagnostics && draft.generationDiagnostics.droppedUngroundedAnswerKeys > 0 && (
             <Alert className="border-orange-500/30 bg-orange-500/5 text-orange-700">
